@@ -12,6 +12,9 @@ data/*.db-wal
 # Config (contains IDs/tokens)
 config/config.jsonc
 
+# Locales (contains translations)
+locales/main.json
+
 # Logs
 *.log
 
