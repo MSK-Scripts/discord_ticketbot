@@ -37,15 +37,39 @@ function ticketOpenedEmbed(client, { user, ticketType, priority, count, answers 
     priority: priorityLabel,
   });
 
-  if (ticketType.customDescription) {
-    let custom = ticketType.customDescription
-      .replace(/USERNAME/g,    user.username)
-      .replace(/USERID/g,      user.id)
-      .replace(/TICKETCOUNT/g, String(count));
-    answers.forEach((ans, i) => {
-      custom = custom.replace(new RegExp(`REASON${i + 1}`, 'g'), ans || '—');
-    });
-    description += `\n\n${custom}`;
+  const customDesc  = ticketType.customDescription?.trim();
+  const hasAnswers  = ticketType.questions?.length > 0 && answers.length > 0;
+  const hasReasonRefs = customDesc ? /REASON\d+/.test(customDesc) : false;
+
+  if (customDesc) {
+    if (hasAnswers && hasReasonRefs) {
+      // Questions are defined → show only the intro text from customDescription,
+      // strip lines that contain REASON placeholders to avoid duplicate display.
+      // The answers will appear below as named fields using the question labels.
+      const introText = customDesc
+        .split('\n')
+        .filter(line => !/REASON\d+/.test(line))
+        .join('\n')
+        .trim();
+
+      if (introText) {
+        const substituted = introText
+          .replace(/USERNAME/g,    user.username)
+          .replace(/USERID/g,      user.id)
+          .replace(/TICKETCOUNT/g, String(count));
+        description += `\n\n${substituted}`;
+      }
+    } else {
+      // No questions defined → substitute REASON placeholders directly in the description
+      let custom = customDesc
+        .replace(/USERNAME/g,    user.username)
+        .replace(/USERID/g,      user.id)
+        .replace(/TICKETCOUNT/g, String(count));
+      answers.forEach((ans, i) => {
+        custom = custom.replace(new RegExp(`REASON${i + 1}`, 'g'), ans || '—');
+      });
+      description += `\n\n${custom}`;
+    }
   }
 
   const embed = new EmbedBuilder()
@@ -55,7 +79,8 @@ function ticketOpenedEmbed(client, { user, ticketType, priority, count, answers 
     .setTimestamp()
     .setFooter({ text: `Ticket #${count} • ${ticketType.name}` });
 
-  if (answers.length > 0 && ticketType.questions?.length > 0) {
+  // Always show answers as fields when questions are defined
+  if (hasAnswers) {
     ticketType.questions.forEach((q, i) => {
       if (answers[i]) embed.addFields({ name: q.label, value: answers[i], inline: false });
     });
@@ -142,23 +167,15 @@ function statsEmbed(client, stats) {
     .setColor(parseColor(client.config.mainColor))
     .setTimestamp()
     .addFields(
-      { name: f.totalTickets  ?? 'Gesamt',       value: String(stats.total),            inline: true },
-      { name: f.openTickets   ?? 'Offen',         value: String(stats.open),             inline: true },
-      { name: f.closedTickets ?? 'Geschlossen',   value: String(stats.closed),           inline: true },
-      { name: f.avgRating     ?? 'Ø Bewertung',   value: avgRatingStr,                   inline: true },
-      { name: f.avgDuration   ?? 'Ø Dauer',       value: formatDuration(stats.avgDuration), inline: true },
-      { name: f.topStaff      ?? 'Top Staff',     value: topStaffStr,                    inline: false },
+      { name: f.totalTickets  ?? 'Gesamt',     value: String(stats.total),               inline: true },
+      { name: f.openTickets   ?? 'Offen',       value: String(stats.open),                inline: true },
+      { name: f.closedTickets ?? 'Geschlossen', value: String(stats.closed),              inline: true },
+      { name: f.avgRating     ?? 'Ø Bewertung', value: avgRatingStr,                      inline: true },
+      { name: f.avgDuration   ?? 'Ø Dauer',     value: formatDuration(stats.avgDuration), inline: true },
+      { name: f.topStaff      ?? 'Top Staff',   value: topStaffStr,                       inline: false },
     );
 }
 
-/**
- * Per-user statistics embed.
- * Shows two sections: "Als Nutzer" and "Als Staff" (if they have any staff activity).
- *
- * @param {import('../client').TicketClient} client
- * @param {import('discord.js').User}        user
- * @param {object}                           stats   Result of getUserStats()
- */
 function userStatsEmbed(client, user, stats) {
   const embed = new EmbedBuilder()
     .setTitle(`📊 Statistiken — ${user.displayName ?? user.username}`)
@@ -166,21 +183,19 @@ function userStatsEmbed(client, user, stats) {
     .setColor(parseColor(client.config.mainColor))
     .setTimestamp();
 
-  // ── Als Nutzer ────────────────────────────────────────────────────────────
   const avgRatingGiven = stats.ratingsGiven != null
     ? `${Number(stats.ratingsGiven).toFixed(1)} ⭐ (${stats.ratingsGivenCount}x)`
     : '—';
 
   embed.addFields(
-    { name: '\u200b', value: '**👤 Als Nutzer**', inline: false },
-    { name: '🎫 Tickets eröffnet',     value: String(stats.opened),         inline: true },
-    { name: '🟢 Davon offen',          value: String(stats.openNow),        inline: true },
-    { name: '🔴 Davon geschlossen',    value: String(stats.closedAsCreator), inline: true },
-    { name: '🏷️ Häufigster Typ',       value: stats.favoriteType ?? '—',    inline: true },
-    { name: '⭐ Ø Bewertung gegeben',  value: avgRatingGiven,               inline: true },
+    { name: '\u200b',                  value: '**👤 Als Nutzer**',           inline: false },
+    { name: '🎫 Tickets eröffnet',     value: String(stats.opened),          inline: true  },
+    { name: '🟢 Davon offen',          value: String(stats.openNow),         inline: true  },
+    { name: '🔴 Davon geschlossen',    value: String(stats.closedAsCreator), inline: true  },
+    { name: '🏷️ Häufigster Typ',       value: stats.favoriteType ?? '—',     inline: true  },
+    { name: '⭐ Ø Bewertung gegeben',  value: avgRatingGiven,                inline: true  },
   );
 
-  // ── Als Staff (nur anzeigen wenn sie irgendwas als Staff getan haben) ─────
   const hasStaffActivity = stats.closedAsStaff > 0 || stats.claimed > 0;
   if (hasStaffActivity) {
     const avgStaffRating = stats.staffRating != null
@@ -188,10 +203,10 @@ function userStatsEmbed(client, user, stats) {
       : '—';
 
     embed.addFields(
-      { name: '\u200b', value: '**🛡️ Als Staff**', inline: false },
-      { name: '🔒 Tickets geschlossen', value: String(stats.closedAsStaff), inline: true },
-      { name: '🙋 Tickets beansprucht', value: String(stats.claimed),       inline: true },
-      { name: '⭐ Ø Bewertung erhalten', value: avgStaffRating,             inline: true },
+      { name: '\u200b',                   value: '**🛡️ Als Staff**',          inline: false },
+      { name: '🔒 Tickets geschlossen',   value: String(stats.closedAsStaff), inline: true  },
+      { name: '🙋 Tickets beansprucht',   value: String(stats.claimed),       inline: true  },
+      { name: '⭐ Ø Bewertung erhalten',  value: avgStaffRating,              inline: true  },
     );
   }
 

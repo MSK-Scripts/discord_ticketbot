@@ -18,7 +18,7 @@
       "color": "",                   // Hex color or "" to use mainColor
       "categoryId": "CATEGORY_ID_HERE", // Category where tickets of this type are created
       "ticketNameOption": "",        // USERNAME, USERID, TICKETCOUNT oder "" für Standard
-      "customDescription": "An team member will get back to you as soon as possible!\n\n**Script:** REASON1\n**Problem:** REASON2",
+      "customDescription": "An team member will get back to you as soon as possible!",
       "cantAccess": [],              // Rollen-IDs ohne Zugriff auf diesen Typ
       "staffRoles": [],              // Typ-spezifische Staff-Rollen (überschreibt globale rolesWhoHaveAccessToTheTickets)
                                      // Leer lassen um die globalen Rollen zu verwenden
