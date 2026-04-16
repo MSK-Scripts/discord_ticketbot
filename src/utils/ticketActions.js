@@ -43,7 +43,6 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     .replace(/-+/g, '-')
     .substring(0, 100);
 
-  // ── Permission overwrites ─────────────────────────────────────────────────
   const overwrites = [
     { id: guild.roles.everyone, deny: [PermissionFlagsBits.ViewChannel] },
     {
@@ -56,9 +55,6 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     },
   ];
 
-  // Determine which staff roles have access to this ticket type:
-  // If the type defines its own staffRoles (non-empty), use those exclusively.
-  // Otherwise fall back to the global rolesWhoHaveAccessToTheTickets.
   const staffRoles = (ticketType.staffRoles?.length > 0)
     ? ticketType.staffRoles
     : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
@@ -74,12 +70,10 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     });
   }
 
-  // Explicitly deny access to any roles listed in cantAccess
   for (const roleId of ticketType.cantAccess ?? []) {
     overwrites.push({ id: roleId, deny: [PermissionFlagsBits.ViewChannel] });
   }
 
-  // ── Create channel ────────────────────────────────────────────────────────
   let channel;
   try {
     channel = await guild.channels.create({
@@ -99,7 +93,6 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
   const embed   = ticketOpenedEmbed(client, { user, ticketType, priority: 'medium', count: ticket.id, answers });
   const buttons = buildTicketButtons(client);
 
-  // Ping: use type-specific staffRoles for ping if defined, else fall back to roleToPingWhenOpenedId
   let pingContent = '';
   if (cfg.pingRoleWhenOpened) {
     const pingRoles = (ticketType.staffRoles?.length > 0)
@@ -120,6 +113,7 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
 async function performClose(client, channel, ticket, closer, reason) {
   const cfg = client.config.closeOption ?? {};
 
+  // ── Generate transcript ───────────────────────────────────────────────────
   let transcriptHtml = null;
   let transcriptFile = null;
 
@@ -135,9 +129,11 @@ async function performClose(client, channel, ticket, closer, reason) {
     }
   }
 
+  // ── Update DB ─────────────────────────────────────────────────────────────
   db.closeTicket(channel.id, closer.id, reason, transcriptHtml);
   const updatedTicket = db.getTicketByChannel(channel.id);
 
+  // ── Post closed embed + delete button in channel ──────────────────────────
   const deleteRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('tb_delete')
@@ -151,47 +147,77 @@ async function performClose(client, channel, ticket, closer, reason) {
     components: [deleteRow],
   }).catch(() => null);
 
+  // ── Move to closed category ───────────────────────────────────────────────
   if (cfg.closeTicketCategoryId) {
     await channel.setParent(cfg.closeTicketCategoryId, { lockPermissions: false }).catch(() => null);
   }
 
+  // ── Remove creator's channel access ──────────────────────────────────────
   await channel.permissionOverwrites.edit(ticket.creator_id, {
     ViewChannel: false, SendMessages: false,
   }).catch(() => null);
 
   const duration = updatedTicket.closed_at - updatedTicket.created_at;
 
+  // ── Log to log channel ────────────────────────────────────────────────────
   if (client.config.logs && client.config.logsChannelId) {
     const logChannel = await channel.guild.channels.fetch(client.config.logsChannelId).catch(() => null);
     if (logChannel) {
       await logChannel.send({
         embeds: [ticketLogEmbed(client, { ticket: updatedTicket, closer, reason, duration, transcriptUrl: null })],
         files:  transcriptFile ? [transcriptFile] : [],
-      }).catch(() => null);
+      }).catch(err => client.logger.error('[performClose] Failed to send log:', err));
+    } else {
+      client.logger.warn('[performClose] Log channel not found.');
     }
   }
 
-  if (cfg.dmUser && ticket.creator_id !== closer.id) {
+  // ── DM the ticket creator ─────────────────────────────────────────────────
+  // Always DM the creator regardless of who closed the ticket.
+  // The transcript file is attached to the DM as well.
+  if (cfg.dmUser) {
     try {
       const creator = await channel.guild.members.fetch(ticket.creator_id);
-      await creator.user.send({
+
+      // Build the DM — attach transcript file if one was generated
+      const dmPayload = {
         embeds: [ticketClosedDMEmbed(client, {
           count: ticket.id, type: ticket.type, closer, reason, transcriptUrl: null,
         })],
-      }).catch(() => null);
-    } catch { /* DMs closed */ }
+      };
+      if (transcriptFile) {
+        // Re-create the attachment — AttachmentBuilder can only be sent once
+        dmPayload.files = [
+          new AttachmentBuilder(
+            Buffer.from(transcriptHtml, 'utf-8'),
+            { name: `ticket-${ticket.id}.html` }
+          ),
+        ];
+      }
+
+      await creator.user.send(dmPayload);
+      client.logger.info(`[performClose] DM sent to ${creator.user.tag}`);
+    } catch (err) {
+      // Most common reason: user has DMs disabled
+      client.logger.warn(`[performClose] Could not DM creator (${ticket.creator_id}): ${err.message}`);
+    }
   }
 
+  // ── Rating request ────────────────────────────────────────────────────────
+  // Always send rating request to the ticket creator.
   const ratingCfg = client.config.ratingSystem;
-  if (ratingCfg?.enabled && ticket.creator_id !== closer.id) {
+  if (ratingCfg?.enabled) {
     const ratingRow   = buildRatingRow();
     const ratingEmbed = ratingRequestEmbed(client, { count: ticket.id });
 
     if (ratingCfg.dmUser) {
       try {
         const creator = await channel.guild.members.fetch(ticket.creator_id);
-        await creator.user.send({ embeds: [ratingEmbed], components: [ratingRow] }).catch(() => null);
-      } catch { /* DMs closed */ }
+        await creator.user.send({ embeds: [ratingEmbed], components: [ratingRow] });
+        client.logger.info(`[performClose] Rating DM sent to ${creator.user.tag}`);
+      } catch (err) {
+        client.logger.warn(`[performClose] Could not send rating DM (${ticket.creator_id}): ${err.message}`);
+      }
     } else {
       await channel.send({
         content:    `<@${ticket.creator_id}>`,
@@ -204,10 +230,6 @@ async function performClose(client, channel, ticket, closer, reason) {
 
 // ─── Move ─────────────────────────────────────────────────────────────────────
 
-/**
- * Move a ticket to a different type/category.
- * Updates DB, moves the channel, adjusts permissions (incl. staffRoles).
- */
 async function performMove(client, channel, ticket, newType, movedBy) {
   db.setType(channel.id, newType.codeName);
 
@@ -215,27 +237,23 @@ async function performMove(client, channel, ticket, newType, movedBy) {
     await channel.setParent(newType.categoryId, { lockPermissions: false }).catch(() => null);
   }
 
-  const cfg     = client.config;
+  const cfg      = client.config;
   const allTypes = cfg.ticketTypes;
   const oldType  = allTypes.find(t => t.codeName === ticket.type);
 
-  // ── Remove old type's staff role overwrites ───────────────────────────────
   const oldStaffRoles = (oldType?.staffRoles?.length > 0)
     ? oldType.staffRoles
     : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
 
-  // ── Apply new type's staff role overwrites ────────────────────────────────
   const newStaffRoles = (newType.staffRoles?.length > 0)
     ? newType.staffRoles
     : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
 
-  // Roles that were in old but not in new → remove overwrite
   const rolesToRemove = oldStaffRoles.filter(id => !newStaffRoles.includes(id));
   for (const roleId of rolesToRemove) {
     await channel.permissionOverwrites.delete(roleId).catch(() => null);
   }
 
-  // All new staff roles → grant full staff access
   for (const roleId of newStaffRoles) {
     await channel.permissionOverwrites.edit(roleId, {
       ViewChannel:        true,
@@ -247,7 +265,6 @@ async function performMove(client, channel, ticket, newType, movedBy) {
     }).catch(() => null);
   }
 
-  // Remove old cantAccess denies, apply new ones
   for (const roleId of oldType?.cantAccess ?? []) {
     await channel.permissionOverwrites.delete(roleId).catch(() => null);
   }
@@ -267,9 +284,6 @@ async function performMove(client, channel, ticket, newType, movedBy) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * Build the Close + Claim + Move action row for a ticket channel.
- */
 function buildTicketButtons(client) {
   const cfg     = client.config;
   const buttons = [];
@@ -294,7 +308,6 @@ function buildTicketButtons(client) {
     );
   }
 
-  // Move button — only shown when there are multiple ticket types
   if (cfg.ticketTypes?.length > 1) {
     buttons.push(
       new ButtonBuilder()
@@ -324,14 +337,6 @@ function sanitizeName(name) {
   return name.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 20) || 'user';
 }
 
-/**
- * Get the effective staff roles for a ticket type.
- * Returns type-specific staffRoles if defined, otherwise the global list.
- *
- * @param {object} ticketType  Config ticketType entry
- * @param {object} cfg         Global bot config
- * @returns {string[]}
- */
 function getEffectiveStaffRoles(ticketType, cfg) {
   return (ticketType?.staffRoles?.length > 0)
     ? ticketType.staffRoles
