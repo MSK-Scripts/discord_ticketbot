@@ -2,14 +2,21 @@ const fs = require('fs');
 const path = require('path');
 
 // __dirname = <project>/src  →  ../config = <project>/config  ✓
-const CONFIG_PATH   = path.resolve(__dirname, '../config/config.jsonc');
-const EXAMPLE_PATH  = path.resolve(__dirname, '../config/config.example.jsonc');
+const CONFIG_PATH  = path.resolve(__dirname, '../config/config.jsonc');
+const EXAMPLE_PATH = path.resolve(__dirname, '../config/config.example.jsonc');
 
 /**
- * Strips single-line (//) and multi-line (/* ... *\/) comments from a JSONC string,
- * while preserving content inside strings (e.g. URLs containing "//").
- * @param {string} text
- * @returns {string}
+ * Strips single-line (//) and multi-line (/* ... *\/) comments from a JSONC
+ * string, then removes trailing commas before } and ] so the result is valid
+ * JSON that JSON.parse() can consume.
+ *
+ * Handles edge-cases:
+ *  - Preserves content inside strings (including "https://..." URLs)
+ *  - Handles escaped quotes (\")
+ *  - Removes trailing commas left by the last item in objects/arrays
+ *
+ * @param {string} text  Raw JSONC source
+ * @returns {string}     Valid JSON string
  */
 function stripJsonComments(text) {
   let result   = '';
@@ -19,9 +26,11 @@ function stripJsonComments(text) {
   while (i < text.length) {
     const ch = text[i];
 
+    // ── Inside a string literal ─────────────────────────────────────────────
     if (inString) {
       if (ch === '\\') {
-        result += ch + text[i + 1];
+        // Escaped character — copy both chars and skip
+        result += ch + (text[i + 1] ?? '');
         i += 2;
         continue;
       }
@@ -31,6 +40,7 @@ function stripJsonComments(text) {
       continue;
     }
 
+    // ── Start of a string literal ───────────────────────────────────────────
     if (ch === '"') {
       inString = true;
       result += ch;
@@ -38,13 +48,13 @@ function stripJsonComments(text) {
       continue;
     }
 
-    // Single-line comment
+    // ── Single-line comment (//) ────────────────────────────────────────────
     if (ch === '/' && text[i + 1] === '/') {
       while (i < text.length && text[i] !== '\n') i++;
       continue;
     }
 
-    // Multi-line comment
+    // ── Multi-line comment (/* ... */) ──────────────────────────────────────
     if (ch === '/' && text[i + 1] === '*') {
       i += 2;
       while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++;
@@ -56,12 +66,18 @@ function stripJsonComments(text) {
     i++;
   }
 
+  // ── Remove trailing commas before } or ] ───────────────────────────────────
+  // e.g.  { "a": 1, }  →  { "a": 1 }
+  //        [ "x",  ]   →  [ "x"  ]
+  result = result.replace(/,(\s*[}\]])/g, '$1');
+
   return result;
 }
 
 /**
  * Load and parse the JSONC config file.
- * If config.jsonc does not exist, it is created from config.example.jsonc.
+ * If config.jsonc does not exist it is created from config.example.jsonc,
+ * and the process exits so the user can fill it in before restarting.
  * @returns {object}
  */
 function loadConfig() {
@@ -81,6 +97,7 @@ function loadConfig() {
     return JSON.parse(stripJsonComments(raw));
   } catch (err) {
     console.error('[Config] Failed to parse config.jsonc:', err.message);
+    console.error('[Config] Tip: Check for stray commas or invalid characters near the position shown above.');
     process.exit(1);
   }
 }
@@ -94,11 +111,11 @@ function validateConfig(config) {
   const errors = [];
 
   const required = [
-    ['openTicketChannelId', 'string'],
-    ['ticketTypes',         'array' ],
-    ['rolesWhoHaveAccessToTheTickets', 'array'],
-    ['closeOption',         'object'],
-    ['mainColor',           'string'],
+    ['openTicketChannelId',           'string'],
+    ['ticketTypes',                   'array' ],
+    ['rolesWhoHaveAccessToTheTickets','array' ],
+    ['closeOption',                   'object'],
+    ['mainColor',                     'string'],
   ];
 
   for (const [key, type] of required) {
@@ -122,8 +139,6 @@ function validateConfig(config) {
       if (!t.codeName)   errors.push(`ticketTypes[${i}] is missing "codeName".`);
       if (!t.name)       errors.push(`ticketTypes[${i}] is missing "name".`);
       if (!t.categoryId) errors.push(`ticketTypes[${i}] is missing "categoryId".`);
-
-      // staffRoles must be an array if present
       if (t.staffRoles !== undefined && !Array.isArray(t.staffRoles)) {
         errors.push(`ticketTypes[${i}].staffRoles must be an array.`);
       }
