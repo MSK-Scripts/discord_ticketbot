@@ -1,6 +1,15 @@
+/**
+ * Button: tb_open
+ * Always the entry point — shown in every ticket panel regardless of type count.
+ *
+ * Behaviour:
+ *  - Multiple types → show ephemeral select menu (fresh each time, no Discord cache issue)
+ *  - Single type, has questions → show questions modal
+ *  - Single type, no questions  → open ticket directly
+ */
 const {
-  ModalBuilder, TextInputBuilder, TextInputStyle,
-  ActionRowBuilder, MessageFlags,
+  ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder,
+  StringSelectMenuBuilder, StringSelectMenuOptionBuilder, MessageFlags,
 } = require('discord.js');
 const { isBlacklisted, getOpenTicketsByUser } = require('../../database');
 const { openTicket } = require('../../utils/ticketActions');
@@ -9,10 +18,10 @@ module.exports = {
   customId: 'tb_open',
 
   async execute(client, interaction) {
-    const cfg        = client.config;
-    const ticketType = cfg.ticketTypes[0];
-    const user       = interaction.user;
+    const cfg  = client.config;
+    const user = interaction.user;
 
+    // ── Guard checks ──────────────────────────────────────────────────────────
     if (isBlacklisted(user.id, interaction.guildId)) {
       return interaction.reply({ content: client.t('messages.blacklisted'), flags: MessageFlags.Ephemeral });
     }
@@ -26,6 +35,33 @@ module.exports = {
         });
       }
     }
+
+    // ── Multiple types → ephemeral select menu ────────────────────────────────
+    // Sending the menu as an ephemeral reply means Discord creates a fresh
+    // interaction every time — the previously selected value is never cached.
+    if (cfg.ticketTypes.length > 1) {
+      const options = cfg.ticketTypes.map(t =>
+        new StringSelectMenuOptionBuilder()
+          .setLabel(t.name)
+          .setDescription(t.description?.substring(0, 100) ?? '')
+          .setValue(t.codeName)
+          .setEmoji(t.emoji || '🎫')
+      );
+
+      const menu = new StringSelectMenuBuilder()
+        .setCustomId('tb_selectType')
+        .setPlaceholder(client.t('menus.ticketType'))
+        .addOptions(options);
+
+      return interaction.reply({
+        content: '🎫 Bitte wähle eine Kategorie:',
+        components: [new ActionRowBuilder().addComponents(menu)],
+        flags: MessageFlags.Ephemeral,
+      });
+    }
+
+    // ── Single type ───────────────────────────────────────────────────────────
+    const ticketType = cfg.ticketTypes[0];
 
     if (ticketType.askQuestions && ticketType.questions?.length > 0) {
       return interaction.showModal(buildQuestionsModal(ticketType));
@@ -42,6 +78,11 @@ module.exports = {
   },
 };
 
+/**
+ * Build a Discord modal from a ticket type's question list.
+ * @param {object} ticketType
+ * @returns {ModalBuilder}
+ */
 function buildQuestionsModal(ticketType) {
   const modal = new ModalBuilder()
     .setCustomId(`tb_modalQuestions:${ticketType.codeName}`)
