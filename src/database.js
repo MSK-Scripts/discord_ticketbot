@@ -2,7 +2,8 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-const DB_PATH = path.resolve(__dirname, '../../data/tickets.db');
+// __dirname = <project>/src  →  ../data = <project>/data  ✓
+const DB_PATH = path.resolve(__dirname, '../data/tickets.db');
 
 /** @type {Database.Database} */
 let db;
@@ -149,10 +150,6 @@ function getInactiveTickets(thresholdMs, excludeClaimed = true) {
   return db.prepare(query).all(cutoff);
 }
 
-/**
- * Find open tickets where no staff has replied for reminderMs,
- * but we haven't sent a reminder yet (or last reminder was > reminderMs ago).
- */
 function getTicketsNeedingStaffReminder(reminderMs) {
   const cutoff = Date.now() - reminderMs;
   return db.prepare(`
@@ -164,10 +161,10 @@ function getTicketsNeedingStaffReminder(reminderMs) {
 }
 
 function getStats(guildId) {
-  const total    = db.prepare("SELECT COUNT(*) as c FROM tickets WHERE guild_id = ?").get(guildId).c;
-  const open     = db.prepare("SELECT COUNT(*) as c FROM tickets WHERE guild_id = ? AND status = 'open'").get(guildId).c;
-  const closed   = db.prepare("SELECT COUNT(*) as c FROM tickets WHERE guild_id = ? AND status = 'closed'").get(guildId).c;
-  const avgRating = db.prepare(`
+  const total       = db.prepare("SELECT COUNT(*) as c FROM tickets WHERE guild_id = ?").get(guildId).c;
+  const open        = db.prepare("SELECT COUNT(*) as c FROM tickets WHERE guild_id = ? AND status = 'open'").get(guildId).c;
+  const closed      = db.prepare("SELECT COUNT(*) as c FROM tickets WHERE guild_id = ? AND status = 'closed'").get(guildId).c;
+  const avgRating   = db.prepare(`
     SELECT AVG(r.rating) as avg FROM ratings r
     JOIN tickets t ON r.ticket_id = t.id WHERE t.guild_id = ?
   `).get(guildId).avg;
@@ -175,7 +172,7 @@ function getStats(guildId) {
     SELECT AVG(closed_at - created_at) as avg FROM tickets
     WHERE guild_id = ? AND status = 'closed' AND closed_at IS NOT NULL
   `).get(guildId).avg;
-  const topStaff = db.prepare(`
+  const topStaff    = db.prepare(`
     SELECT closed_by, COUNT(*) as count FROM tickets
     WHERE guild_id = ? AND status = 'closed' AND closed_by IS NOT NULL
     GROUP BY closed_by ORDER BY count DESC LIMIT 3
@@ -184,13 +181,7 @@ function getStats(guildId) {
   return { total, open, closed, avgRating, avgDuration, topStaff };
 }
 
-/**
- * Extended per-user statistics.
- * @param {string} userId
- * @param {string} guildId
- */
 function getUserStats(userId, guildId) {
-  // As ticket creator
   const opened = db.prepare(
     "SELECT COUNT(*) as c FROM tickets WHERE creator_id = ? AND guild_id = ?"
   ).get(userId, guildId).c;
@@ -203,33 +194,28 @@ function getUserStats(userId, guildId) {
     "SELECT COUNT(*) as c FROM tickets WHERE creator_id = ? AND guild_id = ? AND status = 'closed'"
   ).get(userId, guildId).c;
 
-  // Ratings given by this user
   const ratingsGiven = db.prepare(`
     SELECT AVG(r.rating) as avg, COUNT(*) as count FROM ratings r
     JOIN tickets t ON r.ticket_id = t.id
     WHERE r.user_id = ? AND t.guild_id = ?
   `).get(userId, guildId);
 
-  // Most used ticket type
   const favoriteType = db.prepare(`
     SELECT type, COUNT(*) as count FROM tickets
     WHERE creator_id = ? AND guild_id = ?
     GROUP BY type ORDER BY count DESC LIMIT 1
   `).get(userId, guildId);
 
-  // As staff: tickets closed
   const closedAsStaff = db.prepare(
     "SELECT COUNT(*) as c FROM tickets WHERE closed_by = ? AND guild_id = ?"
   ).get(userId, guildId).c;
 
-  // As staff: avg rating on tickets they closed
   const staffRating = db.prepare(`
     SELECT AVG(r.rating) as avg, COUNT(*) as count FROM ratings r
     JOIN tickets t ON r.ticket_id = t.id
     WHERE t.closed_by = ? AND t.guild_id = ?
   `).get(userId, guildId);
 
-  // As staff: tickets claimed
   const claimed = db.prepare(
     "SELECT COUNT(*) as c FROM tickets WHERE claimed_by = ? AND guild_id = ?"
   ).get(userId, guildId).c;
@@ -292,16 +278,12 @@ function getRating(ticketId) {
 
 module.exports = {
   initDatabase,
-  // Tickets
   createTicket, getTicketByChannel, getTicketById,
   getOpenTicketsByUser, closeTicket, claimTicket, unclaimTicket,
   setPriority, setType, updateLastActivity, setStaffReminded,
   getInactiveTickets, getTicketsNeedingStaffReminder,
   getStats, getUserStats,
-  // Blacklist
   addToBlacklist, removeFromBlacklist, isBlacklisted, getBlacklist,
-  // Notes
   addNote, getNotes,
-  // Ratings
   addRating, getRating,
 };
