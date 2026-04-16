@@ -12,7 +12,7 @@ const ACTIVITY_TYPE_MAP = {
 };
 
 module.exports = {
-  name: 'ready',
+  name: 'clientReady', // renamed from 'ready' in Discord.js v14 to avoid conflict with gateway READY
   once: true,
 
   async execute(client) {
@@ -51,7 +51,6 @@ module.exports = {
       const reminderMs = (reminderCfg.afterHours ?? 4) * 3_600_000;
 
       client.logger.info(`[StaffReminder] Enabled — after ${reminderCfg.afterHours}h without response`);
-      // Check every 15 minutes
       setInterval(() => runStaffReminder(client, reminderMs), 15 * 60_000);
       runStaffReminder(client, reminderMs);
     }
@@ -143,10 +142,9 @@ async function runStaffReminder(client, reminderMs) {
     return;
   }
 
-  const reminderCfg  = client.config.staffReminder;
-  const staffRoles   = client.config.rolesWhoHaveAccessToTheTickets ?? [];
+  const reminderCfg = client.config.staffReminder;
+  const staffRoles  = client.config.rolesWhoHaveAccessToTheTickets ?? [];
 
-  // Build the ping string once (e.g. "@Team @Support")
   const pingStr = reminderCfg.pingRoles && staffRoles.length > 0
     ? staffRoles.map(id => `<@&${id}>`).join(' ')
     : '';
@@ -166,7 +164,6 @@ async function runStaffReminder(client, reminderMs) {
 
       await channel.send({ content }).catch(() => null);
 
-      // Mark as reminded so we don't spam
       setStaffReminded(ticket.channel_id);
 
       client.logger.info(`[StaffReminder] Reminded ticket #${ticket.id} (${hoursIdle}h idle)`);
