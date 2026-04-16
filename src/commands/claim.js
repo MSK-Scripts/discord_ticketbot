@@ -26,6 +26,10 @@ module.exports = {
 
     claimTicket(interaction.channelId, interaction.user.id);
 
+    // ── Reply immediately so Discord doesn't time out ─────────────────────────
+    await interaction.reply(client.t('messages.ticketClaimed', { user: `<@${interaction.user.id}>` }));
+
+    // ── Rename + move in background (can be slow / rate-limited) ─────────────
     const cfg = client.config.claimOption;
     if (cfg?.nameWhenClaimed) {
       const creator = await interaction.guild.members.fetch(ticket.creator_id).catch(() => null);
@@ -34,13 +38,17 @@ module.exports = {
         .replace(/S_USERID/g,   interaction.user.id)
         .replace(/U_USERNAME/g, creator?.user.username ?? 'unknown')
         .replace(/U_USERID/g,   ticket.creator_id)
-        .replace(/TICKETCOUNT/g, String(ticket.id));
-      await interaction.channel.setName(newName).catch(() => null);
+        .replace(/TICKETCOUNT/g, String(ticket.id))
+        .toLowerCase()
+        .replace(/[^a-z0-9-✔️]/g, '-')
+        .replace(/-+/g, '-')
+        .substring(0, 100);
+      await interaction.channel.setName(newName).catch(err =>
+        client.logger.warn(`[Claim] Could not rename channel: ${err.message}`)
+      );
     }
     if (cfg?.categoryWhenClaimed) {
       await interaction.channel.setParent(cfg.categoryWhenClaimed, { lockPermissions: false }).catch(() => null);
     }
-
-    await interaction.reply(client.t('messages.ticketClaimed', { user: `<@${interaction.user.id}>` }));
   },
 };

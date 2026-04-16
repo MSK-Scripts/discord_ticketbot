@@ -20,14 +20,18 @@ module.exports = {
 
     unclaimTicket(interaction.channelId);
 
+    // ── Reply immediately so Discord doesn't time out ─────────────────────────
+    await interaction.reply(client.t('messages.ticketUnclaimed', { user: `<@${interaction.user.id}>` }));
+
+    // ── Restore original channel name in background ───────────────────────────
     const creator  = await interaction.guild.members.fetch(ticket.creator_id).catch(() => null);
     const nameOpt  = client.config.ticketNameOption ?? 'ticket-USERNAME';
     const origName = nameOpt
       .replace(/USERNAME/g,    creator?.user.username ?? 'unknown')
       .replace(/USERID/g,      ticket.creator_id)
       .replace(/TICKETCOUNT/g, String(ticket.id));
-    await interaction.channel.setName(origName).catch(() => null);
-
-    await interaction.reply(client.t('messages.ticketUnclaimed', { user: `<@${interaction.user.id}>` }));
+    await interaction.channel.setName(origName).catch(err =>
+      client.logger.warn(`[Unclaim] Could not rename channel: ${err.message}`)
+    );
   },
 };

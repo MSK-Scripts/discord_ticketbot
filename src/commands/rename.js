@@ -28,12 +28,12 @@ module.exports = {
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
 
-    try {
-      await interaction.channel.setName(newName);
-      await interaction.reply(client.t('messages.ticketRenamed', { name: newName }));
-    } catch (err) {
-      client.logger.error('[Rename] Error:', err);
-      await interaction.reply({ content: '❌ Umbenennung fehlgeschlagen.', flags: MessageFlags.Ephemeral });
-    }
+    // ── Reply immediately so Discord doesn't time out ─────────────────────────
+    await interaction.reply(client.t('messages.ticketRenamed', { name: newName }));
+
+    // ── Rename in background ──────────────────────────────────────────────────
+    await interaction.channel.setName(newName).catch(err => {
+      client.logger.warn(`[Rename] Could not rename channel: ${err.message}`);
+    });
   },
 };
