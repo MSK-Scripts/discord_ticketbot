@@ -15,7 +15,7 @@
   "embeds": {
     "panel": {
       "title": "Support Ticket",
-      "description": "• Have a Question about our Scripts and Features?\n• Want to request a Custom Script?\n\n**Please open a ticket and select the correct Category.**\n\nIf you want to report a bug, please post it in <#1088205980686360596>.\nWe do not provide ticket support for free scripts, ask in <#939628758229471242>."
+      "description": "Click the button below to open a ticket.\nA team member will assist you as soon as possible."
     },
     "ticketOpened": {
       "title": "Ticket Opened",
