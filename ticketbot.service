@@ -1,26 +1,25 @@
-# /etc/systemd/system/multibot.service
+# /etc/systemd/system/ticketbot.service
 #
-# systemd-Unit für den MSK Scripts Discord Multi-Bot
+# systemd-Unit für den MSK Scripts Discord Ticket-Bot
 # ────────────────────────────────────────────────────
 # Installation:
-#   sudo cp multibot.service /etc/systemd/system/
+#   sudo cp ticketbot.service /etc/systemd/system/
 #   sudo systemctl daemon-reload
-#   sudo systemctl enable --now multibot.service
+#   sudo systemctl enable --now ticketbot.service
 #
 # Nützliche Befehle:
-#   sudo systemctl status  multibot.service     # Status anzeigen
-#   sudo systemctl restart multibot.service     # Neustart
-#   sudo systemctl stop    multibot.service     # Stoppen
-#   sudo journalctl -u multibot.service -f      # Live-Logs (journald)
-#   tail -f /opt/discord_multibot/multibot.log  # Datei-Log
+#   sudo systemctl status  ticketbot.service   # Status anzeigen
+#   sudo systemctl restart ticketbot.service   # Neustart
+#   sudo systemctl stop    ticketbot.service   # Stoppen
+#   sudo journalctl -u ticketbot.service -f    # Live-Logs (journald)
 
 [Unit]
-Description=MSK Scripts Discord Multi-Bot
+Description=MSK Scripts Discord Ticket-Bot
 Documentation=https://github.com/MSK-Scripts
 # Erst starten, wenn das Netzwerk vollständig verfügbar ist
 After=network-online.target
 Wants=network-online.target
-# Neustart, wenn der Service unerwartet endet
+# Neustart-Limit: max 5 Versuche in 120 Sekunden
 StartLimitIntervalSec=120
 StartLimitBurst=5
 
@@ -29,15 +28,15 @@ StartLimitBurst=5
 Type=simple
 User=discord
 Group=discord
-WorkingDirectory=/opt/discord_multibot
+WorkingDirectory=/opt/discord_ticketbot
 
 # ── Umgebung ─────────────────────────────────────────────────────────────────
-# .env-Datei wird von python-dotenv automatisch geladen;
+# .env-Datei wird von dotenv automatisch geladen;
 # für systemd zusätzlich hier referenzieren (doppelte Absicherung).
-EnvironmentFile=/opt/discord_multibot/.env
+EnvironmentFile=/opt/discord_ticketbot/.env
 
-# Python-Pfad sicherstellen (virtualenv)
-ExecStart=/opt/discord_multibot/venv/bin/python main.py
+# Node.js direkt als Interpreter, index.js als Einstiegspunkt
+ExecStart=/usr/bin/node /opt/discord_ticketbot/index.js
 
 # ── Restart-Verhalten ─────────────────────────────────────────────────────────
 # Neustart bei jedem unerwarteten Exit (Absturz, OOM, etc.)
@@ -45,10 +44,10 @@ Restart=on-failure
 RestartSec=10s
 
 # ── Logging ───────────────────────────────────────────────────────────────────
-# stdout/stderr an journald weiterleiten (journalctl -u multibot abrufbar)
+# stdout/stderr an journald weiterleiten (journalctl -u ticketbot abrufbar)
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=multibot
+SyslogIdentifier=ticketbot
 
 # ── Ressourcen & Sicherheit ───────────────────────────────────────────────────
 # Verhindert, dass der Bot Root-Rechte erlangen kann
@@ -57,7 +56,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 # Erlaubt Schreibzugriff nur auf das Projektverzeichnis (Logs, data/)
-ReadWritePaths=/opt/discord_multibot
+ReadWritePaths=/opt/discord_ticketbot
 
 # Prozess nicht beenden, wenn er zu viel Speicher braucht (OOM-Killer)
 OOMScoreAdjust=-500

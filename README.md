@@ -14,6 +14,7 @@ A modern, self-hosted Discord ticket bot built on **Discord.js v14** and **SQLit
 | 🔴 Priorities | Low / Medium / High / Urgent via `/priority` or button |
 | 📝 Staff Notes | Private notes via `/note add` / `/note list` |
 | 🔀 Move Ticket | Move to a different type/category via `/move` or button (staff only) |
+| 🛡️ Type-specific Staff Roles | Each ticket type can define its own staff roles |
 | ⭐ Rating System | 1–5 star feedback after closing, automatically posted to a configured channel |
 | ⏰ Staff Reminder | Automatic ping inside the ticket if no staff responds within X hours |
 | ⏰ Auto-Close | Automatically close inactive tickets with a configurable warning period |
@@ -32,6 +33,7 @@ discord_ticketbot/
 ├── index.js                    # Entry point
 ├── package.json
 ├── .env.example                # Environment variable template
+├── ticketbot.service           # systemd unit file for Linux servers
 ├── config/
 │   └── config.example.jsonc    # Configuration template (with comments)
 ├── locales/
@@ -140,6 +142,69 @@ Run `/setup` on your Discord server (Administrator permission required). The bot
 
 ---
 
+## 🖥️ Autostart with systemd (Linux Server)
+
+The included `ticketbot.service` file lets the bot start automatically after a server reboot.
+
+### 1. Copy the bot files to the server
+
+```bash
+# Copy project folder to /opt
+sudo cp -r discord_ticketbot /opt/discord_ticketbot
+
+# Create a dedicated system user (recommended — never run as root)
+sudo useradd -r -s /bin/false discord
+
+# Set permissions
+sudo chown -R discord:discord /opt/discord_ticketbot
+```
+
+### 2. Set up .env on the server
+
+```bash
+sudo nano /opt/discord_ticketbot/.env
+```
+
+### 3. Verify the Node.js path
+
+```bash
+which node
+# Output e.g.: /usr/bin/node
+```
+
+If the path differs, adjust `ExecStart` in `ticketbot.service` accordingly.
+
+### 4. Install the systemd unit
+
+```bash
+sudo cp /opt/discord_ticketbot/ticketbot.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now ticketbot.service
+```
+
+### 5. Check the status
+
+```bash
+# Show current status
+sudo systemctl status ticketbot.service
+
+# Follow live logs
+sudo journalctl -u ticketbot.service -f
+```
+
+### Useful commands
+
+| Command | Description |
+|---|---|
+| `sudo systemctl start ticketbot.service` | Start the bot |
+| `sudo systemctl stop ticketbot.service` | Stop the bot |
+| `sudo systemctl restart ticketbot.service` | Restart the bot |
+| `sudo systemctl enable ticketbot.service` | Enable autostart |
+| `sudo systemctl disable ticketbot.service` | Disable autostart |
+| `sudo journalctl -u ticketbot.service -f` | Follow live logs |
+
+---
+
 ## ⚙️ Slash Commands
 
 | Command | Permission | Description |
@@ -151,7 +216,7 @@ Run `/setup` on your Discord server (Administrator permission required). The bot
 | `/move` | Staff | Move ticket to a different type/category |
 | `/add <user>` | Staff | Add a user to the ticket |
 | `/remove <user>` | Staff | Remove a user from the ticket |
-| `/rename <name>` | Staff | Rename the ticket channel |
+| `/rename <n>` | Staff | Rename the ticket channel |
 | `/transcript` | Staff | Generate an HTML transcript |
 | `/priority <level>` | Staff | Set ticket priority |
 | `/note add <text>` | Staff | Add a staff note |
@@ -192,6 +257,7 @@ Every ticket channel contains a button row at the top:
   "ticketNameOption": "",         // Channel name: USERNAME, USERID, TICKETCOUNT
   "customDescription": "...",     // Variables: REASON1, REASON2, USERNAME, USERID
   "cantAccess": ["roleId"],       // Roles that cannot access this type
+  "staffRoles": [],               // Type-specific staff roles (see below)
   "askQuestions": true,
   "questions": [
     {
@@ -204,9 +270,39 @@ Every ticket channel contains a button row at the top:
 }
 ```
 
+### Type-specific Staff Roles (`staffRoles`)
+
+Each ticket type can define its own staff roles, controlling who can see, manage and claim the ticket.
+
+```jsonc
+// Only developers can see "Bug Report" tickets:
+{
+  "codeName": "bugreport",
+  "staffRoles": ["ROLE_ID_DEVELOPER"]
+}
+
+// Only partner managers can see "Partnership" tickets:
+{
+  "codeName": "partner",
+  "staffRoles": ["ROLE_ID_PARTNER_MANAGER"]
+}
+
+// Leave empty → global rolesWhoHaveAccessToTheTickets are used:
+{
+  "codeName": "support",
+  "staffRoles": []
+}
+```
+
+**Behaviour:**
+- If `staffRoles` is set and non-empty → only those roles have access to the channel
+- If `staffRoles` is empty or missing → the global `rolesWhoHaveAccessToTheTickets` are used
+- When moving a ticket (`/move`), permissions are automatically updated to match the new type
+- On ticket open, type-specific roles are pinged instead of the global `roleToPingWhenOpenedId`
+
 ### Moving Tickets (`/move` & Button)
 
-When more than one ticket type is configured, a **🔀 Move** button appears automatically in every ticket. Only staff can use it. Both the button and the `/move` command open a selection menu listing all other available types. After selecting, the channel is moved to the new category, permissions are updated, and a message is posted in the ticket.
+When more than one ticket type is configured, a **🔀 Move** button appears automatically in every ticket. Only staff can use it. Both the button and the `/move` command open a selection menu listing all other available types. After selecting, the channel is moved to the new category, permissions (including `staffRoles`) are updated, and a message is posted in the ticket.
 
 ### Staff Reminder
 
@@ -214,7 +310,7 @@ When more than one ticket type is configured, a **🔀 Move** button appears aut
 "staffReminder": {
   "enabled": true,
   "afterHours": 4,     // Send reminder after X hours without any message
-  "pingRoles": true    // Whether to @mention the configured staff roles
+  "pingRoles": true    // Whether to @mention the staff roles of the ticket type
 }
 ```
 
@@ -225,8 +321,8 @@ The bot checks all open tickets every **15 minutes**. Once a ticket has had no a
 ```jsonc
 "ratingSystem": {
   "enabled": true,
-  "dmUser": true,                          // Send rating request via DM
-  "ratingsChannelId": "CHANNEL_ID_HERE"   // Channel where ratings are posted automatically
+  "dmUser": true,
+  "ratingsChannelId": "CHANNEL_ID_HERE"
 }
 ```
 
@@ -247,14 +343,9 @@ After closing, the ticket creator receives a 1–5 ⭐ rating request (via DM or
 
 `/stats` shows server-wide numbers. `/stats @user` shows a detailed profile:
 
-**👤 As a User**
-- Tickets opened (total, open, closed)
-- Most frequently used ticket type
-- Average rating the user has given
+**👤 As a User** — Tickets opened, most used type, average rating given
 
-**🛡️ As Staff** *(only shown if applicable)*
-- Tickets closed & claimed
-- Average rating received on their closed tickets
+**🛡️ As Staff** *(only shown if applicable)* — Tickets closed & claimed, average rating received
 
 ---
 
@@ -281,4 +372,4 @@ The SQLite database is created automatically at `data/tickets.db`. Existing data
 
 ## 📝 License
 
-AGPL-3.0
+AGPL-3.0 — Source code must remain open and be published under the same license when distributed or hosted.

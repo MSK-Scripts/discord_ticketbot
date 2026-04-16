@@ -1,17 +1,19 @@
 const fs = require('fs');
 const path = require('path');
 
-const CONFIG_PATH = path.resolve(__dirname, '../../config/config.jsonc');
+// __dirname = <project>/src  →  ../config = <project>/config  ✓
+const CONFIG_PATH   = path.resolve(__dirname, '../config/config.jsonc');
+const EXAMPLE_PATH  = path.resolve(__dirname, '../config/config.example.jsonc');
 
 /**
  * Strips single-line (//) and multi-line (/* ... *\/) comments from a JSONC string,
- * while preserving URLs (e.g. https://...) and strings containing "//".
+ * while preserving content inside strings (e.g. URLs containing "//").
  * @param {string} text
  * @returns {string}
  */
 function stripJsonComments(text) {
-  let result = '';
-  let i = 0;
+  let result   = '';
+  let i        = 0;
   let inString = false;
 
   while (i < text.length) {
@@ -59,14 +61,15 @@ function stripJsonComments(text) {
 
 /**
  * Load and parse the JSONC config file.
+ * If config.jsonc does not exist, it is created from config.example.jsonc.
  * @returns {object}
  */
 function loadConfig() {
   if (!fs.existsSync(CONFIG_PATH)) {
-    const examplePath = path.resolve(__dirname, '../../config/config.example.jsonc');
-    if (fs.existsSync(examplePath)) {
-      fs.copyFileSync(examplePath, CONFIG_PATH);
-      console.warn('[Config] config.jsonc not found — created from example. Please fill it in and restart.');
+    if (fs.existsSync(EXAMPLE_PATH)) {
+      fs.copyFileSync(EXAMPLE_PATH, CONFIG_PATH);
+      console.warn('[Config] config.jsonc not found — created from example. Please fill in your IDs and restart.');
+      process.exit(0);
     } else {
       console.error('[Config] config.jsonc not found and no example available. Exiting.');
       process.exit(1);
@@ -92,14 +95,14 @@ function validateConfig(config) {
 
   const required = [
     ['openTicketChannelId', 'string'],
-    ['ticketTypes', 'array'],
+    ['ticketTypes',         'array' ],
     ['rolesWhoHaveAccessToTheTickets', 'array'],
-    ['closeOption', 'object'],
-    ['mainColor', 'string'],
+    ['closeOption',         'object'],
+    ['mainColor',           'string'],
   ];
 
   for (const [key, type] of required) {
-    const val = config[key];
+    const val        = config[key];
     const actualType = Array.isArray(val) ? 'array' : typeof val;
     if (val === undefined || val === null) {
       errors.push(`Missing required field: "${key}"`);
@@ -116,15 +119,20 @@ function validateConfig(config) {
       errors.push('ticketTypes cannot have more than 25 entries (Discord limit).');
     }
     config.ticketTypes.forEach((t, i) => {
-      if (!t.codeName) errors.push(`ticketTypes[${i}] is missing "codeName".`);
-      if (!t.name) errors.push(`ticketTypes[${i}] is missing "name".`);
+      if (!t.codeName)   errors.push(`ticketTypes[${i}] is missing "codeName".`);
+      if (!t.name)       errors.push(`ticketTypes[${i}] is missing "name".`);
       if (!t.categoryId) errors.push(`ticketTypes[${i}] is missing "categoryId".`);
+
+      // staffRoles must be an array if present
+      if (t.staffRoles !== undefined && !Array.isArray(t.staffRoles)) {
+        errors.push(`ticketTypes[${i}].staffRoles must be an array.`);
+      }
     });
   }
 
-  if (!process.env.TOKEN) errors.push('Environment variable TOKEN is not set.');
+  if (!process.env.TOKEN)     errors.push('Environment variable TOKEN is not set.');
   if (!process.env.CLIENT_ID) errors.push('Environment variable CLIENT_ID is not set.');
-  if (!process.env.GUILD_ID) errors.push('Environment variable GUILD_ID is not set.');
+  if (!process.env.GUILD_ID)  errors.push('Environment variable GUILD_ID is not set.');
 
   return errors;
 }

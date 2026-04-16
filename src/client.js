@@ -1,8 +1,8 @@
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
-const { loadCommands } = require('./handlers/commandHandler');
-const { loadEvents } = require('./handlers/eventHandler');
-const { loadComponents } = require('./handlers/componentHandler');
-const { initDatabase } = require('./database');
+const { loadCommands }    = require('./handlers/commandHandler');
+const { loadEvents }      = require('./handlers/eventHandler');
+const { loadComponents }  = require('./handlers/componentHandler');
+const { initDatabase }    = require('./database');
 const { loadConfig, validateConfig } = require('./config');
 const logger = require('./utils/logger');
 
@@ -26,7 +26,7 @@ class TicketClient extends Client {
 
     this.logger = logger;
     this.config = null;
-    this.db = null;
+    this.db     = null;
     this.locale = null;
   }
 
@@ -42,7 +42,7 @@ class TicketClient extends Client {
       process.exit(1);
     }
 
-    // Load locale
+    // Load locale — __dirname is src/, so ../locales/ is correct
     const localePath = `../locales/${this.config.lang}.json`;
     try {
       this.locale = require(localePath);
@@ -72,7 +72,7 @@ class TicketClient extends Client {
    */
   t(keyPath, vars = {}) {
     const keys = keyPath.split('.');
-    let value = this.locale;
+    let value  = this.locale;
     for (const key of keys) {
       value = value?.[key];
       if (value === undefined) return keyPath;
@@ -86,14 +86,24 @@ class TicketClient extends Client {
 
   /**
    * Check if a member has staff access.
+   * Optionally checks against a ticket type's specific staffRoles.
+   *
    * @param {import('discord.js').GuildMember} member
+   * @param {object|null} ticketType  Optional ticket type config entry
    * @returns {boolean}
    */
-  isStaff(member) {
+  isStaff(member, ticketType = null) {
     if (!member) return false;
     if (member.permissions.has('Administrator')) return true;
-    const staffRoles = this.config.rolesWhoHaveAccessToTheTickets ?? [];
-    return staffRoles.some(roleId => member.roles.cache.has(roleId));
+
+    // If the ticket type has its own staffRoles, check those first
+    if (ticketType?.staffRoles?.length > 0) {
+      if (ticketType.staffRoles.some(roleId => member.roles.cache.has(roleId))) return true;
+    }
+
+    // Fall back to global staff roles
+    const globalRoles = this.config.rolesWhoHaveAccessToTheTickets ?? [];
+    return globalRoles.some(roleId => member.roles.cache.has(roleId));
   }
 }
 
