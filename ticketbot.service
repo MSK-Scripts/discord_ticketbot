@@ -1,0 +1,70 @@
+# /etc/systemd/system/multibot.service
+#
+# systemd-Unit für den MSK Scripts Discord Multi-Bot
+# ────────────────────────────────────────────────────
+# Installation:
+#   sudo cp multibot.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now multibot.service
+#
+# Nützliche Befehle:
+#   sudo systemctl status  multibot.service     # Status anzeigen
+#   sudo systemctl restart multibot.service     # Neustart
+#   sudo systemctl stop    multibot.service     # Stoppen
+#   sudo journalctl -u multibot.service -f      # Live-Logs (journald)
+#   tail -f /opt/discord_multibot/multibot.log  # Datei-Log
+
+[Unit]
+Description=MSK Scripts Discord Multi-Bot
+Documentation=https://github.com/MSK-Scripts
+# Erst starten, wenn das Netzwerk vollständig verfügbar ist
+After=network-online.target
+Wants=network-online.target
+# Neustart, wenn der Service unerwartet endet
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+# ── Benutzer & Pfade ─────────────────────────────────────────────────────────
+Type=simple
+User=discord
+Group=discord
+WorkingDirectory=/opt/discord_multibot
+
+# ── Umgebung ─────────────────────────────────────────────────────────────────
+# .env-Datei wird von python-dotenv automatisch geladen;
+# für systemd zusätzlich hier referenzieren (doppelte Absicherung).
+EnvironmentFile=/opt/discord_multibot/.env
+
+# Python-Pfad sicherstellen (virtualenv)
+ExecStart=/opt/discord_multibot/venv/bin/python main.py
+
+# ── Restart-Verhalten ─────────────────────────────────────────────────────────
+# Neustart bei jedem unerwarteten Exit (Absturz, OOM, etc.)
+Restart=on-failure
+RestartSec=10s
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+# stdout/stderr an journald weiterleiten (journalctl -u multibot abrufbar)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=multibot
+
+# ── Ressourcen & Sicherheit ───────────────────────────────────────────────────
+# Verhindert, dass der Bot Root-Rechte erlangen kann
+NoNewPrivileges=true
+# Schränkt sichtbares Filesystem ein
+PrivateTmp=true
+ProtectSystem=strict
+# Erlaubt Schreibzugriff nur auf das Projektverzeichnis (Logs, data/)
+ReadWritePaths=/opt/discord_multibot
+
+# Prozess nicht beenden, wenn er zu viel Speicher braucht (OOM-Killer)
+OOMScoreAdjust=-500
+
+# ── Graceful Shutdown ─────────────────────────────────────────────────────────
+# Gibt dem Bot 30 Sekunden für sauberes Beenden, bevor SIGKILL gesendet wird
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
