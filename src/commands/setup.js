@@ -27,15 +27,12 @@ module.exports = {
 
     const embed = panelEmbed(client);
 
-    // Always use a single button — regardless of how many ticket types are configured.
-    // The type selection happens in an ephemeral follow-up so Discord never caches
-    // a previously selected value (which would force users to restart Discord).
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId('tb_open')
         .setLabel(client.t('buttons.openTicket'))
         .setEmoji('🎫')
-        .setStyle(ButtonStyle.Primary)
+        .setStyle(ButtonStyle.Success)
     );
 
     try {
