@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel, setPriority } = require('../database');
 
-// Emoji prefix for each priority level, shown in the channel name
 const PRIORITY_EMOJI = {
   low:    '🟢',
   medium: '🟡',
@@ -9,18 +8,9 @@ const PRIORITY_EMOJI = {
   urgent: '🔴',
 };
 
-/**
- * Strip any existing priority emoji prefix from a channel name and
- * prepend the new one.
- * e.g. "🟡-ticket-max" → "🔴-ticket-max"
- *      "ticket-max"    → "🔴-ticket-max"
- *
- * @param {string} currentName
- * @param {string} priority
- * @returns {string}
- */
+const RENAME_WARNING = '\n> ⚠️ *Der Kanalname wird gleich aktualisiert – Discord limitiert Umbenennungen, das kann einen Moment dauern.*';
+
 function applyPriorityPrefix(currentName, priority) {
-  // Remove leading priority emoji + separator if present
   const stripped = currentName.replace(/^[🟢🟡🟠🔴][-_]?/, '');
   return `${PRIORITY_EMOJI[priority]}-${stripped}`.substring(0, 100);
 }
@@ -45,7 +35,6 @@ module.exports = {
     if (!client.isStaff(interaction.member)) {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
-
     const ticket = getTicketByChannel(interaction.channelId);
     if (!ticket) {
       return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
@@ -60,17 +49,18 @@ module.exports = {
       });
     }
 
-    // ── Save to DB ────────────────────────────────────────────────────────────
     setPriority(interaction.channelId, priority);
 
-    // ── Rename the channel with priority emoji prefix ─────────────────────────
+    const label   = client.t(`priorities.${priority}`);
     const newName = applyPriorityPrefix(interaction.channel.name, priority);
+
+    // Reply immediately — rename happens in background
+    await interaction.reply(
+      client.t('messages.priorityChanged', { priority: label }) + RENAME_WARNING
+    );
+
     await interaction.channel.setName(newName).catch(err => {
       client.logger.warn(`[Priority] Could not rename channel: ${err.message}`);
     });
-
-    // ── Post confirmation message ─────────────────────────────────────────────
-    const label = client.t(`priorities.${priority}`);
-    await interaction.reply(client.t('messages.priorityChanged', { priority: label }));
   },
 };

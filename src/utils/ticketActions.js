@@ -113,7 +113,21 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
 async function performClose(client, channel, ticket, closer, reason) {
   const cfg = client.config.closeOption ?? {};
 
-  // ── Generate transcript ───────────────────────────────────────────────────
+  // ── 1. Disable all ticket buttons immediately ─────────────────────────────
+  // Fetch recent messages and remove components from any bot message that has
+  // buttons (the opening embed). This prevents double-clicks and further
+  // interactions while the ticket is being processed.
+  try {
+    const recent = await channel.messages.fetch({ limit: 20 });
+    const withButtons = recent.filter(
+      m => m.author.id === client.user.id && m.components.length > 0
+    );
+    await Promise.all(withButtons.map(m => m.edit({ components: [] }).catch(() => null)));
+  } catch {
+    /* ignore — channel might already be inaccessible */
+  }
+
+  // ── 2. Generate transcript ────────────────────────────────────────────────
   let transcriptHtml = null;
   let transcriptFile = null;
 
@@ -129,11 +143,11 @@ async function performClose(client, channel, ticket, closer, reason) {
     }
   }
 
-  // ── Update DB ─────────────────────────────────────────────────────────────
+  // ── 3. Update DB ──────────────────────────────────────────────────────────
   db.closeTicket(channel.id, closer.id, reason, transcriptHtml);
   const updatedTicket = db.getTicketByChannel(channel.id);
 
-  // ── Post closed embed + delete button in channel ──────────────────────────
+  // ── 4. Post closed embed + delete button ──────────────────────────────────
   const deleteRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('tb_delete')
@@ -147,19 +161,19 @@ async function performClose(client, channel, ticket, closer, reason) {
     components: [deleteRow],
   }).catch(() => null);
 
-  // ── Move to closed category ───────────────────────────────────────────────
+  // ── 5. Move to closed category ────────────────────────────────────────────
   if (cfg.closeTicketCategoryId) {
     await channel.setParent(cfg.closeTicketCategoryId, { lockPermissions: false }).catch(() => null);
   }
 
-  // ── Remove creator's channel access ──────────────────────────────────────
+  // ── 6. Remove creator's view access ──────────────────────────────────────
   await channel.permissionOverwrites.edit(ticket.creator_id, {
     ViewChannel: false, SendMessages: false,
   }).catch(() => null);
 
   const duration = updatedTicket.closed_at - updatedTicket.created_at;
 
-  // ── Log to log channel ────────────────────────────────────────────────────
+  // ── 7. Send to log channel ────────────────────────────────────────────────
   if (client.config.logs && client.config.logsChannelId) {
     const logChannel = await channel.guild.channels.fetch(client.config.logsChannelId).catch(() => null);
     if (logChannel) {
@@ -172,21 +186,16 @@ async function performClose(client, channel, ticket, closer, reason) {
     }
   }
 
-  // ── DM the ticket creator ─────────────────────────────────────────────────
-  // Always DM the creator regardless of who closed the ticket.
-  // The transcript file is attached to the DM as well.
+  // ── 8. DM the ticket creator ──────────────────────────────────────────────
   if (cfg.dmUser) {
     try {
-      const creator = await channel.guild.members.fetch(ticket.creator_id);
-
-      // Build the DM — attach transcript file if one was generated
-      const dmPayload = {
+      const creator    = await channel.guild.members.fetch(ticket.creator_id);
+      const dmPayload  = {
         embeds: [ticketClosedDMEmbed(client, {
           count: ticket.id, type: ticket.type, closer, reason, transcriptUrl: null,
         })],
       };
-      if (transcriptFile) {
-        // Re-create the attachment — AttachmentBuilder can only be sent once
+      if (transcriptHtml) {
         dmPayload.files = [
           new AttachmentBuilder(
             Buffer.from(transcriptHtml, 'utf-8'),
@@ -194,17 +203,14 @@ async function performClose(client, channel, ticket, closer, reason) {
           ),
         ];
       }
-
       await creator.user.send(dmPayload);
       client.logger.info(`[performClose] DM sent to ${creator.user.tag}`);
     } catch (err) {
-      // Most common reason: user has DMs disabled
       client.logger.warn(`[performClose] Could not DM creator (${ticket.creator_id}): ${err.message}`);
     }
   }
 
-  // ── Rating request ────────────────────────────────────────────────────────
-  // Always send rating request to the ticket creator.
+  // ── 9. Rating request ─────────────────────────────────────────────────────
   const ratingCfg = client.config.ratingSystem;
   if (ratingCfg?.enabled) {
     const ratingRow   = buildRatingRow();
@@ -244,7 +250,6 @@ async function performMove(client, channel, ticket, newType, movedBy) {
   const oldStaffRoles = (oldType?.staffRoles?.length > 0)
     ? oldType.staffRoles
     : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
-
   const newStaffRoles = (newType.staffRoles?.length > 0)
     ? newType.staffRoles
     : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
@@ -253,18 +258,12 @@ async function performMove(client, channel, ticket, newType, movedBy) {
   for (const roleId of rolesToRemove) {
     await channel.permissionOverwrites.delete(roleId).catch(() => null);
   }
-
   for (const roleId of newStaffRoles) {
     await channel.permissionOverwrites.edit(roleId, {
-      ViewChannel:        true,
-      SendMessages:       true,
-      ReadMessageHistory: true,
-      AttachFiles:        true,
-      EmbedLinks:         true,
-      ManageMessages:     true,
+      ViewChannel: true, SendMessages: true, ReadMessageHistory: true,
+      AttachFiles: true, EmbedLinks:   true, ManageMessages:     true,
     }).catch(() => null);
   }
-
   for (const roleId of oldType?.cantAccess ?? []) {
     await channel.permissionOverwrites.delete(roleId).catch(() => null);
   }

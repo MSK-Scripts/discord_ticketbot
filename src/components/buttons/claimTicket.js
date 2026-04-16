@@ -1,6 +1,8 @@
 const { MessageFlags } = require('discord.js');
 const { getTicketByChannel, claimTicket } = require('../../database');
 
+const RENAME_WARNING = '\n> ⚠️ *Der Kanalname wird gleich aktualisiert – Discord limitiert Umbenennungen, das kann einen Moment dauern.*';
+
 module.exports = {
   customId: 'tb_claim',
 
@@ -25,12 +27,16 @@ module.exports = {
 
     claimTicket(interaction.channelId, interaction.user.id);
 
-    // ── Reply immediately so Discord doesn't time out ─────────────────────────
-    await interaction.reply(client.t('messages.ticketClaimed', { user: `<@${interaction.user.id}>` }));
-
-    // ── Rename + move in background (can be slow / rate-limited) ─────────────
+    // Reply immediately — rename happens in background
     const cfg = client.config.claimOption;
-    if (cfg?.nameWhenClaimed) {
+    const willRename = !!cfg?.nameWhenClaimed;
+    await interaction.reply(
+      client.t('messages.ticketClaimed', { user: `<@${interaction.user.id}>` }) +
+      (willRename ? RENAME_WARNING : '')
+    );
+
+    // Rename + move in background
+    if (willRename) {
       const creator = await interaction.guild.members.fetch(ticket.creator_id).catch(() => null);
       const newName = cfg.nameWhenClaimed
         .replace(/S_USERNAME/g, interaction.user.username)

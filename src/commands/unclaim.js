@@ -1,6 +1,8 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel, unclaimTicket } = require('../database');
 
+const RENAME_WARNING = '\n> ⚠️ *Der Kanalname wird gleich aktualisiert – Discord limitiert Umbenennungen, das kann einen Moment dauern.*';
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('unclaim')
@@ -20,10 +22,11 @@ module.exports = {
 
     unclaimTicket(interaction.channelId);
 
-    // ── Reply immediately so Discord doesn't time out ─────────────────────────
-    await interaction.reply(client.t('messages.ticketUnclaimed', { user: `<@${interaction.user.id}>` }));
+    // Reply immediately — rename happens in background
+    await interaction.reply(
+      client.t('messages.ticketUnclaimed', { user: `<@${interaction.user.id}>` }) + RENAME_WARNING
+    );
 
-    // ── Restore original channel name in background ───────────────────────────
     const creator  = await interaction.guild.members.fetch(ticket.creator_id).catch(() => null);
     const nameOpt  = client.config.ticketNameOption ?? 'ticket-USERNAME';
     const origName = nameOpt

@@ -11,19 +11,27 @@ module.exports = {
     ),
 
   async execute(client, interaction) {
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
     const ticket = getTicketByChannel(interaction.channelId);
-    if (!ticket)                  return interaction.editReply(client.t('messages.notATicket'));
-    if (ticket.status !== 'open') return interaction.editReply(client.t('messages.ticketAlreadyClosed'));
+    if (!ticket) {
+      return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
+    }
+    if (ticket.status !== 'open') {
+      return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), flags: MessageFlags.Ephemeral });
+    }
 
     const cfg = client.config.closeOption;
     if (cfg.whoCanCloseTicket === 'STAFFONLY' && !client.isStaff(interaction.member)) {
-      return interaction.editReply(client.t('messages.onlyStaff'));
+      return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 
     const reason = interaction.options.getString('grund') ?? null;
-    await interaction.editReply('⏳ Ticket wird geschlossen...');
+
+    // Reply immediately with warning before the slow close process starts
+    await interaction.reply({
+      content: '⏳ **Das Ticket wird geschlossen.** Bitte warte einen Moment, das Transcript wird erstellt...',
+      flags: MessageFlags.Ephemeral,
+    });
+
     await performClose(client, interaction.channel, ticket, interaction.user, reason);
   },
 };

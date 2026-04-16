@@ -13,9 +13,12 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), flags: MessageFlags.Ephemeral });
     }
 
-    await interaction.deferUpdate().catch(() =>
-      interaction.deferReply({ flags: MessageFlags.Ephemeral })
-    );
+    // Acknowledge the modal and show warning — performClose will disable all
+    // buttons as its very first step, so no further interactions are possible.
+    await interaction.reply({
+      content: '⏳ **Das Ticket wird geschlossen.** Bitte warte einen Moment, das Transcript wird erstellt...',
+      flags: MessageFlags.Ephemeral,
+    });
 
     await performClose(client, interaction.channel, ticket, interaction.user, reason);
   },
