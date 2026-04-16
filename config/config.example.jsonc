@@ -48,7 +48,7 @@
       "ticketNameOption": "",
       "customDescription": "",
       "cantAccess": [],
-      "staffRoles": [],              // z.B. ["ROLE_ID_DEVELOPER"] für nur Entwickler
+      "staffRoles": [],
       "askQuestions": false,
       "questions": []
     }
