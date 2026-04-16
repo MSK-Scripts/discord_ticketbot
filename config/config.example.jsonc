@@ -1,0 +1,119 @@
+{
+  // ─── Bot Appearance ──────────────────────────────────────────────────────────
+  "mainColor": "#5eb131",
+  "lang": "de",
+
+  // ─── Ticket Panel ────────────────────────────────────────────────────────────
+  "openTicketChannelId": "CHANNEL_ID_HERE",
+
+  // ─── Ticket Types ────────────────────────────────────────────────────────────
+  "ticketTypes": [
+    {
+      "codeName": "support",
+      "name": "Support",
+      "description": "Fragen oder Probleme mit unseren Scripts",
+      "emoji": "💡",
+      "color": "",
+      "categoryId": "CATEGORY_ID_HERE",
+      "ticketNameOption": "",
+      "customDescription": "Ein Teammitglied wird sich so schnell wie möglich melden!\n\n**Script:** REASON1\n**Problem:** REASON2",
+      "cantAccess": [],
+      "askQuestions": true,
+      "questions": [
+        {
+          "label": "Scriptname",
+          "placeholder": "Bitte Scriptname eingeben",
+          "style": "SHORT",
+          "maxLength": 50
+        },
+        {
+          "label": "Problembeschreibung",
+          "placeholder": "Bitte das Problem ausführlich beschreiben",
+          "style": "PARAGRAPH",
+          "maxLength": 500
+        }
+      ]
+    },
+    {
+      "codeName": "custom",
+      "name": "Custom Order",
+      "description": "Du möchtest ein individuelles Script?",
+      "emoji": "⌨️",
+      "color": "",
+      "categoryId": "CATEGORY_ID_HERE",
+      "ticketNameOption": "",
+      "customDescription": "",
+      "cantAccess": [],
+      "askQuestions": false,
+      "questions": []
+    }
+  ],
+
+  "ticketNameOption": "ticket-USERNAME",
+
+  // ─── Claim Options ───────────────────────────────────────────────────────────
+  "claimOption": {
+    "claimButton": true,
+    "nameWhenClaimed": "✔️ ticket-U_USERNAME",
+    "categoryWhenClaimed": ""
+  },
+
+  // ─── Access Control ──────────────────────────────────────────────────────────
+  "rolesWhoHaveAccessToTheTickets": [
+    "ROLE_ID_TEAM",
+    "ROLE_ID_SUPPORT"
+  ],
+  "rolesWhoCanNotCreateTickets": [],
+
+  // ─── Ping on Open ────────────────────────────────────────────────────────────
+  "pingRoleWhenOpened": true,
+  "roleToPingWhenOpenedId": ["ROLE_ID_TEAM"],
+
+  // ─── Logging ─────────────────────────────────────────────────────────────────
+  "logs": true,
+  "logsChannelId": "LOG_CHANNEL_ID_HERE",
+
+  // ─── Close Options ───────────────────────────────────────────────────────────
+  "closeOption": {
+    "closeButton": true,
+    "dmUser": true,
+    "createTranscript": true,
+    "askReason": true,
+    "whoCanCloseTicket": "EVERYONE",
+    "closeTicketCategoryId": ""
+  },
+
+  // ─── Rating System ───────────────────────────────────────────────────────────
+  "ratingSystem": {
+    "enabled": true,
+    "dmUser": true,
+    "ratingsChannelId": "RATINGS_CHANNEL_ID_HERE" // Channel where all ratings are posted
+  },
+
+  // ─── Staff Reminder ───────────────────────────────────────────────────────────
+  "staffReminder": {
+    "enabled": true,
+    "afterHours": 4,    // Ping staff in the ticket after X hours without any message
+    "pingRoles": true   // Whether to @mention the configured staff roles
+  },
+
+  // ─── Auto-Close ──────────────────────────────────────────────────────────────
+  "autoClose": {
+    "enabled": false,
+    "inactiveHours": 48,
+    "warnBeforeHours": 6,
+    "excludeClaimed": true
+  },
+
+  // ─── Limits ──────────────────────────────────────────────────────────────────
+  "maxTicketOpened": 2,
+
+  // ─── Bot Status ──────────────────────────────────────────────────────────────
+  "status": {
+    "enabled": true,
+    "text": "Support Tickets",
+    "type": "WATCHING",
+    "url": "",
+    "status": "online"
+  }
+}

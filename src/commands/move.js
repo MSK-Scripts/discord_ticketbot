@@ -1,0 +1,50 @@
+const { SlashCommandBuilder } = require('discord.js');
+const { getTicketByChannel } = require('../database');
+const { performMove } = require('../utils/ticketActions');
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('move')
+    .setDescription('Verschiebt das Ticket in einen anderen Typ/Kategorie.'),
+
+  async execute(client, interaction) {
+    if (!client.isStaff(interaction.member)) {
+      return interaction.reply({ content: client.t('messages.onlyStaff'), ephemeral: true });
+    }
+
+    const ticket = getTicketByChannel(interaction.channelId);
+    if (!ticket) {
+      return interaction.reply({ content: client.t('messages.notATicket'), ephemeral: true });
+    }
+    if (ticket.status !== 'open') {
+      return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), ephemeral: true });
+    }
+
+    const types = client.config.ticketTypes.filter(t => t.codeName !== ticket.type);
+    if (types.length === 0) {
+      return interaction.reply({ content: '❌ Es gibt keine anderen Ticket-Typen zum Verschieben.', ephemeral: true });
+    }
+
+    // Build choices dynamically from config and show a select menu
+    const { StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder } = require('discord.js');
+
+    const options = types.map(t =>
+      new StringSelectMenuOptionBuilder()
+        .setLabel(t.name)
+        .setDescription(t.description?.substring(0, 100) ?? '')
+        .setValue(t.codeName)
+        .setEmoji(t.emoji || '🎫')
+    );
+
+    const menu = new StringSelectMenuBuilder()
+      .setCustomId('tb_moveSelect')
+      .setPlaceholder('Neuen Ticket-Typ auswählen...')
+      .addOptions(options);
+
+    await interaction.reply({
+      content: '🔀 Wohin soll dieses Ticket verschoben werden?',
+      components: [new ActionRowBuilder().addComponents(menu)],
+      ephemeral: true,
+    });
+  },
+};

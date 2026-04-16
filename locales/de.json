@@ -1,0 +1,116 @@
+{
+  "buttons": {
+    "openTicket": "Ticket öffnen",
+    "close": "Ticket schließen",
+    "closeEmoji": "🔒",
+    "claim": "Beanspruchen",
+    "claimEmoji": "🙋",
+    "unclaim": "Freigeben",
+    "unclaimEmoji": "🙌",
+    "move": "Verschieben",
+    "moveEmoji": "🔀",
+    "delete": "Ticket löschen",
+    "deleteEmoji": "🗑️",
+    "transcript": "Transcript",
+    "transcriptEmoji": "📄"
+  },
+  "embeds": {
+    "panel": {
+      "title": "Support Ticket",
+      "description": "Klicke auf den Button unten, um ein Ticket zu öffnen.\nEin Teammitglied wird sich so schnell wie möglich um dich kümmern."
+    },
+    "ticketOpened": {
+      "title": "Ticket geöffnet",
+      "description": "Hallo {user}! Danke, dass du ein Ticket geöffnet hast.\nEin Teammitglied wird sich in Kürze melden.\n\n**Typ:** {type}\n**Priorität:** {priority}"
+    },
+    "ticketClosed": {
+      "title": "Ticket geschlossen",
+      "description": "Das Ticket wurde von {closer} geschlossen.\n**Grund:** {reason}"
+    },
+    "ticketClosedDM": {
+      "title": "Dein Ticket wurde geschlossen",
+      "description": "Dein Ticket **#{count}** ({type}) wurde von {closer} geschlossen.\n**Grund:** {reason}"
+    },
+    "ticketLog": {
+      "title": "Ticket #{count} geschlossen",
+      "fields": {
+        "type": "Typ",
+        "creator": "Erstellt von",
+        "closer": "Geschlossen von",
+        "claimed": "Beansprucht von",
+        "reason": "Grund",
+        "duration": "Dauer",
+        "messages": "Nachrichten"
+      }
+    },
+    "ratingRequest": {
+      "title": "Wie war dein Support?",
+      "description": "Bitte bewerte deinen Support für Ticket **#{count}**.\nDeine Rückmeldung hilft uns, besser zu werden."
+    },
+    "stats": {
+      "title": "📊 Ticket-Statistiken",
+      "fields": {
+        "totalTickets": "Tickets gesamt",
+        "openTickets": "Offen",
+        "closedTickets": "Geschlossen",
+        "avgRating": "Ø Bewertung",
+        "avgDuration": "Ø Dauer",
+        "topStaff": "Top Staff"
+      }
+    }
+  },
+  "modals": {
+    "closeReason": {
+      "title": "Ticket schließen",
+      "label": "Grund der Schließung",
+      "placeholder": "Bitte gib einen Grund für die Schließung an."
+    },
+    "openTicket": {
+      "title": "Ticket öffnen",
+      "label": "Grund deines Tickets",
+      "placeholder": "Bitte beschreibe kurz dein Anliegen."
+    }
+  },
+  "menus": {
+    "ticketType": "Ticket-Typ auswählen"
+  },
+  "messages": {
+    "ticketCreated": "✅ Dein Ticket wurde geöffnet: {channel}",
+    "ticketAlreadyClosed": "❌ Dieses Ticket ist bereits geschlossen!",
+    "ticketAlreadyClaimed": "❌ Dieses Ticket wurde bereits von {user} beansprucht!",
+    "ticketClaimed": "🙋 Ticket von {user} beansprucht.",
+    "ticketUnclaimed": "🙌 Ticket wurde von {user} freigegeben.",
+    "ticketRenamed": "✏️ Ticket wurde zu **{name}** umbenannt.",
+    "ticketMoved": "🔀 Ticket wurde von {user} zu **{type}** verschoben.",
+    "ticketLimitReached": "❌ Du kannst maximal **{limit}** Tickets gleichzeitig offen haben.",
+    "blacklisted": "❌ Du bist auf der Blacklist und kannst keine Tickets öffnen.",
+    "noPermission": "❌ Du hast keine Berechtigung für diese Aktion.",
+    "notATicket": "❌ Dieser Kanal ist kein Ticket.",
+    "onlyStaff": "❌ Nur Staff kann diese Aktion durchführen.",
+    "userAdded": "✅ {user} wurde zum Ticket hinzugefügt.",
+    "userRemoved": "✅ {user} wurde aus dem Ticket entfernt.",
+    "priorityChanged": "🔔 Priorität wurde auf **{priority}** gesetzt.",
+    "noteAdded": "📝 Staff-Notiz hinzugefügt.",
+    "transcriptCreated": "📄 Transcript wurde erstellt.",
+    "generatingTranscript": "⏳ Erstelle Transcript...",
+    "autoCloseWarning": "⚠️ Dieses Ticket wird in **{hours}** Stunden wegen Inaktivität automatisch geschlossen.",
+    "blacklistAdded": "✅ {user} wurde zur Blacklist hinzugefügt.",
+    "blacklistRemoved": "✅ {user} wurde von der Blacklist entfernt.",
+    "blacklistAlreadyAdded": "❌ {user} ist bereits auf der Blacklist.",
+    "blacklistNotFound": "❌ {user} ist nicht auf der Blacklist.",
+    "configError": "⚠️ Fehler in der Konfiguration. Bitte den Bot-Betreiber kontaktieren!"
+  },
+  "priorities": {
+    "low": "🟢 Niedrig",
+    "medium": "🟡 Mittel",
+    "high": "🟠 Hoch",
+    "urgent": "🔴 Dringend"
+  },
+  "ratings": {
+    "1": "⭐ Sehr schlecht",
+    "2": "⭐⭐ Schlecht",
+    "3": "⭐⭐⭐ In Ordnung",
+    "4": "⭐⭐⭐⭐ Gut",
+    "5": "⭐⭐⭐⭐⭐ Ausgezeichnet"
+  }
+}

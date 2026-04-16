@@ -1,0 +1,113 @@
+{
+  "buttons": {
+    "openTicket": "Open Ticket",
+    "close": "Close Ticket",
+    "closeEmoji": "🔒",
+    "claim": "Claim",
+    "claimEmoji": "🙋",
+    "unclaim": "Unclaim",
+    "unclaimEmoji": "🙌",
+    "delete": "Delete Ticket",
+    "deleteEmoji": "🗑️",
+    "transcript": "Transcript",
+    "transcriptEmoji": "📄"
+  },
+  "embeds": {
+    "panel": {
+      "title": "Support Ticket",
+      "description": "• Have a Question about our Scripts and Features?\n• Want to request a Custom Script?\n\n**Please open a ticket and select the correct Category.**\n\nIf you want to report a bug, please post it in <#1088205980686360596>.\nWe do not provide ticket support for free scripts, ask in <#939628758229471242>."
+    },
+    "ticketOpened": {
+      "title": "Ticket Opened",
+      "description": "Hello {user}! Thank you for opening a ticket.\nA team member will be with you shortly.\n\n**Type:** {type}\n**Priority:** {priority}"
+    },
+    "ticketClosed": {
+      "title": "Ticket Closed",
+      "description": "The ticket was closed by {closer}.\n**Reason:** {reason}"
+    },
+    "ticketClosedDM": {
+      "title": "Your Ticket Was Closed",
+      "description": "Your ticket **#{count}** ({type}) was closed by {closer}.\n**Reason:** {reason}"
+    },
+    "ticketLog": {
+      "title": "Ticket #{count} Closed",
+      "fields": {
+        "type": "Type",
+        "creator": "Created by",
+        "closer": "Closed by",
+        "claimed": "Claimed by",
+        "reason": "Reason",
+        "duration": "Duration",
+        "messages": "Messages"
+      }
+    },
+    "ratingRequest": {
+      "title": "How was your support?",
+      "description": "Please rate your support experience for ticket **#{count}**.\nYour feedback helps us improve."
+    },
+    "stats": {
+      "title": "📊 Ticket Statistics",
+      "fields": {
+        "totalTickets": "Total Tickets",
+        "openTickets": "Open",
+        "closedTickets": "Closed",
+        "avgRating": "Avg. Rating",
+        "avgDuration": "Avg. Duration",
+        "topStaff": "Top Staff"
+      }
+    }
+  },
+  "modals": {
+    "closeReason": {
+      "title": "Close Ticket",
+      "label": "Reason for closing",
+      "placeholder": "Please provide a reason for closing this ticket."
+    },
+    "openTicket": {
+      "title": "Open Ticket",
+      "label": "Reason for your ticket",
+      "placeholder": "Please briefly describe your issue."
+    }
+  },
+  "menus": {
+    "ticketType": "Select a ticket type"
+  },
+  "messages": {
+    "ticketCreated": "✅ Your ticket has been created: {channel}",
+    "ticketAlreadyClosed": "❌ This ticket is already closed!",
+    "ticketAlreadyClaimed": "❌ This ticket has already been claimed by {user}!",
+    "ticketClaimed": "🙋 Ticket claimed by {user}.",
+    "ticketUnclaimed": "🙌 Ticket unclaimed by {user}.",
+    "ticketRenamed": "✏️ Ticket renamed to **{name}**.",
+    "ticketLimitReached": "❌ You can only have **{limit}** open tickets at a time.",
+    "blacklisted": "❌ You are blacklisted and cannot open tickets.",
+    "noPermission": "❌ You do not have permission for this action.",
+    "notATicket": "❌ This channel is not a ticket.",
+    "onlyStaff": "❌ Only staff can perform this action.",
+    "userAdded": "✅ {user} has been added to the ticket.",
+    "userRemoved": "✅ {user} has been removed from the ticket.",
+    "priorityChanged": "🔔 Priority set to **{priority}**.",
+    "noteAdded": "📝 Staff note added.",
+    "transcriptCreated": "📄 Transcript created.",
+    "generatingTranscript": "⏳ Generating transcript...",
+    "autoCloseWarning": "⚠️ This ticket will be automatically closed in **{hours}** hours due to inactivity.",
+    "blacklistAdded": "✅ {user} has been added to the blacklist.",
+    "blacklistRemoved": "✅ {user} has been removed from the blacklist.",
+    "blacklistAlreadyAdded": "❌ {user} is already blacklisted.",
+    "blacklistNotFound": "❌ {user} is not on the blacklist.",
+    "configError": "⚠️ Configuration error. Please contact the bot operator!"
+  },
+  "priorities": {
+    "low": "🟢 Low",
+    "medium": "🟡 Medium",
+    "high": "🟠 High",
+    "urgent": "🔴 Urgent"
+  },
+  "ratings": {
+    "1": "⭐ Very Poor",
+    "2": "⭐⭐ Poor",
+    "3": "⭐⭐⭐ Okay",
+    "4": "⭐⭐⭐⭐ Good",
+    "5": "⭐⭐⭐⭐⭐ Excellent"
+  }
+}

@@ -1,0 +1,12 @@
+  "ratingSystem": {
+    "enabled": true,                // Ask user to rate support after ticket closes
+    "dmUser": true,                 // Send rating request via DM
+    "ratingsChannelId": "RATINGS_CHANNEL_ID_HERE" // Channel where ratings are posted publicly
+  },
+
+  // ─── Staff Reminder ───────────────────────────────────────────────────────────
+  "staffReminder": {
+    "enabled": true,                // Remind staff in the ticket channel if no response
+    "afterHours": 4,                // Send reminder after X hours without any message
+    "pingRoles": true               // Whether to ping the staff roles configured above
+  },
