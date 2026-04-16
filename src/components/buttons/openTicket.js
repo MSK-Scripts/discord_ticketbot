@@ -1,13 +1,6 @@
-/**
- * Button: tb_open
- * Triggered when there is only ONE ticket type configured.
- * Directly opens a ticket (or shows a modal if questions are configured).
- */
 const {
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  ActionRowBuilder,
+  ModalBuilder, TextInputBuilder, TextInputStyle,
+  ActionRowBuilder, MessageFlags,
 } = require('discord.js');
 const { isBlacklisted, getOpenTicketsByUser } = require('../../database');
 const { openTicket } = require('../../utils/ticketActions');
@@ -20,9 +13,8 @@ module.exports = {
     const ticketType = cfg.ticketTypes[0];
     const user       = interaction.user;
 
-    // ── Guard checks ────────────────────────────────────────────────────────
     if (isBlacklisted(user.id, interaction.guildId)) {
-      return interaction.reply({ content: client.t('messages.blacklisted'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.blacklisted'), flags: MessageFlags.Ephemeral });
     }
 
     if (cfg.maxTicketOpened > 0) {
@@ -30,36 +22,26 @@ module.exports = {
       if (open.length >= cfg.maxTicketOpened) {
         return interaction.reply({
           content: client.t('messages.ticketLimitReached', { limit: String(cfg.maxTicketOpened) }),
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }
 
-    // ── Show modal if questions are configured ───────────────────────────────
     if (ticketType.askQuestions && ticketType.questions?.length > 0) {
-      const modal = buildQuestionsModal(ticketType);
-      return interaction.showModal(modal);
+      return interaction.showModal(buildQuestionsModal(ticketType));
     }
 
-    // ── Open ticket directly ─────────────────────────────────────────────────
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const channel = await openTicket(client, interaction.guild, user, ticketType, []);
     if (!channel) {
       return interaction.editReply('❌ Ticket konnte nicht erstellt werden.');
     }
 
-    await interaction.editReply(
-      client.t('messages.ticketCreated', { channel: `<#${channel.id}>` })
-    );
+    await interaction.editReply(client.t('messages.ticketCreated', { channel: `<#${channel.id}>` }));
   },
 };
 
-/**
- * Build a Discord modal from a ticket type's question list.
- * @param {object} ticketType
- * @returns {ModalBuilder}
- */
 function buildQuestionsModal(ticketType) {
   const modal = new ModalBuilder()
     .setCustomId(`tb_modalQuestions:${ticketType.codeName}`)

@@ -1,12 +1,5 @@
-const {
-  SlashCommandBuilder,
-  StringSelectMenuBuilder,
-  ActionRowBuilder,
-  PermissionFlagsBits,
-} = require('discord.js');
-const { getTicketByChannel } = require('../database');
-
-const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const { getTicketByChannel, setPriority } = require('../database');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -26,16 +19,15 @@ module.exports = {
 
   async execute(client, interaction) {
     if (!client.isStaff(interaction.member)) {
-      return interaction.reply({ content: client.t('messages.onlyStaff'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
-
     const ticket = getTicketByChannel(interaction.channelId);
     if (!ticket) {
-      return interaction.reply({ content: client.t('messages.notATicket'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
     }
 
     const priority = interaction.options.getString('stufe');
-    require('../database').setPriority(interaction.channelId, priority);
+    setPriority(interaction.channelId, priority);
 
     const label = client.t(`priorities.${priority}`);
     await interaction.reply(client.t('messages.priorityChanged', { priority: label }));

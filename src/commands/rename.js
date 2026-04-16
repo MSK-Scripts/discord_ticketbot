@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel } = require('../database');
 
 module.exports = {
@@ -15,12 +15,11 @@ module.exports = {
 
   async execute(client, interaction) {
     if (!client.isStaff(interaction.member)) {
-      return interaction.reply({ content: client.t('messages.onlyStaff'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
-
     const ticket = getTicketByChannel(interaction.channelId);
     if (!ticket) {
-      return interaction.reply({ content: client.t('messages.notATicket'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
     }
 
     const newName = interaction.options.getString('name')
@@ -34,7 +33,7 @@ module.exports = {
       await interaction.reply(client.t('messages.ticketRenamed', { name: newName }));
     } catch (err) {
       client.logger.error('[Rename] Error:', err);
-      await interaction.reply({ content: '❌ Umbenennung fehlgeschlagen.', ephemeral: true });
+      await interaction.reply({ content: '❌ Umbenennung fehlgeschlagen.', flags: MessageFlags.Ephemeral });
     }
   },
 };

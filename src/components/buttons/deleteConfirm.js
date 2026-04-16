@@ -1,16 +1,14 @@
-/**
- * Button: tb_deleteConfirm
- * Final step — actually deletes the channel after user confirmed.
- */
+const { MessageFlags } = require('discord.js');
+
 module.exports = {
   customId: 'tb_deleteConfirm',
 
   async execute(client, interaction) {
     if (!client.isStaff(interaction.member)) {
-      return interaction.reply({ content: client.t('messages.onlyStaff'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 
-    await interaction.reply({ content: '🗑️ Kanal wird gelöscht...', ephemeral: true }).catch(() => null);
+    await interaction.reply({ content: '🗑️ Kanal wird gelöscht...', flags: MessageFlags.Ephemeral }).catch(() => null);
 
     try {
       await interaction.channel.delete(`Ticket gelöscht von ${interaction.user.tag}`);

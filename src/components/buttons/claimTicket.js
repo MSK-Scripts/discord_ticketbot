@@ -1,7 +1,4 @@
-/**
- * Button: tb_claim
- * Claims a ticket for the staff member who clicked the button.
- */
+const { MessageFlags } = require('discord.js');
 const { getTicketByChannel, claimTicket } = require('../../database');
 
 module.exports = {
@@ -9,26 +6,25 @@ module.exports = {
 
   async execute(client, interaction) {
     if (!client.isStaff(interaction.member)) {
-      return interaction.reply({ content: client.t('messages.onlyStaff'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 
     const ticket = getTicketByChannel(interaction.channelId);
     if (!ticket) {
-      return interaction.reply({ content: client.t('messages.notATicket'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
     }
     if (ticket.status !== 'open') {
-      return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), flags: MessageFlags.Ephemeral });
     }
     if (ticket.claimed_by) {
       return interaction.reply({
         content: client.t('messages.ticketAlreadyClaimed', { user: `<@${ticket.claimed_by}>` }),
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
     claimTicket(interaction.channelId, interaction.user.id);
 
-    // Rename channel
     const cfg = client.config.claimOption;
     if (cfg?.nameWhenClaimed) {
       const creator = await interaction.guild.members.fetch(ticket.creator_id).catch(() => null);
@@ -49,8 +45,6 @@ module.exports = {
       await interaction.channel.setParent(cfg.categoryWhenClaimed, { lockPermissions: false }).catch(() => null);
     }
 
-    await interaction.reply(
-      client.t('messages.ticketClaimed', { user: `<@${interaction.user.id}>` })
-    );
+    await interaction.reply(client.t('messages.ticketClaimed', { user: `<@${interaction.user.id}>` }));
   },
 };

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getStats, getUserStats } = require('../database');
 const { statsEmbed, userStatsEmbed } = require('../utils/embeds');
 
@@ -14,21 +14,17 @@ module.exports = {
 
   async execute(client, interaction) {
     if (!client.isStaff(interaction.member)) {
-      return interaction.reply({ content: client.t('messages.onlyStaff'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 
     const targetUser = interaction.options.getUser('nutzer');
 
     if (targetUser) {
-      // ── Per-user stats ──────────────────────────────────────────────────
       const stats = getUserStats(targetUser.id, interaction.guildId);
-      const embed = userStatsEmbed(client, targetUser, stats);
-      return interaction.reply({ embeds: [embed] });
+      return interaction.reply({ embeds: [userStatsEmbed(client, targetUser, stats)] });
     }
 
-    // ── Server-wide stats ───────────────────────────────────────────────
     const stats = getStats(interaction.guildId);
-    const embed = statsEmbed(client, stats);
-    return interaction.reply({ embeds: [embed] });
+    return interaction.reply({ embeds: [statsEmbed(client, stats)] });
   },
 };

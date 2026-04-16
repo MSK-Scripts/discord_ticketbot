@@ -1,4 +1,4 @@
-const { InteractionType } = require('discord.js');
+const { MessageFlags } = require('discord.js');
 
 module.exports = {
   name: 'interactionCreate',
@@ -9,7 +9,6 @@ module.exports = {
       if (interaction.isChatInputCommand()) {
         const command = client.commands.get(interaction.commandName);
         if (!command) return;
-
         await command.execute(client, interaction);
         return;
       }
@@ -22,13 +21,11 @@ module.exports = {
       ) {
         const customId = interaction.customId;
 
-        // Exact match first
         if (client.components.has(customId)) {
           await client.components.get(customId).execute(client, interaction);
           return;
         }
 
-        // Prefix match: "prefix:data"
         const prefix = customId.split(':')[0];
         if (client.components.has(prefix)) {
           await client.components.get(prefix).execute(client, interaction);
@@ -40,7 +37,7 @@ module.exports = {
     } catch (err) {
       client.logger.error('[Interactions] Unhandled error:', err);
 
-      const reply = { content: '❌ Ein interner Fehler ist aufgetreten.', ephemeral: true };
+      const reply = { content: '❌ Ein interner Fehler ist aufgetreten.', flags: MessageFlags.Ephemeral };
       if (interaction.replied || interaction.deferred) {
         await interaction.followUp(reply).catch(() => null);
       } else {

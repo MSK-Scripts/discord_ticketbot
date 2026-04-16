@@ -1,13 +1,4 @@
-/**
- * Button: tb_delete
- * Permanently deletes the ticket channel (staff only).
- * Shows a confirmation step first.
- */
-const {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-} = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
 const { getTicketByChannel } = require('../../database');
 
 module.exports = {
@@ -15,15 +6,14 @@ module.exports = {
 
   async execute(client, interaction) {
     if (!client.isStaff(interaction.member)) {
-      return interaction.reply({ content: client.t('messages.onlyStaff'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 
     const ticket = getTicketByChannel(interaction.channelId);
     if (!ticket) {
-      return interaction.reply({ content: client.t('messages.notATicket'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
     }
 
-    // Confirmation step
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId('tb_deleteConfirm')
@@ -38,7 +28,7 @@ module.exports = {
     await interaction.reply({
       content: '⚠️ **Bist du sicher?** Der Ticket-Kanal wird unwiderruflich gelöscht.',
       components: [row],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

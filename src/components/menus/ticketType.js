@@ -1,8 +1,4 @@
-/**
- * Select Menu: tb_selectType
- * Shown when multiple ticket types are configured.
- * After selection: show modal (if questions) or open ticket directly.
- */
+const { MessageFlags } = require('discord.js');
 const { isBlacklisted, getOpenTicketsByUser } = require('../../database');
 const { openTicket } = require('../../utils/ticketActions');
 const { buildQuestionsModal } = require('../buttons/openTicket');
@@ -15,14 +11,13 @@ module.exports = {
     const ticketType = client.config.ticketTypes.find(t => t.codeName === typeCode);
 
     if (!ticketType) {
-      return interaction.reply({ content: '❌ Unbekannter Ticket-Typ.', ephemeral: true });
+      return interaction.reply({ content: '❌ Unbekannter Ticket-Typ.', flags: MessageFlags.Ephemeral });
     }
 
     const user = interaction.user;
 
-    // ── Guard checks ─────────────────────────────────────────────────────────
     if (isBlacklisted(user.id, interaction.guildId)) {
-      return interaction.reply({ content: client.t('messages.blacklisted'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.blacklisted'), flags: MessageFlags.Ephemeral });
     }
 
     const cfg = client.config;
@@ -31,39 +26,32 @@ module.exports = {
       if (open.length >= cfg.maxTicketOpened) {
         return interaction.reply({
           content: client.t('messages.ticketLimitReached', { limit: String(cfg.maxTicketOpened) }),
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }
 
-    // ── Role restriction check ────────────────────────────────────────────────
     if (ticketType.cantAccess?.length > 0) {
-      const member = interaction.member;
-      const blocked = ticketType.cantAccess.some(roleId => member.roles.cache.has(roleId));
+      const blocked = ticketType.cantAccess.some(roleId => interaction.member.roles.cache.has(roleId));
       if (blocked) {
         return interaction.reply({
           content: '❌ Du hast keinen Zugriff auf diesen Ticket-Typ.',
-          ephemeral: true,
+          flags: MessageFlags.Ephemeral,
         });
       }
     }
 
-    // ── Show modal if questions configured ────────────────────────────────────
     if (ticketType.askQuestions && ticketType.questions?.length > 0) {
-      const modal = buildQuestionsModal(ticketType);
-      return interaction.showModal(modal);
+      return interaction.showModal(buildQuestionsModal(ticketType));
     }
 
-    // ── Open ticket directly ──────────────────────────────────────────────────
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const channel = await openTicket(client, interaction.guild, user, ticketType, []);
     if (!channel) {
       return interaction.editReply('❌ Ticket konnte nicht erstellt werden. Bitte versuche es erneut.');
     }
 
-    await interaction.editReply(
-      client.t('messages.ticketCreated', { channel: `<#${channel.id}>` })
-    );
+    await interaction.editReply(client.t('messages.ticketCreated', { channel: `<#${channel.id}>` }));
   },
 };

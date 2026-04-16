@@ -1,12 +1,6 @@
-/**
- * Button: tb_move
- * Opens an ephemeral select menu so staff can pick the target ticket type.
- * Only accessible by staff.
- */
 const {
-  ActionRowBuilder,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
+  ActionRowBuilder, StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder, MessageFlags,
 } = require('discord.js');
 const { getTicketByChannel } = require('../../database');
 
@@ -14,26 +8,23 @@ module.exports = {
   customId: 'tb_move',
 
   async execute(client, interaction) {
-    // Staff-only
     if (!client.isStaff(interaction.member)) {
-      return interaction.reply({ content: client.t('messages.onlyStaff'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 
     const ticket = getTicketByChannel(interaction.channelId);
     if (!ticket) {
-      return interaction.reply({ content: client.t('messages.notATicket'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
     }
     if (ticket.status !== 'open') {
-      return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), flags: MessageFlags.Ephemeral });
     }
 
-    // Exclude the current type from the options
     const types = client.config.ticketTypes.filter(t => t.codeName !== ticket.type);
-
     if (types.length === 0) {
       return interaction.reply({
         content: '❌ Es gibt keine anderen Ticket-Typen zum Verschieben.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -53,7 +44,7 @@ module.exports = {
     await interaction.reply({
       content: `🔀 **Ticket verschieben** (aktuell: **${ticket.type}**)\nWohin soll dieses Ticket verschoben werden?`,
       components: [new ActionRowBuilder().addComponents(menu)],
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
   },
 };

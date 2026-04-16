@@ -1,7 +1,4 @@
-/**
- * Modal: tb_modalClose
- * Submitted when the user fills in the close-reason modal.
- */
+const { MessageFlags } = require('discord.js');
 const { getTicketByChannel } = require('../../database');
 const { performClose } = require('../../utils/ticketActions');
 
@@ -13,11 +10,11 @@ module.exports = {
 
     const ticket = getTicketByChannel(interaction.channelId);
     if (!ticket || ticket.status !== 'open') {
-      return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), flags: MessageFlags.Ephemeral });
     }
 
     await interaction.deferUpdate().catch(() =>
-      interaction.deferReply({ ephemeral: true })
+      interaction.deferReply({ flags: MessageFlags.Ephemeral })
     );
 
     await performClose(client, interaction.channel, ticket, interaction.user, reason);

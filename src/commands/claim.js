@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel, claimTicket } = require('../database');
 
 module.exports = {
@@ -8,26 +8,24 @@ module.exports = {
 
   async execute(client, interaction) {
     if (!client.isStaff(interaction.member)) {
-      return interaction.reply({ content: client.t('messages.onlyStaff'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
-
     const ticket = getTicketByChannel(interaction.channelId);
     if (!ticket) {
-      return interaction.reply({ content: client.t('messages.notATicket'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
     }
     if (ticket.status !== 'open') {
-      return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), ephemeral: true });
+      return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), flags: MessageFlags.Ephemeral });
     }
     if (ticket.claimed_by) {
       return interaction.reply({
         content: client.t('messages.ticketAlreadyClaimed', { user: `<@${ticket.claimed_by}>` }),
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
     }
 
     claimTicket(interaction.channelId, interaction.user.id);
 
-    // Rename channel if configured
     const cfg = client.config.claimOption;
     if (cfg?.nameWhenClaimed) {
       const creator = await interaction.guild.members.fetch(ticket.creator_id).catch(() => null);
@@ -39,8 +37,6 @@ module.exports = {
         .replace(/TICKETCOUNT/g, String(ticket.id));
       await interaction.channel.setName(newName).catch(() => null);
     }
-
-    // Move to claimed category if configured
     if (cfg?.categoryWhenClaimed) {
       await interaction.channel.setParent(cfg.categoryWhenClaimed, { lockPermissions: false }).catch(() => null);
     }
