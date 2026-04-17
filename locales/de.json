@@ -18,7 +18,7 @@
     "panel": {
       "title": "Support Ticket",
       "description": "Klicke auf den Button unten, um ein Ticket zu öffnen.\nEin Teammitglied wird sich so schnell wie möglich um dich kümmern.",
-      "footer": "Copyright MSK Scripts"
+      "footer": "© MSK Scripts - Alle Rechte vorbehalten"
     },
     "ticketOpened": {
       "title": "Ticket geöffnet",
