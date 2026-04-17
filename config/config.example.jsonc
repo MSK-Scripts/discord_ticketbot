@@ -8,6 +8,7 @@
 
   // ─── Panel Settings ───────────────────────────────────────────────────────────
   "panel": {
+    "interactionType": "BUTTON",     // WIP -> "BUTTON" or "SELECT_MENU"
     "logo": {
       "enabled": false,             // Set to true to show a banner image in the panel
       "file": "logo.png"            // Filename inside the assets/ folder
@@ -23,25 +24,25 @@
     {
       "codeName": "support",
       "name": "Support",
-      "description": "Fragen oder Probleme mit unseren Scripts",
+      "description": "If you have questions or need help with our scripts",
       "emoji": "💡",
       "color": "",
       "categoryId": "CATEGORY_ID_HERE",
       "ticketNameOption": "",
-      "customDescription": "Ein Teammitglied wird sich so schnell wie möglich melden!\n\n**Script:** REASON1\n**Problem:** REASON2",
+      "customDescription": "A team member will get back to you as soon as possible!",
       "cantAccess": [],
       "staffRoles": [],
       "askQuestions": true,
       "questions": [
         {
           "label": "Scriptname",
-          "placeholder": "Bitte Scriptname eingeben",
+          "placeholder": "Please enter the script name",
           "style": "SHORT",
           "maxLength": 50
         },
         {
-          "label": "Problembeschreibung",
-          "placeholder": "Bitte das Problem ausführlich beschreiben",
+          "label": "Problem Description",
+          "placeholder": "Please describe the problem in detail",
           "style": "PARAGRAPH",
           "maxLength": 500
         }
@@ -50,7 +51,7 @@
     {
       "codeName": "custom",
       "name": "Custom Order",
-      "description": "Du möchtest ein individuelles Script?",
+      "description": "Do you want a custom script?",
       "emoji": "⌨️",
       "color": "",
       "categoryId": "CATEGORY_ID_HERE",
