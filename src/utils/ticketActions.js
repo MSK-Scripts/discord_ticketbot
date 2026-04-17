@@ -20,6 +20,53 @@ const {
   ratingRequestEmbed,
 } = require('./embeds');
 
+// Priority emoji used in channel topics
+const PRIORITY_EMOJI = {
+  low:    '🟢',
+  medium: '🟡',
+  high:   '🟠',
+  urgent: '🔴',
+};
+
+// Priority labels (fallback if locale not available)
+const PRIORITY_LABEL = {
+  low:    'Niedrig',
+  medium: 'Mittel',
+  high:   'Hoch',
+  urgent: 'Dringend',
+};
+
+// ─── Channel Topic ────────────────────────────────────────────────────────────
+
+/**
+ * Build and set the channel topic to reflect the current ticket state.
+ * Format: "🟠 Hoch | 🙋 Claimed by @username"  or just  "🟡 Mittel"
+ *
+ * This has NO rate-limit (unlike channel rename) so it can be called freely.
+ *
+ * @param {import('discord.js').TextChannel} channel
+ * @param {object}  ticket     DB row (may be stale — pass fresh data via overrides)
+ * @param {object}  [overrides]  { priority?, claimedBy? } — values to use instead of DB row
+ * @param {import('../client').TicketClient} client
+ */
+async function updateChannelTopic(channel, ticket, overrides = {}, client) {
+  const priority  = overrides.priority  ?? ticket.priority  ?? 'medium';
+  const claimedBy = overrides.claimedBy !== undefined
+    ? overrides.claimedBy   // null means explicitly unclaimed
+    : ticket.claimed_by;
+
+  const priorityLabel = client?.t(`priorities.${priority}`) ?? `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]}`;
+
+  let topic = priorityLabel;
+  if (claimedBy) {
+    topic += ` | 🙋 Claimed by <@${claimedBy}>`;
+  }
+
+  await channel.setTopic(topic).catch(err => {
+    client?.logger?.warn(`[Topic] Could not set topic: ${err.message}`);
+  });
+}
+
 // ─── Open ─────────────────────────────────────────────────────────────────────
 
 async function openTicket(client, guild, user, ticketType, answers = []) {
@@ -32,17 +79,24 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     if (open.length >= cfg.maxTicketOpened) return null;
   }
 
-  const totalForUser = db.getOpenTicketsByUser(user.id, guild.id).length;
-  const nameTpl      = ticketType.ticketNameOption || cfg.ticketNameOption || 'ticket-USERNAME';
-  const channelName  = nameTpl
+  // ── TICKETCOUNT: global sequential counter across all guild tickets ────────
+  // We query the total BEFORE inserting so the count reflects "this is ticket N+1".
+  // Using the DB auto-increment id is more reliable than counting open tickets
+  // per user, which caused the bug where the counter reset after closing.
+  const totalCount = db.getTotalTicketCount(guild.id);
+  const ticketNumber = totalCount + 1;
+
+  const nameTpl     = ticketType.ticketNameOption || cfg.ticketNameOption || 'ticket-USERNAME';
+  const channelName = nameTpl
     .replace(/USERNAME/g,    sanitizeName(user.username))
     .replace(/USERID/g,      user.id)
-    .replace(/TICKETCOUNT/g, String(totalForUser + 1))
+    .replace(/TICKETCOUNT/g, String(ticketNumber))
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, '-')
     .replace(/-+/g, '-')
     .substring(0, 100);
 
+  // ── Permission overwrites ─────────────────────────────────────────────────
   const overwrites = [
     { id: guild.roles.everyone, deny: [PermissionFlagsBits.ViewChannel] },
     {
@@ -74,6 +128,7 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     overwrites.push({ id: roleId, deny: [PermissionFlagsBits.ViewChannel] });
   }
 
+  // ── Create channel ────────────────────────────────────────────────────────
   let channel;
   try {
     channel = await guild.channels.create({
@@ -89,6 +144,9 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
 
   db.createTicket({ channelId: channel.id, guildId: guild.id, creatorId: user.id, type: ticketType.codeName });
   const ticket = db.getTicketByChannel(channel.id);
+
+  // ── Set initial channel topic (priority = medium, not claimed) ────────────
+  await updateChannelTopic(channel, ticket, {}, client);
 
   const embed   = ticketOpenedEmbed(client, { user, ticketType, priority: 'medium', count: ticket.id, answers });
   const buttons = buildTicketButtons(client);
@@ -114,18 +172,13 @@ async function performClose(client, channel, ticket, closer, reason) {
   const cfg = client.config.closeOption ?? {};
 
   // ── 1. Disable all ticket buttons immediately ─────────────────────────────
-  // Fetch recent messages and remove components from any bot message that has
-  // buttons (the opening embed). This prevents double-clicks and further
-  // interactions while the ticket is being processed.
   try {
     const recent = await channel.messages.fetch({ limit: 20 });
     const withButtons = recent.filter(
       m => m.author.id === client.user.id && m.components.length > 0
     );
     await Promise.all(withButtons.map(m => m.edit({ components: [] }).catch(() => null)));
-  } catch {
-    /* ignore — channel might already be inaccessible */
-  }
+  } catch { /* ignore */ }
 
   // ── 2. Generate transcript ────────────────────────────────────────────────
   let transcriptHtml = null;
@@ -189,18 +242,15 @@ async function performClose(client, channel, ticket, closer, reason) {
   // ── 8. DM the ticket creator ──────────────────────────────────────────────
   if (cfg.dmUser) {
     try {
-      const creator    = await channel.guild.members.fetch(ticket.creator_id);
-      const dmPayload  = {
+      const creator   = await channel.guild.members.fetch(ticket.creator_id);
+      const dmPayload = {
         embeds: [ticketClosedDMEmbed(client, {
           count: ticket.id, type: ticket.type, closer, reason, transcriptUrl: null,
         })],
       };
       if (transcriptHtml) {
         dmPayload.files = [
-          new AttachmentBuilder(
-            Buffer.from(transcriptHtml, 'utf-8'),
-            { name: `ticket-${ticket.id}.html` }
-          ),
+          new AttachmentBuilder(Buffer.from(transcriptHtml, 'utf-8'), { name: `ticket-${ticket.id}.html` }),
         ];
       }
       await creator.user.send(dmPayload);
@@ -248,14 +298,11 @@ async function performMove(client, channel, ticket, newType, movedBy) {
   const oldType  = allTypes.find(t => t.codeName === ticket.type);
 
   const oldStaffRoles = (oldType?.staffRoles?.length > 0)
-    ? oldType.staffRoles
-    : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
+    ? oldType.staffRoles : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
   const newStaffRoles = (newType.staffRoles?.length > 0)
-    ? newType.staffRoles
-    : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
+    ? newType.staffRoles : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
 
-  const rolesToRemove = oldStaffRoles.filter(id => !newStaffRoles.includes(id));
-  for (const roleId of rolesToRemove) {
+  for (const roleId of oldStaffRoles.filter(id => !newStaffRoles.includes(id))) {
     await channel.permissionOverwrites.delete(roleId).catch(() => null);
   }
   for (const roleId of newStaffRoles) {
@@ -296,7 +343,6 @@ function buildTicketButtons(client) {
         .setStyle(ButtonStyle.Danger)
     );
   }
-
   if (cfg.claimOption?.claimButton) {
     buttons.push(
       new ButtonBuilder()
@@ -306,7 +352,6 @@ function buildTicketButtons(client) {
         .setStyle(ButtonStyle.Success)
     );
   }
-
   if (cfg.ticketTypes?.length > 1) {
     buttons.push(
       new ButtonBuilder()
@@ -342,4 +387,7 @@ function getEffectiveStaffRoles(ticketType, cfg) {
     : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
 }
 
-module.exports = { openTicket, performClose, performMove, buildTicketButtons, getEffectiveStaffRoles };
+module.exports = {
+  openTicket, performClose, performMove,
+  buildTicketButtons, getEffectiveStaffRoles, updateChannelTopic,
+};

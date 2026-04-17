@@ -1,19 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel, setPriority } = require('../database');
-
-const PRIORITY_EMOJI = {
-  low:    '🟢',
-  medium: '🟡',
-  high:   '🟠',
-  urgent: '🔴',
-};
-
-const RENAME_WARNING = '\n> ⚠️ *Der Kanalname wird gleich aktualisiert – Discord limitiert Umbenennungen, das kann einen Moment dauern.*';
-
-function applyPriorityPrefix(currentName, priority) {
-  const stripped = currentName.replace(/^[🟢🟡🟠🔴][-_]?/, '');
-  return `${PRIORITY_EMOJI[priority]}-${stripped}`.substring(0, 100);
-}
+const { updateChannelTopic } = require('../utils/ticketActions');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -41,7 +28,6 @@ module.exports = {
     }
 
     const priority = interaction.options.getString('stufe');
-
     if (ticket.priority === priority) {
       return interaction.reply({
         content: `ℹ️ Die Priorität ist bereits auf **${client.t(`priorities.${priority}`)}** gesetzt.`,
@@ -51,16 +37,9 @@ module.exports = {
 
     setPriority(interaction.channelId, priority);
 
-    const label   = client.t(`priorities.${priority}`);
-    const newName = applyPriorityPrefix(interaction.channel.name, priority);
-
-    // Reply immediately — rename happens in background
-    await interaction.reply(
-      client.t('messages.priorityChanged', { priority: label }) + RENAME_WARNING
-    );
-
-    await interaction.channel.setName(newName).catch(err => {
-      client.logger.warn(`[Priority] Could not rename channel: ${err.message}`);
-    });
+    // Reply immediately, then update topic (no rate-limit)
+    const label = client.t(`priorities.${priority}`);
+    await interaction.reply(client.t('messages.priorityChanged', { priority: label }));
+    await updateChannelTopic(interaction.channel, ticket, { priority }, client);
   },
 };

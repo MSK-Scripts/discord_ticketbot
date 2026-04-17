@@ -10,15 +10,16 @@ Ein moderner, selbst-gehosteter Discord-Ticket-Bot auf Basis von **Discord.js v1
 |---|---|
 | 🎫 Ticket-Typen | Bis zu 25 konfigurierbare Typen mit eigenem Emoji, Farbe, Kategorie & Fragen |
 | 📋 Fragebögen | Modale Formulare (bis zu 5 Fragen) bei Ticket-Erstellung |
-| 🙋 Claim-System | Staff kann Tickets beanspruchen & freigeben |
-| 🔴 Prioritäten | Low / Medium / High / Urgent per `/priority` oder Button |
+| 🙋 Claim-System | Staff kann Tickets beanspruchen & freigeben — benennt Kanal um und aktualisiert Topic |
+| 🔴 Prioritäten | Low / Medium / High / Urgent per `/priority` — wird im Channel-Topic angezeigt |
 | 📝 Staff-Notizen | Private Notizen per `/note add` / `/note list` |
 | 🔀 Ticket verschieben | Per `/move` oder Button in einen anderen Typ/Kategorie verschieben (Staff only) |
 | 🛡️ Typ-spezifische Staff-Rollen | Jeder Ticket-Typ kann eigene Staff-Rollen haben |
+| 🖼️ Panel-Banner | Optionales Banner-Bild im Ticket-Panel, konfigurierbar in der Config |
 | ⭐ Bewertungssystem | 1–5 Sterne Feedback nach Schließung, automatisch in konfigurierten Channel gepostet |
 | ⏰ Staff-Erinnerung | Automatischer Ping im Ticket wenn kein Staff nach X Stunden antwortet |
 | ⏰ Auto-Close | Inaktive Tickets automatisch schließen mit Warn-Vorlauf (konfigurierbar) |
-| 📄 HTML-Transcript | Vollständiges, schön gestaltetes HTML-Transcript lokal als Datei-Attachment |
+| 📄 HTML-Transcript | Vollständiges HTML-Transcript — an Log-Channel und per DM an den Ersteller |
 | 📊 Statistiken | Server-weite Stats sowie detaillierte Per-Nutzer-Stats per `/stats` |
 | 🚫 Blacklist | `/blacklist add/remove/list` zum Sperren von Nutzern |
 | 🌍 Mehrsprachig | Deutsch und Englisch enthalten, leicht erweiterbar |
@@ -34,6 +35,8 @@ discord_ticketbot/
 ├── package.json
 ├── .env.example                # Vorlage für Umgebungsvariablen
 ├── ticketbot.service           # systemd-Unit-Datei für Linux-Server
+├── assets/                     # Statische Dateien (Panel-Banner, etc.)
+│   └── banner.png              # Beispiel-Banner (eigenes Bild hier ablegen)
 ├── config/
 │   └── config.example.jsonc    # Konfigurationsvorlage (mit Kommentaren)
 ├── locales/
@@ -59,7 +62,7 @@ discord_ticketbot/
     │   ├── move.js             # /move       – Ticket verschieben
     │   ├── rename.js           # /rename     – Kanal umbenennen
     │   ├── transcript.js       # /transcript – HTML-Transcript
-    │   ├── priority.js         # /priority   – Priorität setzen
+    │   ├── priority.js         # /priority   – Priorität setzen (Topic)
     │   ├── note.js             # /note       – Staff-Notizen
     │   ├── blacklist.js        # /blacklist  – Nutzer sperren
     │   └── stats.js            # /stats      – Statistiken (Server & Nutzer)
@@ -87,7 +90,7 @@ discord_ticketbot/
         ├── logger.js           # Farbiger Console-Logger
         ├── embeds.js           # Alle Embed-Konstruktoren
         ├── transcript.js       # HTML-Transcript-Generator
-        └── ticketActions.js    # Kernlogik: openTicket, performClose, performMove
+        └── ticketActions.js    # Kernlogik: openTicket, performClose, performMove, updateChannelTopic
 ```
 
 ---
@@ -149,13 +152,8 @@ Damit der Bot nach einem Server-Neustart automatisch startet, kann die mitgelief
 ### 1. Bot-Dateien auf den Server kopieren
 
 ```bash
-# Projektordner nach /opt kopieren
 sudo cp -r discord_ticketbot /opt/discord_ticketbot
-
-# Eigenen Systembenutzer anlegen (empfohlen, niemals als root laufen lassen)
 sudo useradd -r -s /bin/false discord
-
-# Berechtigungen setzen
 sudo chown -R discord:discord /opt/discord_ticketbot
 ```
 
@@ -185,10 +183,7 @@ sudo systemctl enable --now ticketbot.service
 ### 5. Status prüfen
 
 ```bash
-# Aktuellen Status anzeigen
 sudo systemctl status ticketbot.service
-
-# Live-Logs verfolgen
 sudo journalctl -u ticketbot.service -f
 ```
 
@@ -211,14 +206,14 @@ sudo journalctl -u ticketbot.service -f
 |---|---|---|
 | `/setup` | Administrator | Ticket-Panel senden |
 | `/close [grund]` | Konfigurierbar | Ticket schließen |
-| `/claim` | Staff | Ticket beanspruchen |
-| `/unclaim` | Staff | Ticket freigeben |
+| `/claim` | Staff | Ticket beanspruchen (Kanal umbenennen + Topic aktualisieren) |
+| `/unclaim` | Staff | Ticket freigeben (Name wiederherstellen + Topic aktualisieren) |
 | `/move` | Staff | Ticket in anderen Typ/Kategorie verschieben |
 | `/add <nutzer>` | Staff | Nutzer zum Ticket hinzufügen |
 | `/remove <nutzer>` | Staff | Nutzer aus Ticket entfernen |
 | `/rename <n>` | Staff | Kanal umbenennen |
 | `/transcript` | Staff | HTML-Transcript generieren |
-| `/priority <stufe>` | Staff | Priorität setzen |
+| `/priority <stufe>` | Staff | Priorität setzen (Channel-Topic aktualisieren) |
 | `/note add <text>` | Staff | Notiz hinzufügen |
 | `/note list` | Staff | Alle Notizen anzeigen |
 | `/stats` | Staff | Server-weite Ticket-Statistiken |
@@ -235,14 +230,40 @@ Jedes Ticket enthält eine Button-Leiste direkt im Kanal:
 
 | Button | Sichtbar wenn | Beschreibung |
 |---|---|---|
-| 🔒 Ticket schließen | Immer (konfigurierbar) | Öffnet Grund-Modal oder schließt direkt |
-| 🙋 Beanspruchen | `claimButton: true` | Staff beansprucht das Ticket |
+| 🔒 Ticket schließen | Immer (konfigurierbar) | Deaktiviert alle Buttons, erstellt Transcript, schließt Ticket |
+| 🙋 Beanspruchen | `claimButton: true` | Staff beansprucht Ticket — Kanal umbenennen + Topic aktualisieren |
 | 🔀 Verschieben | Mehr als 1 Ticket-Typ | Staff öffnet Typ-Auswahl (nur Staff) |
 | 🗑️ Ticket löschen | Nach Schließung | Löscht den Kanal nach Bestätigung |
 
 ---
 
 ## 🛠️ Konfigurationsreferenz
+
+### Panel-Banner
+
+Ein optionales Bild kann am unteren Ende des Ticket-Panel-Embeds angezeigt werden.
+
+```jsonc
+"panel": {
+  "banner": {
+    "enabled": true,        // true = Banner anzeigen
+    "file": "banner.png"    // Dateiname im assets/-Ordner
+  }
+}
+```
+
+Bild (PNG, JPG, GIF oder WEBP) in den `assets/`-Ordner legen und `/setup` erneut ausführen. Falls die Datei nicht gefunden wird, loggt der Bot eine Warnung und sendet das Panel ohne Banner.
+
+### Priorität & Channel-Topic
+
+`/priority` benennt den Kanal **nicht** um — stattdessen wird das **Channel-Topic** aktualisiert, das kein Rate-Limit hat. Das Topic wird auch beim Claim/Unclaim automatisch angepasst.
+
+| Zustand | Kanalname | Channel-Topic |
+|---|---|---|
+| Ticket geöffnet | `ticket-maxmuster` | `🟡 Mittel` |
+| `/priority urgent` | `ticket-maxmuster` | `🔴 Dringend` |
+| `/claim` | `✔️ ticket-maxmuster` | `🟡 Mittel \| 🙋 Claimed by @Staff` |
+| `/unclaim` | `ticket-maxmuster` | `🟡 Mittel` |
 
 ### Ticket-Typen
 
@@ -270,39 +291,21 @@ Jedes Ticket enthält eine Button-Leiste direkt im Kanal:
 }
 ```
 
+**Hinweis zu `TICKETCOUNT`:** Globaler, fortlaufender Zähler über alle Tickets des Servers — setzt sich nie zurück, auch nicht wenn Tickets geschlossen werden. Jedes neue Ticket bekommt immer eine höhere Nummer als das vorherige.
+
 ### Typ-spezifische Staff-Rollen (`staffRoles`)
 
-Jeder Ticket-Typ kann eigene Staff-Rollen definieren. Diese steuern wer das Ticket sehen, bearbeiten und beanspruchen darf.
+Jeder Ticket-Typ kann eigene Staff-Rollen definieren, die steuern wer das Ticket sehen, verwalten und beanspruchen darf.
 
 ```jsonc
 // Nur Entwickler können "Bug Report"-Tickets sehen:
-{
-  "codeName": "bugreport",
-  "staffRoles": ["ROLE_ID_DEVELOPER"]
-}
-
-// Nur Partner-Manager können "Partnership"-Tickets sehen:
-{
-  "codeName": "partner",
-  "staffRoles": ["ROLE_ID_PARTNER_MANAGER"]
-}
+{ "codeName": "bugreport", "staffRoles": ["ROLE_ID_DEVELOPER"] }
 
 // Leer lassen → globale rolesWhoHaveAccessToTheTickets werden verwendet:
-{
-  "codeName": "support",
-  "staffRoles": []
-}
+{ "codeName": "support", "staffRoles": [] }
 ```
 
-**Verhalten:**
-- Ist `staffRoles` gesetzt und nicht leer → nur diese Rollen haben Zugriff auf den Kanal
-- Ist `staffRoles` leer oder nicht vorhanden → die globalen `rolesWhoHaveAccessToTheTickets` werden verwendet
-- Beim Verschieben eines Tickets (`/move`) werden die Berechtigungen automatisch auf den neuen Typ angepasst
-- Beim Ping bei Ticket-Öffnung werden ebenfalls die typ-spezifischen Rollen anstelle der globalen gepingt
-
-### Ticket verschieben (`/move` & Button)
-
-Wenn mehr als ein Ticket-Typ konfiguriert ist, erscheint automatisch ein **🔀 Verschieben**-Button in jedem Ticket. Nur Staff kann ihn nutzen. Der Button und der `/move`-Command öffnen ein Auswahlmenü mit allen anderen verfügbaren Typen. Nach der Auswahl wird der Kanal in die neue Kategorie verschoben, Berechtigungen (inkl. `staffRoles`) werden angepasst und eine Nachricht im Ticket gepostet.
+Beim Verschieben eines Tickets (`/move`) werden die Berechtigungen automatisch auf den neuen Typ angepasst. Beim Ping bei Ticket-Öffnung werden die typ-spezifischen Rollen anstelle der globalen gepingt.
 
 ### Staff-Erinnerung
 
@@ -314,7 +317,7 @@ Wenn mehr als ein Ticket-Typ konfiguriert ist, erscheint automatisch ein **🔀 
 }
 ```
 
-Der Bot prüft alle **15 Minuten** offene Tickets. Sobald ein Ticket `afterHours` Stunden keine Aktivität hatte und noch keine Erinnerung gesendet wurde, postet er eine Nachricht im Ticket-Kanal. Jedes Ticket wird dabei **nur einmal** erinnert — kein Spam.
+Der Bot prüft alle **15 Minuten** offene Tickets. Jedes Ticket wird dabei **nur einmal** erinnert — kein Spam.
 
 ### Bewertungssystem
 
@@ -322,11 +325,11 @@ Der Bot prüft alle **15 Minuten** offene Tickets. Sobald ein Ticket `afterHours
 "ratingSystem": {
   "enabled": true,
   "dmUser": true,
-  "ratingsChannelId": "CHANNEL_ID_HERE"
+  "ratingsChannelId": "CHANNEL_ID_HERE"   // Channel für automatische Bewertungs-Posts
 }
 ```
 
-Nach dem Schließen erhält der Nutzer eine 1–5 ⭐ Bewertungsanfrage (per DM oder im Ticket). Sobald er bewertet, wird das Ergebnis automatisch in `ratingsChannelId` gepostet.
+Nach dem Schließen erhält der Nutzer eine 1–5 ⭐ Bewertungsanfrage per DM. Sobald er bewertet, wird das Ergebnis automatisch in `ratingsChannelId` gepostet.
 
 ### Auto-Close
 
@@ -341,11 +344,7 @@ Nach dem Schließen erhält der Nutzer eine 1–5 ⭐ Bewertungsanfrage (per DM 
 
 ### Statistiken
 
-`/stats` zeigt server-weite Zahlen. `/stats @nutzer` zeigt ein detailliertes Profil:
-
-**👤 Als Nutzer** — Tickets eröffnet, häufigster Typ, Ø Bewertung vergeben
-
-**🛡️ Als Staff** *(nur sichtbar wenn vorhanden)* — Tickets geschlossen & beansprucht, Ø Bewertung erhalten
+`/stats` zeigt server-weite Zahlen. `/stats @nutzer` zeigt ein detailliertes Profil in zwei Sektionen — **👤 Als Nutzer** (Tickets eröffnet, häufigster Typ, Ø Bewertung vergeben) und **🛡️ Als Staff** (Tickets geschlossen & beansprucht, Ø Bewertung erhalten — nur sichtbar wenn vorhanden).
 
 ---
 

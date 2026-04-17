@@ -1,7 +1,18 @@
+/**
+ * Select Menu: tb_selectType
+ * Shown when multiple ticket types are configured.
+ *
+ * After selection:
+ *  - Has questions → show modal (select menu message stays until user dismisses)
+ *  - No questions  → deferUpdate (keeps the message), open ticket, transform message
+ *                    into success notice, then auto-delete after 10 seconds
+ */
 const { MessageFlags } = require('discord.js');
 const { isBlacklisted, getOpenTicketsByUser } = require('../../database');
 const { openTicket } = require('../../utils/ticketActions');
 const { buildQuestionsModal } = require('../buttons/openTicket');
+
+const SUCCESS_DELETE_DELAY = 10_000;
 
 module.exports = {
   customId: 'tb_selectType',
@@ -41,17 +52,29 @@ module.exports = {
       }
     }
 
+    // ── Has questions → show modal ────────────────────────────────────────────
+    // The select-menu message is consumed by showing the modal (Discord limitation:
+    // a component interaction can only be acknowledged once). The select-menu message
+    // will disappear once the user submits the modal and receives the success reply.
     if (ticketType.askQuestions && ticketType.questions?.length > 0) {
       return interaction.showModal(buildQuestionsModal(ticketType));
     }
 
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+    // ── No questions → open ticket directly ───────────────────────────────────
+    // deferUpdate keeps the existing ephemeral message visible (no new message).
+    // We then transform that same message into the success notice and delete it.
+    await interaction.deferUpdate();
 
     const channel = await openTicket(client, interaction.guild, user, ticketType, []);
     if (!channel) {
-      return interaction.editReply('❌ Ticket konnte nicht erstellt werden. Bitte versuche es erneut.');
+      return interaction.editReply({ content: '❌ Ticket konnte nicht erstellt werden. Bitte versuche es erneut.', components: [] });
     }
 
-    await interaction.editReply(client.t('messages.ticketCreated', { channel: `<#${channel.id}>` }));
+    // Replace the select menu with the success message, then auto-delete after 10s
+    await interaction.editReply({
+      content:    client.t('messages.ticketCreated', { channel: `<#${channel.id}>` }),
+      components: [],
+    });
+    setTimeout(() => interaction.deleteReply().catch(() => null), SUCCESS_DELETE_DELAY);
   },
 };

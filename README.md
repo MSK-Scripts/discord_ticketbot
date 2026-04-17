@@ -10,15 +10,16 @@ A modern, self-hosted Discord ticket bot built on **Discord.js v14** and **SQLit
 |---|---|
 | 🎫 Ticket Types | Up to 25 configurable types with individual emoji, color, category & questions |
 | 📋 Questionnaires | Modal forms (up to 5 questions) shown when opening a ticket |
-| 🙋 Claim System | Staff can claim and unclaim tickets |
-| 🔴 Priorities | Low / Medium / High / Urgent via `/priority` or button |
+| 🙋 Claim System | Staff can claim and unclaim tickets — renames channel and updates topic |
+| 🔴 Priorities | Low / Medium / High / Urgent via `/priority` — shown in channel topic |
 | 📝 Staff Notes | Private notes via `/note add` / `/note list` |
 | 🔀 Move Ticket | Move to a different type/category via `/move` or button (staff only) |
 | 🛡️ Type-specific Staff Roles | Each ticket type can define its own staff roles |
+| 🖼️ Panel Banner | Optional banner image in the ticket panel, configurable in config |
 | ⭐ Rating System | 1–5 star feedback after closing, automatically posted to a configured channel |
 | ⏰ Staff Reminder | Automatic ping inside the ticket if no staff responds within X hours |
 | ⏰ Auto-Close | Automatically close inactive tickets with a configurable warning period |
-| 📄 HTML Transcript | Full, beautifully styled HTML transcript as a local file attachment |
+| 📄 HTML Transcript | Full, beautifully styled HTML transcript sent to log channel and creator via DM |
 | 📊 Statistics | Server-wide stats and detailed per-user stats via `/stats` |
 | 🚫 Blacklist | `/blacklist add/remove/list` to block users from opening tickets |
 | 🌍 Multilingual | German and English included, easily extensible |
@@ -34,6 +35,8 @@ discord_ticketbot/
 ├── package.json
 ├── .env.example                # Environment variable template
 ├── ticketbot.service           # systemd unit file for Linux servers
+├── assets/                     # Static files (panel banner image, etc.)
+│   └── banner.png              # Example banner (place your own here)
 ├── config/
 │   └── config.example.jsonc    # Configuration template (with comments)
 ├── locales/
@@ -59,7 +62,7 @@ discord_ticketbot/
     │   ├── move.js             # /move       – Move ticket
     │   ├── rename.js           # /rename     – Rename channel
     │   ├── transcript.js       # /transcript – HTML transcript
-    │   ├── priority.js         # /priority   – Set priority
+    │   ├── priority.js         # /priority   – Set priority (updates topic)
     │   ├── note.js             # /note       – Staff notes
     │   ├── blacklist.js        # /blacklist  – Block users
     │   └── stats.js            # /stats      – Statistics (server & user)
@@ -87,7 +90,7 @@ discord_ticketbot/
         ├── logger.js           # Coloured console logger
         ├── embeds.js           # All embed constructors
         ├── transcript.js       # HTML transcript generator
-        └── ticketActions.js    # Core logic: openTicket, performClose, performMove
+        └── ticketActions.js    # Core logic: openTicket, performClose, performMove, updateChannelTopic
 ```
 
 ---
@@ -211,14 +214,14 @@ sudo journalctl -u ticketbot.service -f
 |---|---|---|
 | `/setup` | Administrator | Send the ticket panel |
 | `/close [reason]` | Configurable | Close the current ticket |
-| `/claim` | Staff | Claim a ticket |
-| `/unclaim` | Staff | Release a claimed ticket |
+| `/claim` | Staff | Claim a ticket (renames channel + updates topic) |
+| `/unclaim` | Staff | Release a claimed ticket (restores name + updates topic) |
 | `/move` | Staff | Move ticket to a different type/category |
 | `/add <user>` | Staff | Add a user to the ticket |
 | `/remove <user>` | Staff | Remove a user from the ticket |
 | `/rename <n>` | Staff | Rename the ticket channel |
 | `/transcript` | Staff | Generate an HTML transcript |
-| `/priority <level>` | Staff | Set ticket priority |
+| `/priority <level>` | Staff | Set ticket priority (updates channel topic) |
 | `/note add <text>` | Staff | Add a staff note |
 | `/note list` | Staff | List all notes for this ticket |
 | `/stats` | Staff | Server-wide ticket statistics |
@@ -235,14 +238,40 @@ Every ticket channel contains a button row at the top:
 
 | Button | Visible when | Description |
 |---|---|---|
-| 🔒 Close Ticket | Always (configurable) | Opens reason modal or closes directly |
-| 🙋 Claim | `claimButton: true` | Staff claims the ticket |
+| 🔒 Close Ticket | Always (configurable) | Disables all buttons, generates transcript, closes ticket |
+| 🙋 Claim | `claimButton: true` | Staff claims the ticket, renames channel + updates topic |
 | 🔀 Move | More than 1 ticket type | Staff opens type selection (staff only) |
 | 🗑️ Delete Ticket | After closing | Deletes the channel after confirmation |
 
 ---
 
 ## 🛠️ Configuration Reference
+
+### Panel Banner
+
+An optional image can be shown at the bottom of the ticket panel embed.
+
+```jsonc
+"panel": {
+  "banner": {
+    "enabled": true,        // Set to true to show the banner
+    "file": "banner.png"    // Filename inside the assets/ folder
+  }
+}
+```
+
+Place the image file (PNG, JPG, GIF or WEBP) in the `assets/` folder, then run `/setup` again to apply. If the file is not found, the bot logs a warning and sends the panel without the banner.
+
+### Priority & Channel Topic
+
+`/priority` no longer renames the channel — it updates the **channel topic** instead, which has no rate-limit. The topic is also updated automatically when a ticket is claimed or unclaimed.
+
+| State | Channel Name | Channel Topic |
+|---|---|---|
+| Ticket opened | `ticket-username` | `🟡 Mittel` |
+| `/priority urgent` | `ticket-username` | `🔴 Dringend` |
+| `/claim` | `✔️ ticket-username` | `🟡 Mittel \| 🙋 Claimed by @Staff` |
+| `/unclaim` | `ticket-username` | `🟡 Mittel` |
 
 ### Ticket Types
 
@@ -254,7 +283,7 @@ Every ticket channel contains a button row at the top:
   "emoji": "💡",
   "color": "#ff0000",             // Hex color or "" to use mainColor
   "categoryId": "123456789",      // Discord category ID
-  "ticketNameOption": "",         // Channel name: USERNAME, USERID, TICKETCOUNT
+  "ticketNameOption": "",         // Channel name template: USERNAME, USERID, TICKETCOUNT
   "customDescription": "...",     // Variables: REASON1, REASON2, USERNAME, USERID
   "cantAccess": ["roleId"],       // Roles that cannot access this type
   "staffRoles": [],               // Type-specific staff roles (see below)
@@ -270,35 +299,21 @@ Every ticket channel contains a button row at the top:
 }
 ```
 
+**Note on `TICKETCOUNT`:** This is a global sequential counter across all tickets on the server — it never resets, even if tickets are closed. Each new ticket always gets a higher number than the previous one regardless of type or user.
+
 ### Type-specific Staff Roles (`staffRoles`)
 
 Each ticket type can define its own staff roles, controlling who can see, manage and claim the ticket.
 
 ```jsonc
 // Only developers can see "Bug Report" tickets:
-{
-  "codeName": "bugreport",
-  "staffRoles": ["ROLE_ID_DEVELOPER"]
-}
-
-// Only partner managers can see "Partnership" tickets:
-{
-  "codeName": "partner",
-  "staffRoles": ["ROLE_ID_PARTNER_MANAGER"]
-}
+{ "codeName": "bugreport", "staffRoles": ["ROLE_ID_DEVELOPER"] }
 
 // Leave empty → global rolesWhoHaveAccessToTheTickets are used:
-{
-  "codeName": "support",
-  "staffRoles": []
-}
+{ "codeName": "support", "staffRoles": [] }
 ```
 
-**Behaviour:**
-- If `staffRoles` is set and non-empty → only those roles have access to the channel
-- If `staffRoles` is empty or missing → the global `rolesWhoHaveAccessToTheTickets` are used
-- When moving a ticket (`/move`), permissions are automatically updated to match the new type
-- On ticket open, type-specific roles are pinged instead of the global `roleToPingWhenOpenedId`
+When moving a ticket (`/move`), permissions are automatically updated to match the new type. On ticket open, type-specific roles are pinged instead of the global `roleToPingWhenOpenedId`.
 
 ### Moving Tickets (`/move` & Button)
 
@@ -314,7 +329,7 @@ When more than one ticket type is configured, a **🔀 Move** button appears aut
 }
 ```
 
-The bot checks all open tickets every **15 minutes**. Once a ticket has had no activity for `afterHours` hours and no reminder has been sent yet, it posts a message in the ticket channel. Each ticket is only reminded **once** — no spam.
+The bot checks all open tickets every **15 minutes**. Each ticket is only reminded **once** — no spam.
 
 ### Rating System
 
@@ -322,11 +337,11 @@ The bot checks all open tickets every **15 minutes**. Once a ticket has had no a
 "ratingSystem": {
   "enabled": true,
   "dmUser": true,
-  "ratingsChannelId": "CHANNEL_ID_HERE"
+  "ratingsChannelId": "CHANNEL_ID_HERE"   // Channel where ratings are posted automatically
 }
 ```
 
-After closing, the ticket creator receives a 1–5 ⭐ rating request (via DM or in the ticket channel). Once they rate, the result is automatically posted to `ratingsChannelId`.
+After closing, the ticket creator receives a 1–5 ⭐ rating request via DM. Once they rate, the result is automatically posted to `ratingsChannelId`.
 
 ### Auto-Close
 
@@ -341,11 +356,7 @@ After closing, the ticket creator receives a 1–5 ⭐ rating request (via DM or
 
 ### Statistics
 
-`/stats` shows server-wide numbers. `/stats @user` shows a detailed profile:
-
-**👤 As a User** — Tickets opened, most used type, average rating given
-
-**🛡️ As Staff** *(only shown if applicable)* — Tickets closed & claimed, average rating received
+`/stats` shows server-wide numbers. `/stats @user` shows a detailed profile split into two sections — **👤 As a User** (tickets opened, favourite type, average rating given) and **🛡️ As Staff** (tickets closed & claimed, average rating received — only shown if applicable).
 
 ---
 

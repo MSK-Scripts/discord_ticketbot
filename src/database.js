@@ -68,7 +68,6 @@ function initDatabase() {
     );
   `);
 
-  // Migration: add staff_reminded_at to existing databases that predate this column
   const cols = db.pragma('table_info(tickets)').map(c => c.name);
   if (!cols.includes('staff_reminded_at')) {
     db.exec('ALTER TABLE tickets ADD COLUMN staff_reminded_at INTEGER');
@@ -85,6 +84,16 @@ function createTicket({ channelId, guildId, creatorId, type }) {
     INSERT INTO tickets (channel_id, guild_id, creator_id, type, last_activity, created_at)
     VALUES (?, ?, ?, ?, ?, ?)
   `).run(channelId, guildId, creatorId, type, now, now);
+}
+
+/**
+ * Returns the total number of tickets ever created on this guild.
+ * Used as a sequential TICKETCOUNT that never resets.
+ * @param {string} guildId
+ * @returns {number}
+ */
+function getTotalTicketCount(guildId) {
+  return db.prepare('SELECT COUNT(*) as c FROM tickets WHERE guild_id = ?').get(guildId).c;
 }
 
 function getTicketByChannel(channelId) {
@@ -185,37 +194,28 @@ function getUserStats(userId, guildId) {
   const opened = db.prepare(
     "SELECT COUNT(*) as c FROM tickets WHERE creator_id = ? AND guild_id = ?"
   ).get(userId, guildId).c;
-
   const openNow = db.prepare(
     "SELECT COUNT(*) as c FROM tickets WHERE creator_id = ? AND guild_id = ? AND status = 'open'"
   ).get(userId, guildId).c;
-
   const closedAsCreator = db.prepare(
     "SELECT COUNT(*) as c FROM tickets WHERE creator_id = ? AND guild_id = ? AND status = 'closed'"
   ).get(userId, guildId).c;
-
   const ratingsGiven = db.prepare(`
     SELECT AVG(r.rating) as avg, COUNT(*) as count FROM ratings r
-    JOIN tickets t ON r.ticket_id = t.id
-    WHERE r.user_id = ? AND t.guild_id = ?
+    JOIN tickets t ON r.ticket_id = t.id WHERE r.user_id = ? AND t.guild_id = ?
   `).get(userId, guildId);
-
   const favoriteType = db.prepare(`
     SELECT type, COUNT(*) as count FROM tickets
     WHERE creator_id = ? AND guild_id = ?
     GROUP BY type ORDER BY count DESC LIMIT 1
   `).get(userId, guildId);
-
   const closedAsStaff = db.prepare(
     "SELECT COUNT(*) as c FROM tickets WHERE closed_by = ? AND guild_id = ?"
   ).get(userId, guildId).c;
-
   const staffRating = db.prepare(`
     SELECT AVG(r.rating) as avg, COUNT(*) as count FROM ratings r
-    JOIN tickets t ON r.ticket_id = t.id
-    WHERE t.closed_by = ? AND t.guild_id = ?
+    JOIN tickets t ON r.ticket_id = t.id WHERE t.closed_by = ? AND t.guild_id = ?
   `).get(userId, guildId);
-
   const claimed = db.prepare(
     "SELECT COUNT(*) as c FROM tickets WHERE claimed_by = ? AND guild_id = ?"
   ).get(userId, guildId).c;
@@ -237,15 +237,12 @@ function addToBlacklist({ userId, guildId, reason, addedBy }) {
     VALUES (?, ?, ?, ?, ?)
   `).run(userId, guildId, reason ?? null, addedBy, Date.now());
 }
-
 function removeFromBlacklist(userId) {
   return db.prepare('DELETE FROM blacklist WHERE user_id = ?').run(userId);
 }
-
 function isBlacklisted(userId, guildId) {
   return !!db.prepare('SELECT 1 FROM blacklist WHERE user_id = ? AND guild_id = ?').get(userId, guildId);
 }
-
 function getBlacklist(guildId) {
   return db.prepare('SELECT * FROM blacklist WHERE guild_id = ? ORDER BY added_at DESC').all(guildId);
 }
@@ -258,7 +255,6 @@ function addNote(ticketId, authorId, content) {
     VALUES (?, ?, ?, ?)
   `).run(ticketId, authorId, content, Date.now());
 }
-
 function getNotes(ticketId) {
   return db.prepare('SELECT * FROM staff_notes WHERE ticket_id = ? ORDER BY created_at ASC').all(ticketId);
 }
@@ -271,14 +267,13 @@ function addRating(ticketId, userId, rating, comment) {
     VALUES (?, ?, ?, ?, ?)
   `).run(ticketId, userId, rating, comment ?? null, Date.now());
 }
-
 function getRating(ticketId) {
   return db.prepare('SELECT * FROM ratings WHERE ticket_id = ?').get(ticketId);
 }
 
 module.exports = {
   initDatabase,
-  createTicket, getTicketByChannel, getTicketById,
+  createTicket, getTotalTicketCount, getTicketByChannel, getTicketById,
   getOpenTicketsByUser, closeTicket, claimTicket, unclaimTicket,
   setPriority, setType, updateLastActivity, setStaffReminded,
   getInactiveTickets, getTicketsNeedingStaffReminder,

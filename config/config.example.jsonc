@@ -1,38 +1,43 @@
 {
   // ─── Bot Appearance ──────────────────────────────────────────────────────────
-  "mainColor": "#5eb131",          // Default embed color (hex)
-  "lang": "de",                    // "de" oder "en"
+  "mainColor": "#5eb131",
+  "lang": "en",                    // "de" or "en"
 
   // ─── Ticket Panel ────────────────────────────────────────────────────────────
-  // The channel where /setup will post the "Open a Ticket" message
   "openTicketChannelId": "CHANNEL_ID_HERE",
 
+  // ─── Panel Settings ───────────────────────────────────────────────────────────
+  "panel": {
+    "banner": {
+      "enabled": false,             // Set to true to show a banner image in the panel
+      "file": "banner.png"          // Filename inside the assets/ folder
+    }
+  },
+
   // ─── Ticket Types ────────────────────────────────────────────────────────────
-  // Up to 25 types (Discord's select menu limit)
   "ticketTypes": [
     {
       "codeName": "support",
       "name": "Support",
-      "description": "If you have questions or need help with our scripts",
+      "description": "Fragen oder Probleme mit unseren Scripts",
       "emoji": "💡",
-      "color": "",                   // Hex color or "" to use mainColor
-      "categoryId": "CATEGORY_ID_HERE", // Category where tickets of this type are created
-      "ticketNameOption": "",        // USERNAME, USERID, TICKETCOUNT oder "" für Standard
-      "customDescription": "An team member will get back to you as soon as possible!",
-      "cantAccess": [],              // Rollen-IDs ohne Zugriff auf diesen Typ
-      "staffRoles": [],              // Typ-spezifische Staff-Rollen (überschreibt globale rolesWhoHaveAccessToTheTickets)
-                                     // Leer lassen um die globalen Rollen zu verwenden
+      "color": "",
+      "categoryId": "CATEGORY_ID_HERE",
+      "ticketNameOption": "",
+      "customDescription": "Ein Teammitglied wird sich so schnell wie möglich melden!\n\n**Script:** REASON1\n**Problem:** REASON2",
+      "cantAccess": [],
+      "staffRoles": [],
       "askQuestions": true,
       "questions": [
         {
           "label": "Scriptname",
-          "placeholder": "Please enter the Scriptname",
-          "style": "SHORT",          // SHORT oder PARAGRAPH
+          "placeholder": "Bitte Scriptname eingeben",
+          "style": "SHORT",
           "maxLength": 50
         },
         {
-          "label": "Problem Description",
-          "placeholder": "Please describe the problem in detail",
+          "label": "Problembeschreibung",
+          "placeholder": "Bitte das Problem ausführlich beschreiben",
           "style": "PARAGRAPH",
           "maxLength": 500
         }
@@ -41,7 +46,7 @@
     {
       "codeName": "custom",
       "name": "Custom Order",
-      "description": "You want a Custom Script?",
+      "description": "Du möchtest ein individuelles Script?",
       "emoji": "⌨️",
       "color": "",
       "categoryId": "CATEGORY_ID_HERE",
@@ -54,19 +59,16 @@
     }
   ],
 
-  // Default ticket channel name template (USERNAME, USERID, TICKETCOUNT)
   "ticketNameOption": "ticket-USERNAME",
 
   // ─── Claim Options ───────────────────────────────────────────────────────────
   "claimOption": {
     "claimButton": true,
-    // Name after claiming: S_ = staff, U_ = user (USERNAME, USERID, TICKETCOUNT)
     "nameWhenClaimed": "✔️ ticket-U_USERNAME",
-    "categoryWhenClaimed": "" // Category ID where the ticket will be moved when claimed, leave blank to not move
+    "categoryWhenClaimed": ""
   },
 
   // ─── Access Control ──────────────────────────────────────────────────────────
-  // Globale Staff-Rollen — werden verwendet wenn ein Ticket-Typ kein "staffRoles" definiert
   "rolesWhoHaveAccessToTheTickets": [
     "ROLE_ID_TEAM",
     "ROLE_ID_SUPPORT"
@@ -75,7 +77,6 @@
 
   // ─── Ping on Open ────────────────────────────────────────────────────────────
   "pingRoleWhenOpened": true,
-  // Fallback-Ping-Rollen wenn der Ticket-Typ kein staffRoles definiert
   "roleToPingWhenOpenedId": ["ROLE_ID_TEAM"],
 
   // ─── Logging ─────────────────────────────────────────────────────────────────
@@ -85,45 +86,44 @@
   // ─── Close Options ───────────────────────────────────────────────────────────
   "closeOption": {
     "closeButton": true,
-    "dmUser": true,             // DM the user when ticket is closed
-    "createTranscript": true,   // Attach HTML transcript to the log message
+    "dmUser": true,
+    "createTranscript": true,
     "askReason": true,
-    "whoCanCloseTicket": "EVERYONE", // "EVERYONE" oder "STAFFONLY"
-    "closeTicketCategoryId": "" // Move closed tickets here, or ""
+    "whoCanCloseTicket": "EVERYONE",
+    "closeTicketCategoryId": ""
   },
 
   // ─── Rating System ───────────────────────────────────────────────────────────
   "ratingSystem": {
-    "enabled": true,      // Ask user to rate support after ticket closes
-    "dmUser": true,       // Send rating request via DM
-    "ratingsChannelId": "RATINGS_CHANNEL_ID_HERE" // Channel where ratings are posted publicly
+    "enabled": true,
+    "dmUser": true,
+    "ratingsChannelId": "RATINGS_CHANNEL_ID_HERE"
   },
 
   // ─── Staff Reminder ───────────────────────────────────────────────────────────
   "staffReminder": {
     "enabled": true,
-    "afterHours": 4,    // Erinnerung nach X Stunden ohne Nachricht
-    "pingRoles": true   // Ob die Staff-Rollen des Ticket-Typs gepingt werden
+    "afterHours": 4,
+    "pingRoles": true
   },
 
   // ─── Auto-Close ──────────────────────────────────────────────────────────────
   "autoClose": {
     "enabled": false,
-    "inactiveHours": 48,            // Close ticket after this many hours without a message
-    "warnBeforeHours": 6,           // Warn in the channel X hours before auto-close
-    "excludeClaimed": true          // Don't auto-close claimed tickets
+    "inactiveHours": 48,
+    "warnBeforeHours": 6,
+    "excludeClaimed": true
   },
 
   // ─── Limits ──────────────────────────────────────────────────────────────────
-  // The number of tickets the user can open while another one is already open.
-  "maxTicketOpened": 2,            // 0 = unlimited
+  "maxTicketOpened": 2,
 
   // ─── Bot Status ──────────────────────────────────────────────────────────────
   "status": {
     "enabled": true,
     "text": "Support Tickets",
-    "type": "WATCHING",            // PLAYING, WATCHING, LISTENING, STREAMING, COMPETING
-    "url": "",                     // Nur für STREAMING
-    "status": "online"             // online, idle, dnd, invisible
+    "type": "WATCHING",
+    "url": "",
+    "status": "online"
   }
 }

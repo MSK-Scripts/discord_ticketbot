@@ -3,8 +3,11 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  AttachmentBuilder,
   PermissionFlagsBits,
 } = require('discord.js');
+const path = require('path');
+const fs   = require('fs');
 const { panelEmbed } = require('../utils/embeds');
 
 module.exports = {
@@ -26,7 +29,22 @@ module.exports = {
     }
 
     const embed = panelEmbed(client);
+    const files = [];
 
+    // ── Optional banner image ──────────────────────────────────────────────
+    const bannerCfg = client.config.panel?.banner;
+    if (bannerCfg?.enabled && bannerCfg?.file) {
+      const bannerPath = path.resolve(__dirname, '../../../assets', bannerCfg.file);
+      if (fs.existsSync(bannerPath)) {
+        const attachment = new AttachmentBuilder(bannerPath, { name: bannerCfg.file });
+        embed.setImage(`attachment://${bannerCfg.file}`);
+        files.push(attachment);
+      } else {
+        client.logger.warn(`[Setup] Banner file not found: ${bannerPath}`);
+      }
+    }
+
+    // ── Always use a single button ─────────────────────────────────────────
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId('tb_open')
@@ -36,7 +54,7 @@ module.exports = {
     );
 
     try {
-      await channel.send({ embeds: [embed], components: [row] });
+      await channel.send({ embeds: [embed], components: [row], files });
       await interaction.editReply(`✅ Ticket-Panel wurde in <#${channel.id}> gesendet.`);
     } catch (err) {
       client.logger.error('[Setup] Failed to send panel:', err);

@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel } = require('../database');
 
-const RENAME_WARNING = '\n> ⚠️ *Der Kanalname wird gleich aktualisiert – Discord limitiert Umbenennungen, das kann einen Moment dauern.*';
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('rename')
@@ -30,9 +28,10 @@ module.exports = {
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
 
-    // Reply immediately — rename happens in background
+    // Reply first — setName can be slow due to Discord rate-limits (2/10min per channel)
     await interaction.reply(
-      client.t('messages.ticketRenamed', { name: newName }) + RENAME_WARNING
+      client.t('messages.ticketRenamed', { name: newName }) +
+      '\n> ⚠️ *Discord limitiert Umbenennungen auf 2 pro 10 Minuten – der neue Name erscheint in Kürze.*'
     );
 
     await interaction.channel.setName(newName).catch(err => {

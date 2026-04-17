@@ -14,6 +14,9 @@ const {
 const { isBlacklisted, getOpenTicketsByUser } = require('../../database');
 const { openTicket } = require('../../utils/ticketActions');
 
+// How long (ms) the "ticket created" confirmation stays visible before auto-delete
+const SUCCESS_DELETE_DELAY = 10_000;
+
 module.exports = {
   customId: 'tb_open',
 
@@ -37,8 +40,6 @@ module.exports = {
     }
 
     // ── Multiple types → ephemeral select menu ────────────────────────────────
-    // Sending the menu as an ephemeral reply means Discord creates a fresh
-    // interaction every time — the previously selected value is never cached.
     if (cfg.ticketTypes.length > 1) {
       const options = cfg.ticketTypes.map(t =>
         new StringSelectMenuOptionBuilder()
@@ -63,10 +64,12 @@ module.exports = {
     // ── Single type ───────────────────────────────────────────────────────────
     const ticketType = cfg.ticketTypes[0];
 
+    // Has questions → show modal (the panel button interaction is consumed by the modal)
     if (ticketType.askQuestions && ticketType.questions?.length > 0) {
       return interaction.showModal(buildQuestionsModal(ticketType));
     }
 
+    // No questions → open directly, show success for 10s then delete
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const channel = await openTicket(client, interaction.guild, user, ticketType, []);
@@ -75,6 +78,7 @@ module.exports = {
     }
 
     await interaction.editReply(client.t('messages.ticketCreated', { channel: `<#${channel.id}>` }));
+    setTimeout(() => interaction.deleteReply().catch(() => null), SUCCESS_DELETE_DELAY);
   },
 };
 

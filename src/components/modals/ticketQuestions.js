@@ -1,6 +1,15 @@
+/**
+ * Modal: tb_modalQuestions (prefix match, e.g. tb_modalQuestions:support)
+ * Submitted when the user fills in the ticket-type question modal.
+ *
+ * After successful ticket creation the ephemeral confirmation is shown for
+ * 10 seconds and then automatically deleted.
+ */
 const { MessageFlags } = require('discord.js');
 const { isBlacklisted, getOpenTicketsByUser } = require('../../database');
 const { openTicket } = require('../../utils/ticketActions');
+
+const SUCCESS_DELETE_DELAY = 10_000;
 
 module.exports = {
   customId: 'tb_modalQuestions',
@@ -20,6 +29,7 @@ module.exports = {
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
+    // Re-check limits in case user opened another ticket while filling the form
     if (isBlacklisted(interaction.user.id, interaction.guildId)) {
       return interaction.editReply(client.t('messages.blacklisted'));
     }
@@ -39,6 +49,8 @@ module.exports = {
       return interaction.editReply('❌ Ticket konnte nicht erstellt werden. Bitte versuche es erneut.');
     }
 
+    // Show success for 10 seconds, then auto-delete
     await interaction.editReply(client.t('messages.ticketCreated', { channel: `<#${channel.id}>` }));
+    setTimeout(() => interaction.deleteReply().catch(() => null), SUCCESS_DELETE_DELAY);
   },
 };
