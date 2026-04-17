@@ -119,9 +119,9 @@ cp .env.example .env
 
 `.env` ausfüllen:
 ```env
-TOKEN=dein_bot_token
-CLIENT_ID=deine_application_id
-GUILD_ID=deine_server_id
+TOKEN="dein_bot_token"
+CLIENT_ID="deine_application_id"
+GUILD_ID="deine_server_id"
 ```
 
 ### 3. Konfiguration einrichten
