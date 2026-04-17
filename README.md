@@ -1,3 +1,5 @@
+<img width="2064" height="512" alt="Discord Ticket Bot Banner" src="https://github.com/user-attachments/assets/dce0dcf6-513d-4586-9a90-04be4658f087" />
+
 # 🎫 Discord Ticket Bot
 
 A modern, self-hosted Discord ticket bot built on **Discord.js v14** and **SQLite** — no external database, no telemetry, full feature set out of the box.
