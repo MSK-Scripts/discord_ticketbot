@@ -12,7 +12,7 @@ A modern, self-hosted Discord ticket bot built on **Discord.js v14** and **SQLit
 |---|---|
 | 🎫 Ticket Types | Up to 25 configurable types with individual emoji, color, category & questions |
 | 📋 Questionnaires | Modal forms (up to 5 questions) shown when opening a ticket |
-| 🙋 Claim System | Staff can claim and unclaim tickets — renames channel and updates topic |
+| 🙋 Claim System | Staff can claim and unclaim tickets — shown in channel topic |
 | 🔴 Priorities | Low / Medium / High / Urgent via `/priority` — shown in channel topic |
 | 📝 Staff Notes | Private notes via `/note add` / `/note list` |
 | 🔀 Move Ticket | Move to a different type/category via `/move` or button (staff only) |
@@ -77,6 +77,7 @@ discord_ticketbot/
     │   │   ├── openTicket.js       # tb_open
     │   │   ├── closeTicket.js      # tb_close
     │   │   ├── claimTicket.js      # tb_claim
+    │   │   ├── unclaimTicket.js    # tb_claim
     │   │   ├── moveTicket.js       # tb_move       (opens type selection)
     │   │   ├── deleteTicket.js     # tb_delete     (confirmation step)
     │   │   ├── deleteConfirm.js    # tb_deleteConfirm

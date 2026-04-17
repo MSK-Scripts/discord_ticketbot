@@ -1,3 +1,5 @@
+<img width="2064" height="512" alt="Discord Ticket Bot Banner" src="https://github.com/user-attachments/assets/dce0dcf6-513d-4586-9a90-04be4658f087" />
+
 # 🎫 Discord Ticket Bot
 
 Ein moderner, selbst-gehosteter Discord-Ticket-Bot auf Basis von **Discord.js v14** und **SQLite** — ohne externe Datenbank, ohne Telemetrie, mit vollem Feature-Umfang.
@@ -10,7 +12,7 @@ Ein moderner, selbst-gehosteter Discord-Ticket-Bot auf Basis von **Discord.js v1
 |---|---|
 | 🎫 Ticket-Typen | Bis zu 25 konfigurierbare Typen mit eigenem Emoji, Farbe, Kategorie & Fragen |
 | 📋 Fragebögen | Modale Formulare (bis zu 5 Fragen) bei Ticket-Erstellung |
-| 🙋 Claim-System | Staff kann Tickets beanspruchen & freigeben — benennt Kanal um und aktualisiert Topic |
+| 🙋 Claim-System | Staff kann Tickets beanspruchen & freigeben — wird im Channel-Topic angezeigt |
 | 🔴 Prioritäten | Low / Medium / High / Urgent per `/priority` — wird im Channel-Topic angezeigt |
 | 📝 Staff-Notizen | Private Notizen per `/note add` / `/note list` |
 | 🔀 Ticket verschieben | Per `/move` oder Button in einen anderen Typ/Kategorie verschieben (Staff only) |
@@ -75,6 +77,7 @@ discord_ticketbot/
     │   │   ├── openTicket.js       # tb_open
     │   │   ├── closeTicket.js      # tb_close
     │   │   ├── claimTicket.js      # tb_claim
+    │   │   ├── unclaimTicket.js    # tb_claim
     │   │   ├── moveTicket.js       # tb_move       (öffnet Typ-Auswahl)
     │   │   ├── deleteTicket.js     # tb_delete     (Bestätigungsschritt)
     │   │   ├── deleteConfirm.js    # tb_deleteConfirm
