@@ -1,8 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel, unclaimTicket } = require('../database');
-const { updateChannelTopic } = require('../utils/ticketActions');
-
-const RENAME_WARNING = '\n> ⚠️ *Der Kanalname wird gleich aktualisiert – Discord limitiert Umbenennungen, das kann einen Moment dauern.*';
+const { updateChannelTopic, refreshTicketButtons } = require('../utils/ticketActions');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -23,27 +21,18 @@ module.exports = {
 
     unclaimTicket(interaction.channelId);
 
-    // Reply immediately — rename + topic update happen in background
     await interaction.reply(
-      client.t('messages.ticketUnclaimed', { user: `<@${interaction.user.id}>` }) + RENAME_WARNING
+      client.t('messages.ticketUnclaimed', { user: `<@${interaction.user.id}>` })
     );
 
-    // Update topic (no rate-limit)
-    await updateChannelTopic(interaction.channel, ticket, { claimedBy: null }, client);
+    // Guarantee non-null channel for topic + button updates
+    const channel = interaction.channel
+      ?? await client.channels.fetch(interaction.channelId).catch(() => null);
 
-    // Restore original channel name (rate-limited, runs in background)
-    const creator  = await interaction.guild.members.fetch(ticket.creator_id).catch(() => null);
-    const nameOpt  = client.config.ticketNameOption ?? 'ticket-USERNAME';
-    const origName = nameOpt
-      .replace(/USERNAME/g,    creator?.user.username ?? 'unknown')
-      .replace(/USERID/g,      ticket.creator_id)
-      .replace(/TICKETCOUNT/g, String(ticket.id))
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '-')
-      .replace(/-+/g, '-')
-      .substring(0, 100);
-    await interaction.channel.setName(origName).catch(err =>
-      client.logger.warn(`[Unclaim] Could not rename channel: ${err.message}`)
-    );
+    if (channel) {
+      // Update topic and toggle Unclaim → Claim button
+      await updateChannelTopic(channel, ticket, { claimedBy: null }, client);
+      await refreshTicketButtons(channel, false, client);
+    }
   },
 };

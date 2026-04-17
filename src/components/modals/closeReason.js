@@ -1,3 +1,7 @@
+/**
+ * Modal: tb_modalClose
+ * Submitted when the user fills in the close-reason modal.
+ */
 const { MessageFlags } = require('discord.js');
 const { getTicketByChannel } = require('../../database');
 const { performClose } = require('../../utils/ticketActions');
@@ -13,13 +17,20 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), flags: MessageFlags.Ephemeral });
     }
 
-    // Acknowledge the modal and show warning — performClose will disable all
-    // buttons as its very first step, so no further interactions are possible.
+    // interaction.channel can be null for modal submissions if the channel
+    // is not cached — always fetch to guarantee a valid channel object.
+    const channel = interaction.channel
+      ?? await client.channels.fetch(interaction.channelId).catch(() => null);
+
+    if (!channel) {
+      return interaction.reply({ content: '❌ Kanal nicht gefunden.', flags: MessageFlags.Ephemeral });
+    }
+
     await interaction.reply({
       content: '⏳ **Das Ticket wird geschlossen.** Bitte warte einen Moment, das Transcript wird erstellt...',
       flags: MessageFlags.Ephemeral,
     });
 
-    await performClose(client, interaction.channel, ticket, interaction.user, reason);
+    await performClose(client, channel, ticket, interaction.user, reason);
   },
 };

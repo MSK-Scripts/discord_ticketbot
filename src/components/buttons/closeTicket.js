@@ -1,3 +1,7 @@
+/**
+ * Button: tb_close
+ * Shows a reason modal (if configured) or closes the ticket immediately.
+ */
 const {
   ModalBuilder, TextInputBuilder, TextInputStyle,
   ActionRowBuilder, MessageFlags,
@@ -24,7 +28,7 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 
-    // Show reason modal if configured — the modal submit handler will show the warning
+    // Show reason modal if configured — the modal submit handler will handle the close
     if (cfg.askReason) {
       const modal = new ModalBuilder()
         .setCustomId('tb_modalClose')
@@ -45,12 +49,19 @@ module.exports = {
       return interaction.showModal(modal);
     }
 
-    // No reason modal — reply immediately with warning, then close
+    // No reason modal — fetch channel to guarantee non-null, reply then close
+    const channel = interaction.channel
+      ?? await client.channels.fetch(interaction.channelId).catch(() => null);
+
+    if (!channel) {
+      return interaction.reply({ content: '❌ Kanal nicht gefunden.', flags: MessageFlags.Ephemeral });
+    }
+
     await interaction.reply({
       content: '⏳ **Das Ticket wird geschlossen.** Bitte warte einen Moment, das Transcript wird erstellt...',
       flags: MessageFlags.Ephemeral,
     });
 
-    await performClose(client, interaction.channel, ticket, interaction.user, null);
+    await performClose(client, channel, ticket, interaction.user, null);
   },
 };

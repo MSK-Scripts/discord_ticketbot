@@ -22,6 +22,15 @@ module.exports = {
     if (!client.isStaff(interaction.member)) {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
+
+    // Guarantee non-null channel — required for setTopic
+    const channel = interaction.channel
+      ?? await client.channels.fetch(interaction.channelId).catch(() => null);
+
+    if (!channel) {
+      return interaction.reply({ content: '❌ Kanal nicht gefunden.', flags: MessageFlags.Ephemeral });
+    }
+
     const ticket = getTicketByChannel(interaction.channelId);
     if (!ticket) {
       return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
@@ -37,9 +46,12 @@ module.exports = {
 
     setPriority(interaction.channelId, priority);
 
-    // Reply immediately, then update topic (no rate-limit)
     const label = client.t(`priorities.${priority}`);
+
+    // Reply first, then update topic (setTopic has no rate-limit)
     await interaction.reply(client.t('messages.priorityChanged', { priority: label }));
-    await updateChannelTopic(interaction.channel, ticket, { priority }, client);
+
+    // Pass the current claimed_by from DB so the topic stays accurate
+    await updateChannelTopic(channel, ticket, { priority, claimedBy: ticket.claimed_by ?? null }, client);
   },
 };

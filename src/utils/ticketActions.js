@@ -40,31 +40,121 @@ const PRIORITY_LABEL = {
 
 /**
  * Build and set the channel topic to reflect the current ticket state.
- * Format: "🟠 Hoch | 🙋 Claimed by @username"  or just  "🟡 Mittel"
- *
- * This has NO rate-limit (unlike channel rename) so it can be called freely.
+ * No rate-limit unlike channel rename.
  *
  * @param {import('discord.js').TextChannel} channel
- * @param {object}  ticket     DB row (may be stale — pass fresh data via overrides)
- * @param {object}  [overrides]  { priority?, claimedBy? } — values to use instead of DB row
+ * @param {object}  ticket     DB row
+ * @param {object}  overrides  { priority?, claimedBy? }  — explicit overrides
  * @param {import('../client').TicketClient} client
  */
 async function updateChannelTopic(channel, ticket, overrides = {}, client) {
   const priority  = overrides.priority  ?? ticket.priority  ?? 'medium';
   const claimedBy = overrides.claimedBy !== undefined
-    ? overrides.claimedBy   // null means explicitly unclaimed
+    ? overrides.claimedBy
     : ticket.claimed_by;
 
-  const priorityLabel = client?.t(`priorities.${priority}`) ?? `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]}`;
+  const priorityLabel = client?.t(`priorities.${priority}`)
+    ?? `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]}`;
 
   let topic = priorityLabel;
-  if (claimedBy) {
-    topic += ` | 🙋 Claimed by <@${claimedBy}>`;
+  if (claimedBy) topic += ` | 🙋 Claimed by <@${claimedBy}>`;
+
+  await channel.setTopic(topic).catch(err =>
+    client?.logger?.warn(`[Topic] Could not set topic: ${err.message}`)
+  );
+}
+
+// ─── Ticket Button Row ────────────────────────────────────────────────────────
+
+/**
+ * Build the action row shown in every open ticket.
+ * When the ticket is claimed the Claim button is replaced by an Unclaim button.
+ *
+ * @param {import('../client').TicketClient} client
+ * @param {boolean} [isClaimed=false]
+ * @returns {ActionRowBuilder}
+ */
+function buildTicketButtons(client, isClaimed = false) {
+  const cfg     = client.config;
+  const buttons = [];
+
+  if (cfg.closeOption?.closeButton !== false) {
+    buttons.push(
+      new ButtonBuilder()
+        .setCustomId('tb_close')
+        .setLabel(client.t('buttons.close'))
+        .setEmoji(client.t('buttons.closeEmoji'))
+        .setStyle(ButtonStyle.Danger)
+    );
   }
 
-  await channel.setTopic(topic).catch(err => {
-    client?.logger?.warn(`[Topic] Could not set topic: ${err.message}`);
-  });
+  if (cfg.claimOption?.claimButton) {
+    if (isClaimed) {
+      // Show Unclaim when the ticket is already claimed
+      buttons.push(
+        new ButtonBuilder()
+          .setCustomId('tb_unclaim')
+          .setLabel(client.t('buttons.unclaim'))
+          .setEmoji(client.t('buttons.unclaimEmoji'))
+          .setStyle(ButtonStyle.Secondary)
+      );
+    } else {
+      buttons.push(
+        new ButtonBuilder()
+          .setCustomId('tb_claim')
+          .setLabel(client.t('buttons.claim'))
+          .setEmoji(client.t('buttons.claimEmoji'))
+          .setStyle(ButtonStyle.Success)
+      );
+    }
+  }
+
+  if (cfg.ticketTypes?.length > 1) {
+    buttons.push(
+      new ButtonBuilder()
+        .setCustomId('tb_move')
+        .setLabel(client.t('buttons.move'))
+        .setEmoji(client.t('buttons.moveEmoji'))
+        .setStyle(ButtonStyle.Secondary)
+    );
+  }
+
+  return new ActionRowBuilder().addComponents(buttons);
+}
+
+/**
+ * Find the ticket opening message and update its button row to reflect
+ * the current claim state (Claim ↔ Unclaim toggle).
+ *
+ * The opening message is identified as the oldest bot message with a
+ * tb_close component — that combination is unique to the opening embed.
+ *
+ * @param {import('discord.js').TextChannel} channel
+ * @param {boolean} isClaimed
+ * @param {import('../client').TicketClient} client
+ */
+async function refreshTicketButtons(channel, isClaimed, client) {
+  try {
+    const messages = await channel.messages.fetch({ limit: 50 });
+
+    // Find the opening message: bot message containing the tb_close button
+    const openingMsg = messages.find(m =>
+      m.author.id === client.user.id &&
+      m.components.length > 0 &&
+      m.components[0].components.some(c =>
+        ['tb_close', 'tb_claim', 'tb_unclaim'].includes(c.customId)
+      )
+    );
+
+    if (!openingMsg) {
+      client.logger.warn('[refreshTicketButtons] Opening message not found.');
+      return;
+    }
+
+    await openingMsg.edit({ components: [buildTicketButtons(client, isClaimed)] });
+  } catch (err) {
+    client.logger.warn(`[refreshTicketButtons] ${err.message}`);
+  }
 }
 
 // ─── Open ─────────────────────────────────────────────────────────────────────
@@ -79,11 +169,7 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     if (open.length >= cfg.maxTicketOpened) return null;
   }
 
-  // ── TICKETCOUNT: global sequential counter across all guild tickets ────────
-  // We query the total BEFORE inserting so the count reflects "this is ticket N+1".
-  // Using the DB auto-increment id is more reliable than counting open tickets
-  // per user, which caused the bug where the counter reset after closing.
-  const totalCount = db.getTotalTicketCount(guild.id);
+  const totalCount  = db.getTotalTicketCount(guild.id);
   const ticketNumber = totalCount + 1;
 
   const nameTpl     = ticketType.ticketNameOption || cfg.ticketNameOption || 'ticket-USERNAME';
@@ -94,9 +180,9 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, '-')
     .replace(/-+/g, '-')
-    .substring(0, 100);
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 100) || 'ticket';
 
-  // ── Permission overwrites ─────────────────────────────────────────────────
   const overwrites = [
     { id: guild.roles.everyone, deny: [PermissionFlagsBits.ViewChannel] },
     {
@@ -128,7 +214,6 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     overwrites.push({ id: roleId, deny: [PermissionFlagsBits.ViewChannel] });
   }
 
-  // ── Create channel ────────────────────────────────────────────────────────
   let channel;
   try {
     channel = await guild.channels.create({
@@ -145,11 +230,12 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
   db.createTicket({ channelId: channel.id, guildId: guild.id, creatorId: user.id, type: ticketType.codeName });
   const ticket = db.getTicketByChannel(channel.id);
 
-  // ── Set initial channel topic (priority = medium, not claimed) ────────────
+  // Set initial topic (medium priority, not claimed)
   await updateChannelTopic(channel, ticket, {}, client);
 
   const embed   = ticketOpenedEmbed(client, { user, ticketType, priority: 'medium', count: ticket.id, answers });
-  const buttons = buildTicketButtons(client);
+  // New ticket is never claimed — show Claim button
+  const buttons = buildTicketButtons(client, false);
 
   let pingContent = '';
   if (cfg.pingRoleWhenOpened) {
@@ -171,16 +257,16 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
 async function performClose(client, channel, ticket, closer, reason) {
   const cfg = client.config.closeOption ?? {};
 
-  // ── 1. Disable all ticket buttons immediately ─────────────────────────────
+  // 1. Disable all ticket buttons immediately
   try {
-    const recent = await channel.messages.fetch({ limit: 20 });
+    const recent      = await channel.messages.fetch({ limit: 20 });
     const withButtons = recent.filter(
       m => m.author.id === client.user.id && m.components.length > 0
     );
     await Promise.all(withButtons.map(m => m.edit({ components: [] }).catch(() => null)));
   } catch { /* ignore */ }
 
-  // ── 2. Generate transcript ────────────────────────────────────────────────
+  // 2. Generate transcript
   let transcriptHtml = null;
   let transcriptFile = null;
 
@@ -196,11 +282,11 @@ async function performClose(client, channel, ticket, closer, reason) {
     }
   }
 
-  // ── 3. Update DB ──────────────────────────────────────────────────────────
+  // 3. Update DB
   db.closeTicket(channel.id, closer.id, reason, transcriptHtml);
   const updatedTicket = db.getTicketByChannel(channel.id);
 
-  // ── 4. Post closed embed + delete button ──────────────────────────────────
+  // 4. Post closed embed + delete button
   const deleteRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('tb_delete')
@@ -214,19 +300,19 @@ async function performClose(client, channel, ticket, closer, reason) {
     components: [deleteRow],
   }).catch(() => null);
 
-  // ── 5. Move to closed category ────────────────────────────────────────────
+  // 5. Move to closed category
   if (cfg.closeTicketCategoryId) {
     await channel.setParent(cfg.closeTicketCategoryId, { lockPermissions: false }).catch(() => null);
   }
 
-  // ── 6. Remove creator's view access ──────────────────────────────────────
+  // 6. Remove creator's view access
   await channel.permissionOverwrites.edit(ticket.creator_id, {
     ViewChannel: false, SendMessages: false,
   }).catch(() => null);
 
   const duration = updatedTicket.closed_at - updatedTicket.created_at;
 
-  // ── 7. Send to log channel ────────────────────────────────────────────────
+  // 7. Send to log channel
   if (client.config.logs && client.config.logsChannelId) {
     const logChannel = await channel.guild.channels.fetch(client.config.logsChannelId).catch(() => null);
     if (logChannel) {
@@ -239,7 +325,7 @@ async function performClose(client, channel, ticket, closer, reason) {
     }
   }
 
-  // ── 8. DM the ticket creator ──────────────────────────────────────────────
+  // 8. DM the ticket creator
   if (cfg.dmUser) {
     try {
       const creator   = await channel.guild.members.fetch(ticket.creator_id);
@@ -250,7 +336,10 @@ async function performClose(client, channel, ticket, closer, reason) {
       };
       if (transcriptHtml) {
         dmPayload.files = [
-          new AttachmentBuilder(Buffer.from(transcriptHtml, 'utf-8'), { name: `ticket-${ticket.id}.html` }),
+          new AttachmentBuilder(
+            Buffer.from(transcriptHtml, 'utf-8'),
+            { name: `ticket-${ticket.id}.html` }
+          ),
         ];
       }
       await creator.user.send(dmPayload);
@@ -260,7 +349,7 @@ async function performClose(client, channel, ticket, closer, reason) {
     }
   }
 
-  // ── 9. Rating request ─────────────────────────────────────────────────────
+  // 9. Rating request
   const ratingCfg = client.config.ratingSystem;
   if (ratingCfg?.enabled) {
     const ratingRow   = buildRatingRow();
@@ -330,41 +419,6 @@ async function performMove(client, channel, ticket, newType, movedBy) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function buildTicketButtons(client) {
-  const cfg     = client.config;
-  const buttons = [];
-
-  if (cfg.closeOption?.closeButton !== false) {
-    buttons.push(
-      new ButtonBuilder()
-        .setCustomId('tb_close')
-        .setLabel(client.t('buttons.close'))
-        .setEmoji(client.t('buttons.closeEmoji'))
-        .setStyle(ButtonStyle.Danger)
-    );
-  }
-  if (cfg.claimOption?.claimButton) {
-    buttons.push(
-      new ButtonBuilder()
-        .setCustomId('tb_claim')
-        .setLabel(client.t('buttons.claim'))
-        .setEmoji(client.t('buttons.claimEmoji'))
-        .setStyle(ButtonStyle.Success)
-    );
-  }
-  if (cfg.ticketTypes?.length > 1) {
-    buttons.push(
-      new ButtonBuilder()
-        .setCustomId('tb_move')
-        .setLabel(client.t('buttons.move'))
-        .setEmoji(client.t('buttons.moveEmoji'))
-        .setStyle(ButtonStyle.Secondary)
-    );
-  }
-
-  return new ActionRowBuilder().addComponents(buttons);
-}
-
 function buildRatingRow() {
   return new ActionRowBuilder().addComponents(
     [1, 2, 3, 4, 5].map(n =>
@@ -388,6 +442,11 @@ function getEffectiveStaffRoles(ticketType, cfg) {
 }
 
 module.exports = {
-  openTicket, performClose, performMove,
-  buildTicketButtons, getEffectiveStaffRoles, updateChannelTopic,
+  openTicket,
+  performClose,
+  performMove,
+  buildTicketButtons,
+  refreshTicketButtons,
+  updateChannelTopic,
+  getEffectiveStaffRoles,
 };

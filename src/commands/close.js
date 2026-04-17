@@ -24,14 +24,21 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 
+    // Guarantee a non-null channel object
+    const channel = interaction.channel
+      ?? await client.channels.fetch(interaction.channelId).catch(() => null);
+
+    if (!channel) {
+      return interaction.reply({ content: '❌ Kanal nicht gefunden.', flags: MessageFlags.Ephemeral });
+    }
+
     const reason = interaction.options.getString('grund') ?? null;
 
-    // Reply immediately with warning before the slow close process starts
     await interaction.reply({
       content: '⏳ **Das Ticket wird geschlossen.** Bitte warte einen Moment, das Transcript wird erstellt...',
       flags: MessageFlags.Ephemeral,
     });
 
-    await performClose(client, interaction.channel, ticket, interaction.user, reason);
+    await performClose(client, channel, ticket, interaction.user, reason);
   },
 };

@@ -3,9 +3,9 @@
  * Shown when multiple ticket types are configured.
  *
  * After selection:
- *  - Has questions → show modal (select menu message stays until user dismisses)
- *  - No questions  → deferUpdate (keeps the message), open ticket, transform message
- *                    into success notice, then auto-delete after 10 seconds
+ *  - Has questions → showModal(), then immediately delete the select-menu message
+ *  - No questions  → deferUpdate(), open ticket, transform message into success
+ *                    notice, auto-delete after 10 seconds
  */
 const { MessageFlags } = require('discord.js');
 const { isBlacklisted, getOpenTicketsByUser } = require('../../database');
@@ -52,25 +52,30 @@ module.exports = {
       }
     }
 
-    // ── Has questions → show modal ────────────────────────────────────────────
-    // The select-menu message is consumed by showing the modal (Discord limitation:
-    // a component interaction can only be acknowledged once). The select-menu message
-    // will disappear once the user submits the modal and receives the success reply.
+    // ── Has questions → show modal then delete the select-menu message ────────
+    // After showModal(), the interaction token remains valid for 15 minutes so
+    // we can still call deleteReply() to remove the "Bitte wähle eine Kategorie"
+    // ephemeral message that was sent by the tb_open button handler.
     if (ticketType.askQuestions && ticketType.questions?.length > 0) {
-      return interaction.showModal(buildQuestionsModal(ticketType));
+      await interaction.showModal(buildQuestionsModal(ticketType));
+      // Delete the select-menu message — it's no longer needed
+      await interaction.deleteReply().catch(() => null);
+      return;
     }
 
     // ── No questions → open ticket directly ───────────────────────────────────
-    // deferUpdate keeps the existing ephemeral message visible (no new message).
-    // We then transform that same message into the success notice and delete it.
+    // deferUpdate keeps the existing ephemeral message, then we transform it
+    // into the success notice and auto-delete it after 10 seconds.
     await interaction.deferUpdate();
 
     const channel = await openTicket(client, interaction.guild, user, ticketType, []);
     if (!channel) {
-      return interaction.editReply({ content: '❌ Ticket konnte nicht erstellt werden. Bitte versuche es erneut.', components: [] });
+      return interaction.editReply({
+        content: '❌ Ticket konnte nicht erstellt werden. Bitte versuche es erneut.',
+        components: [],
+      });
     }
 
-    // Replace the select menu with the success message, then auto-delete after 10s
     await interaction.editReply({
       content:    client.t('messages.ticketCreated', { channel: `<#${channel.id}>` }),
       components: [],
