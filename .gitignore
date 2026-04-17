@@ -16,7 +16,10 @@ config/config.jsonc
 locales/main.json
 
 # Assets
-assets/*
+assets/*.png
+assets/*.jpeg
+assets/*.svg
+assets/*.giv
 
 # Logs
 *.log
