@@ -21,15 +21,15 @@ const {
   ratingRequestEmbed,
 } = require('./embeds');
 
-// Priority emoji used in channel topics
 const PRIORITY_EMOJI = { low: '🟢', medium: '🟡', high: '🟠', urgent: '🔴' };
 const PRIORITY_LABEL = { low: 'Niedrig', medium: 'Mittel', high: 'Hoch', urgent: 'Dringend' };
 
 // ─── Channel Topic ────────────────────────────────────────────────────────────
 
 /**
- * Build and set the channel topic (rate-limited: 2 per 10 min per channel).
- * Always fire without await in callers and pair with TOPIC_WARNING.
+ * Build and set the channel topic.
+ * Rate-limited: 2 per 10 min per channel (same bucket as setName/setParent).
+ * Always call fire-and-forget in callers and pair with TOPIC_WARNING.
  */
 async function updateChannelTopic(channel, ticket, overrides = {}, client) {
   const priority  = overrides.priority  ?? ticket.priority  ?? 'medium';
@@ -52,13 +52,9 @@ async function updateChannelTopic(channel, ticket, overrides = {}, client) {
  * Find the ticket opening message and update BOTH the embed (priority + claimed)
  * and the button row (Claim ↔ Unclaim toggle) in a single edit.
  *
- * The opening message is identified by being a bot message that has:
- *   - at least one embed
- *   - a component row containing tb_close, tb_claim, or tb_unclaim
- *
  * @param {import('discord.js').TextChannel} channel
- * @param {boolean} isClaimed   Whether the ticket is currently claimed
- * @param {object}  ticket      DB row (may be stale — use overrides for new values)
+ * @param {boolean} isClaimed
+ * @param {object}  ticket      DB row (may be stale)
  * @param {object}  overrides   { priority?, claimedBy? }
  * @param {import('../client').TicketClient} client
  */
@@ -82,33 +78,24 @@ async function refreshTicketMessage(channel, isClaimed, ticket, overrides = {}, 
     const priority  = overrides.priority  ?? ticket.priority  ?? 'medium';
     const claimedBy = overrides.claimedBy !== undefined ? overrides.claimedBy : ticket.claimed_by;
 
-    // ── Update embed ────────────────────────────────────────────────────────
     const oldEmbed      = openingMsg.embeds[0];
     const priorityLabel = client.t(`priorities.${priority}`);
 
-    // Extract the localized priority key from the locale template
-    // e.g. "**Priority:** {priority}" → key = "Priority"
-    //      "**Priorität:** {priority}" → key = "Priorität"
+    // Extract the localized priority key ("Priority" or "Priorität") from the locale template
     const descTemplate = client.locale?.embeds?.ticketOpened?.description ?? '';
     const keyMatch     = descTemplate.match(/\*\*(.+?):\*\* \{priority\}/);
     const priorityKey  = keyMatch ? keyMatch[1] : 'Priority';
 
-    // Replace the priority value in the description (matches any emoji-prefixed value)
     const newDescription = (oldEmbed?.description ?? '').replace(
       new RegExp(`\\*\\*${priorityKey}:\\*\\* .+`),
       `**${priorityKey}:** ${priorityLabel}`
     );
 
-    // Keep original question fields, remove stale "Claimed by" field, re-add if claimed
     const CLAIM_FIELD = '🙋 Claimed by';
     const fields      = (oldEmbed?.fields ?? []).filter(f => f.name !== CLAIM_FIELD);
     if (claimedBy) fields.push({ name: CLAIM_FIELD, value: `<@${claimedBy}>`, inline: true });
 
-    const newEmbed = EmbedBuilder.from(oldEmbed)
-      .setDescription(newDescription)
-      .setFields(fields);
-
-    // ── Update buttons ───────────────────────────────────────────────────────
+    const newEmbed   = EmbedBuilder.from(oldEmbed).setDescription(newDescription).setFields(fields);
     const newButtons = buildTicketButtons(client, isClaimed);
 
     await openingMsg.edit({ embeds: [newEmbed], components: [newButtons] });
@@ -120,7 +107,8 @@ async function refreshTicketMessage(channel, isClaimed, ticket, overrides = {}, 
 // ─── Ticket Button Row ────────────────────────────────────────────────────────
 
 /**
- * Build the action row shown in every open ticket.
+ * Build the action row for an open ticket.
+ * When isClaimed = true, the Claim button is replaced by Unclaim.
  * @param {import('../client').TicketClient} client
  * @param {boolean} [isClaimed=false]
  */
@@ -244,8 +232,8 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
   db.createTicket({ channelId: channel.id, guildId: guild.id, creatorId: user.id, type: ticketType.codeName });
   const ticket = db.getTicketByChannel(channel.id);
 
-  // Set initial topic (medium priority, not claimed)
-  updateChannelTopic(channel, ticket, {}, client); // fire-and-forget intentional
+  // Set initial topic — fire-and-forget (rate-limited bucket)
+  updateChannelTopic(channel, ticket, {}, client);
 
   const embed   = ticketOpenedEmbed(client, { user, ticketType, priority: 'medium', count: ticket.id, answers });
   const buttons = buildTicketButtons(client, false);
@@ -311,9 +299,14 @@ async function performClose(client, channel, ticket, closer, reason) {
     components: [deleteRow],
   }).catch(() => null);
 
-  // 5. Move to closed category
+  // 5. Move to closed category — FIRE-AND-FORGET.
+  // setParent shares the PATCH /channels/{id} rate-limit bucket with setTopic/setName
+  // (2 per 10 min per channel). Awaiting it would block steps 6–9 if the bucket is
+  // exhausted, delaying permissions cleanup, log entry, and DM to the user.
   if (cfg.closeTicketCategoryId) {
-    await channel.setParent(cfg.closeTicketCategoryId, { lockPermissions: false }).catch(() => null);
+    channel.setParent(cfg.closeTicketCategoryId, { lockPermissions: false }).catch(err =>
+      client.logger.warn(`[performClose] setParent failed: ${err.message}`)
+    );
   }
 
   // 6. Remove creator's view access
@@ -386,11 +379,28 @@ async function performClose(client, channel, ticket, closer, reason) {
 
 // ─── Move ─────────────────────────────────────────────────────────────────────
 
+/**
+ * Move a ticket to a different type/category.
+ * @param {import('../client').TicketClient} client
+ * @param {import('discord.js').TextChannel} channel  Must be non-null (callers must ensure this)
+ * @param {object} ticket
+ * @param {object} newType
+ * @param {import('discord.js').User} movedBy
+ */
 async function performMove(client, channel, ticket, newType, movedBy) {
+  // Guard against null channel (callers should always pass a valid channel)
+  if (!channel) {
+    client.logger.error('[performMove] channel is null — cannot move ticket.');
+    return;
+  }
+
   db.setType(channel.id, newType.codeName);
 
+  // setParent: fire-and-forget — shares the rate-limited PATCH bucket
   if (newType.categoryId) {
-    await channel.setParent(newType.categoryId, { lockPermissions: false }).catch(() => null);
+    channel.setParent(newType.categoryId, { lockPermissions: false }).catch(err =>
+      client.logger.warn(`[performMove] setParent failed: ${err.message}`)
+    );
   }
 
   const cfg      = client.config;
@@ -408,7 +418,7 @@ async function performMove(client, channel, ticket, newType, movedBy) {
   for (const roleId of newStaffRoles) {
     await channel.permissionOverwrites.edit(roleId, {
       ViewChannel: true, SendMessages: true, ReadMessageHistory: true,
-      AttachFiles: true, EmbedLinks: true, ManageMessages: true,
+      AttachFiles: true, EmbedLinks:   true, ManageMessages:     true,
     }).catch(() => null);
   }
   for (const roleId of oldType?.cantAccess ?? []) {
