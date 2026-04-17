@@ -15,6 +15,9 @@ config/config.jsonc
 # Locales (contains translations)
 locales/main.json
 
+# Assets
+assets/*
+
 # Logs
 *.log
 

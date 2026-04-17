@@ -17,7 +17,8 @@
   "embeds": {
     "panel": {
       "title": "Support Ticket",
-      "description": "Click the button below to open a ticket.\nA team member will assist you as soon as possible."
+      "description": "Click the button below to open a ticket.\nA team member will assist you as soon as possible.",
+      "footer": "Copyright MSK Scripts"
     },
     "ticketOpened": {
       "title": "Ticket Opened",

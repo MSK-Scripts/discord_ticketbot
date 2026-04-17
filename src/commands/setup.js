@@ -31,10 +31,23 @@ module.exports = {
     const embed = panelEmbed(client);
     const files = [];
 
+    // ── Optional logo image ──────────────────────────────────────────────
+    const logoCfg = client.config.panel?.logo;
+    if (logoCfg?.enabled && logoCfg?.file) {
+      const logoPath = path.resolve(__dirname, '../../assets', logoCfg.file);
+      if (fs.existsSync(logoPath)) {
+        const attachment = new AttachmentBuilder(logoPath, { name: logoCfg.file });
+        embed.setThumbnail(`attachment://${logoCfg.file}`);
+        files.push(attachment);
+      } else {
+        client.logger.warn(`[Setup] Logo file not found: ${logoPath}`);
+      }
+    }
+
     // ── Optional banner image ──────────────────────────────────────────────
     const bannerCfg = client.config.panel?.banner;
     if (bannerCfg?.enabled && bannerCfg?.file) {
-      const bannerPath = path.resolve(__dirname, '../../../assets', bannerCfg.file);
+      const bannerPath = path.resolve(__dirname, '../../assets', bannerCfg.file);
       if (fs.existsSync(bannerPath)) {
         const attachment = new AttachmentBuilder(bannerPath, { name: bannerCfg.file });
         embed.setImage(`attachment://${bannerCfg.file}`);

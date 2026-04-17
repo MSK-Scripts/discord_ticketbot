@@ -8,9 +8,13 @@
 
   // ─── Panel Settings ───────────────────────────────────────────────────────────
   "panel": {
-    "banner": {
+    "logo": {
       "enabled": false,             // Set to true to show a banner image in the panel
-      "file": "banner.png"          // Filename inside the assets/ folder
+      "file": "logo.png"            // Filename inside the assets/ folder
+    },
+    "banner": {
+      "enabled": false,            // Set to true to show a banner image in the panel
+      "file": "banner.png"         // Filename inside the assets/ folder
     }
   },
 

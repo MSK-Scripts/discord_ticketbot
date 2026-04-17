@@ -24,6 +24,10 @@ function panelEmbed(client) {
     .setTitle(client.t('embeds.panel.title'))
     .setDescription(client.t('embeds.panel.description'))
     .setColor(parseColor(client.config.mainColor))
+    .setFooter({
+      text: `${client.t('embeds.panel.footer')}`,
+      iconURL: null
+    })
     .setTimestamp();
 }
 
