@@ -26,11 +26,6 @@ const PRIORITY_LABEL = { low: 'Niedrig', medium: 'Mittel', high: 'Hoch', urgent:
 
 // ─── Channel Topic ────────────────────────────────────────────────────────────
 
-/**
- * Build and set the channel topic.
- * Rate-limited: 2 per 10 min per channel (same bucket as setName/setParent).
- * Always call fire-and-forget in callers and pair with TOPIC_WARNING.
- */
 async function updateChannelTopic(channel, ticket, overrides = {}, client) {
   const priority  = overrides.priority  ?? ticket.priority  ?? 'medium';
   const claimedBy = overrides.claimedBy !== undefined ? overrides.claimedBy : ticket.claimed_by;
@@ -48,16 +43,6 @@ async function updateChannelTopic(channel, ticket, overrides = {}, client) {
 
 // ─── Opening Message Refresh ──────────────────────────────────────────────────
 
-/**
- * Find the ticket opening message and update BOTH the embed (priority + claimed)
- * and the button row (Claim ↔ Unclaim toggle) in a single edit.
- *
- * @param {import('discord.js').TextChannel} channel
- * @param {boolean} isClaimed
- * @param {object}  ticket      DB row (may be stale)
- * @param {object}  overrides   { priority?, claimedBy? }
- * @param {import('../client').TicketClient} client
- */
 async function refreshTicketMessage(channel, isClaimed, ticket, overrides = {}, client) {
   try {
     const messages   = await channel.messages.fetch({ limit: 50 });
@@ -81,7 +66,6 @@ async function refreshTicketMessage(channel, isClaimed, ticket, overrides = {}, 
     const oldEmbed      = openingMsg.embeds[0];
     const priorityLabel = client.t(`priorities.${priority}`);
 
-    // Extract the localized priority key ("Priority" or "Priorität") from the locale template
     const descTemplate = client.locale?.embeds?.ticketOpened?.description ?? '';
     const keyMatch     = descTemplate.match(/\*\*(.+?):\*\* \{priority\}/);
     const priorityKey  = keyMatch ? keyMatch[1] : 'Priority';
@@ -106,12 +90,6 @@ async function refreshTicketMessage(channel, isClaimed, ticket, overrides = {}, 
 
 // ─── Ticket Button Row ────────────────────────────────────────────────────────
 
-/**
- * Build the action row for an open ticket.
- * When isClaimed = true, the Claim button is replaced by Unclaim.
- * @param {import('../client').TicketClient} client
- * @param {boolean} [isClaimed=false]
- */
 function buildTicketButtons(client, isClaimed = false) {
   const cfg     = client.config;
   const buttons = [];
@@ -232,8 +210,7 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
   db.createTicket({ channelId: channel.id, guildId: guild.id, creatorId: user.id, type: ticketType.codeName });
   const ticket = db.getTicketByChannel(channel.id);
 
-  // Set initial topic — fire-and-forget (rate-limited bucket)
-  updateChannelTopic(channel, ticket, {}, client);
+  updateChannelTopic(channel, ticket, {}, client); // fire-and-forget
 
   const embed   = ticketOpenedEmbed(client, { user, ticketType, priority: 'medium', count: ticket.id, answers });
   const buttons = buildTicketButtons(client, false);
@@ -299,24 +276,14 @@ async function performClose(client, channel, ticket, closer, reason) {
     components: [deleteRow],
   }).catch(() => null);
 
-  // 5. Move to closed category — FIRE-AND-FORGET.
-  // setParent shares the PATCH /channels/{id} rate-limit bucket with setTopic/setName
-  // (2 per 10 min per channel). Awaiting it would block steps 6–9 if the bucket is
-  // exhausted, delaying permissions cleanup, log entry, and DM to the user.
-  if (cfg.closeTicketCategoryId) {
-    channel.setParent(cfg.closeTicketCategoryId, { lockPermissions: false }).catch(err =>
-      client.logger.warn(`[performClose] setParent failed: ${err.message}`)
-    );
-  }
-
-  // 6. Remove creator's view access
+  // 5. Remove creator's view access
   await channel.permissionOverwrites.edit(ticket.creator_id, {
     ViewChannel: false, SendMessages: false,
   }).catch(() => null);
 
   const duration = updatedTicket.closed_at - updatedTicket.created_at;
 
-  // 7. Send to log channel
+  // 6. Send to log channel
   if (client.config.logs && client.config.logsChannelId) {
     const logChannel = await channel.guild.channels.fetch(client.config.logsChannelId).catch(() => null);
     if (logChannel) {
@@ -329,7 +296,7 @@ async function performClose(client, channel, ticket, closer, reason) {
     }
   }
 
-  // 8. DM the ticket creator
+  // 7. DM the ticket creator
   if (cfg.dmUser) {
     try {
       const creator   = await channel.guild.members.fetch(ticket.creator_id);
@@ -353,7 +320,7 @@ async function performClose(client, channel, ticket, closer, reason) {
     }
   }
 
-  // 9. Rating request
+  // 8. Rating request
   const ratingCfg = client.config.ratingSystem;
   if (ratingCfg?.enabled) {
     const ratingRow   = buildRatingRow();
@@ -375,33 +342,34 @@ async function performClose(client, channel, ticket, closer, reason) {
       }).catch(() => null);
     }
   }
+
+  // 9. Move to closed category — awaited last so it never blocks steps 5–8
+  if (cfg.closeTicketCategoryId) {
+    await channel.setParent(cfg.closeTicketCategoryId, { lockPermissions: false }).catch(err =>
+      client.logger.warn(`[performClose] setParent failed: ${err.message}`)
+    );
+  }
+
+  // 10. Rename channel to "closed-..." — fire-and-forget (cosmetic, rate-limited bucket)
+  // Strip any leading priority emoji + separator, then prepend "closed-"
+  // e.g. "🔴-ticket-max" → "closed-ticket-max"
+  //      "ticket-max"    → "closed-ticket-max"
+  const baseName   = channel.name.replace(/^[🟢🟡🟠🔴]-?/, '');
+  const closedName = `closed-${baseName}`.substring(0, 100);
+  channel.setName(closedName).catch(err =>
+    client.logger.warn(`[performClose] setName failed: ${err.message}`)
+  );
 }
 
 // ─── Move ─────────────────────────────────────────────────────────────────────
 
-/**
- * Move a ticket to a different type/category.
- * @param {import('../client').TicketClient} client
- * @param {import('discord.js').TextChannel} channel  Must be non-null (callers must ensure this)
- * @param {object} ticket
- * @param {object} newType
- * @param {import('discord.js').User} movedBy
- */
 async function performMove(client, channel, ticket, newType, movedBy) {
-  // Guard against null channel (callers should always pass a valid channel)
   if (!channel) {
     client.logger.error('[performMove] channel is null — cannot move ticket.');
     return;
   }
 
   db.setType(channel.id, newType.codeName);
-
-  // setParent: fire-and-forget — shares the rate-limited PATCH bucket
-  if (newType.categoryId) {
-    channel.setParent(newType.categoryId, { lockPermissions: false }).catch(err =>
-      client.logger.warn(`[performMove] setParent failed: ${err.message}`)
-    );
-  }
 
   const cfg      = client.config;
   const allTypes = cfg.ticketTypes;
@@ -434,6 +402,12 @@ async function performMove(client, channel, ticket, newType, movedBy) {
       color: 0x5865f2,
     }],
   }).catch(() => null);
+
+  if (newType.categoryId) {
+    await channel.setParent(newType.categoryId, { lockPermissions: false }).catch(err =>
+      client.logger.warn(`[performMove] setParent failed: ${err.message}`)
+    );
+  }
 
   client.logger.info(`[Move] Ticket #${ticket.id} ${ticket.type} → ${newType.codeName} by ${movedBy.tag}`);
 }

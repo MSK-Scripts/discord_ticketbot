@@ -3,6 +3,8 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   AttachmentBuilder,
   PermissionFlagsBits,
 } = require('discord.js');
@@ -31,14 +33,13 @@ module.exports = {
     const embed = panelEmbed(client);
     const files = [];
 
-    // ── Optional logo image ──────────────────────────────────────────────
+    // ── Optional logo image ────────────────────────────────────────────────
     const logoCfg = client.config.panel?.logo;
     if (logoCfg?.enabled && logoCfg?.file) {
       const logoPath = path.resolve(__dirname, '../../assets', logoCfg.file);
       if (fs.existsSync(logoPath)) {
-        const attachment = new AttachmentBuilder(logoPath, { name: logoCfg.file });
+        files.push(new AttachmentBuilder(logoPath, { name: logoCfg.file }));
         embed.setThumbnail(`attachment://${logoCfg.file}`);
-        files.push(attachment);
       } else {
         client.logger.warn(`[Setup] Logo file not found: ${logoPath}`);
       }
@@ -49,22 +50,47 @@ module.exports = {
     if (bannerCfg?.enabled && bannerCfg?.file) {
       const bannerPath = path.resolve(__dirname, '../../assets', bannerCfg.file);
       if (fs.existsSync(bannerPath)) {
-        const attachment = new AttachmentBuilder(bannerPath, { name: bannerCfg.file });
+        files.push(new AttachmentBuilder(bannerPath, { name: bannerCfg.file }));
         embed.setImage(`attachment://${bannerCfg.file}`);
-        files.push(attachment);
       } else {
         client.logger.warn(`[Setup] Banner file not found: ${bannerPath}`);
       }
     }
 
-    // ── Always use a single button ─────────────────────────────────────────
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId('tb_open')
-        .setLabel(client.t('buttons.openTicket'))
-        .setEmoji('🎫')
-        .setStyle(ButtonStyle.Success)
-    );
+    // ── Interaction type ───────────────────────────────────────────────────
+    const interactionType = client.config.panel?.interactionType ?? 'BUTTON';
+    const types           = client.config.ticketTypes;
+
+    let row;
+
+    if (interactionType === 'SELECT_MENU' && types.length > 1) {
+      // Show the select menu directly in the panel — no button click needed.
+      // The handler (tb_panelSelect) resets the menu after every use so Discord
+      // never caches a previously selected value.
+      const options = types.map(t =>
+        new StringSelectMenuOptionBuilder()
+          .setLabel(t.name)
+          .setDescription(t.description?.substring(0, 100) ?? '')
+          .setValue(t.codeName)
+          .setEmoji(t.emoji || '🎫')
+      );
+
+      row = new ActionRowBuilder().addComponents(
+        new StringSelectMenuBuilder()
+          .setCustomId('tb_panelSelect')
+          .setPlaceholder(client.t('menus.ticketType'))
+          .addOptions(options)
+      );
+    } else {
+      // BUTTON mode (default): single green button opens ephemeral select or modal
+      row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId('tb_open')
+          .setLabel(client.t('buttons.openTicket'))
+          .setEmoji('🎫')
+          .setStyle(ButtonStyle.Success)
+      );
+    }
 
     try {
       await channel.send({ embeds: [embed], components: [row], files });

@@ -8,7 +8,8 @@
 
   // ─── Panel Settings ───────────────────────────────────────────────────────────
   "panel": {
-    "interactionType": "BUTTON",     // WIP -> "BUTTON" or "SELECT_MENU"
+    "interactionType": "BUTTON",     // "BUTTON"      → green button → ephemeral select menu
+                                     // "SELECT_MENU"  → select menu directly in panel (auto-resets after use)
     "logo": {
       "enabled": false,             // Set to true to show a banner image in the panel
       "file": "logo.png"            // Filename inside the assets/ folder
