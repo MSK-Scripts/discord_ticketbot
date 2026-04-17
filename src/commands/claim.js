@@ -1,6 +1,8 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel, claimTicket } = require('../database');
-const { updateChannelTopic, refreshTicketButtons } = require('../utils/ticketActions');
+const { updateChannelTopic, refreshTicketMessage } = require('../utils/ticketActions');
+
+const TOPIC_WARNING = '\n> ⚠️ *Das Channel-Topic wird gleich aktualisiert – Discord limitiert Topic-Änderungen auf 2 pro 10 Minuten, das kann einen Moment dauern.*';
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -27,20 +29,21 @@ module.exports = {
 
     claimTicket(interaction.channelId, interaction.user.id);
 
+    // Reply immediately with rate-limit warning
     await interaction.reply(
-      client.t('messages.ticketClaimed', { user: `<@${interaction.user.id}>` })
+      client.t('messages.ticketClaimed', { user: `<@${interaction.user.id}>` }) + TOPIC_WARNING
     );
 
-    // Guarantee non-null channel for topic + button updates
     const channel = interaction.channel
       ?? await client.channels.fetch(interaction.channelId).catch(() => null);
 
     if (channel) {
-      // Update topic and toggle Claim → Unclaim button
-      await updateChannelTopic(channel, ticket, { claimedBy: interaction.user.id }, client);
-      await refreshTicketButtons(channel, true, client);
+      // Update topic (fire-and-forget — rate-limited)
+      updateChannelTopic(channel, ticket, { claimedBy: interaction.user.id }, client);
 
-      // Move to claimed category if configured
+      // Update embed + buttons (no rate-limit)
+      await refreshTicketMessage(channel, true, ticket, { claimedBy: interaction.user.id }, client);
+
       const cfg = client.config.claimOption;
       if (cfg?.categoryWhenClaimed) {
         await channel.setParent(cfg.categoryWhenClaimed, { lockPermissions: false }).catch(() => null);

@@ -9,6 +9,7 @@ const {
   ButtonBuilder,
   ButtonStyle,
   AttachmentBuilder,
+  EmbedBuilder,
 } = require('discord.js');
 const db = require('../database');
 const { generateTranscript } = require('./transcript');
@@ -21,37 +22,18 @@ const {
 } = require('./embeds');
 
 // Priority emoji used in channel topics
-const PRIORITY_EMOJI = {
-  low:    '🟢',
-  medium: '🟡',
-  high:   '🟠',
-  urgent: '🔴',
-};
-
-// Priority labels (fallback if locale not available)
-const PRIORITY_LABEL = {
-  low:    'Niedrig',
-  medium: 'Mittel',
-  high:   'Hoch',
-  urgent: 'Dringend',
-};
+const PRIORITY_EMOJI = { low: '🟢', medium: '🟡', high: '🟠', urgent: '🔴' };
+const PRIORITY_LABEL = { low: 'Niedrig', medium: 'Mittel', high: 'Hoch', urgent: 'Dringend' };
 
 // ─── Channel Topic ────────────────────────────────────────────────────────────
 
 /**
- * Build and set the channel topic to reflect the current ticket state.
- * No rate-limit unlike channel rename.
- *
- * @param {import('discord.js').TextChannel} channel
- * @param {object}  ticket     DB row
- * @param {object}  overrides  { priority?, claimedBy? }  — explicit overrides
- * @param {import('../client').TicketClient} client
+ * Build and set the channel topic (rate-limited: 2 per 10 min per channel).
+ * Always fire without await in callers and pair with TOPIC_WARNING.
  */
 async function updateChannelTopic(channel, ticket, overrides = {}, client) {
   const priority  = overrides.priority  ?? ticket.priority  ?? 'medium';
-  const claimedBy = overrides.claimedBy !== undefined
-    ? overrides.claimedBy
-    : ticket.claimed_by;
+  const claimedBy = overrides.claimedBy !== undefined ? overrides.claimedBy : ticket.claimed_by;
 
   const priorityLabel = client?.t(`priorities.${priority}`)
     ?? `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]}`;
@@ -64,15 +46,83 @@ async function updateChannelTopic(channel, ticket, overrides = {}, client) {
   );
 }
 
+// ─── Opening Message Refresh ──────────────────────────────────────────────────
+
+/**
+ * Find the ticket opening message and update BOTH the embed (priority + claimed)
+ * and the button row (Claim ↔ Unclaim toggle) in a single edit.
+ *
+ * The opening message is identified by being a bot message that has:
+ *   - at least one embed
+ *   - a component row containing tb_close, tb_claim, or tb_unclaim
+ *
+ * @param {import('discord.js').TextChannel} channel
+ * @param {boolean} isClaimed   Whether the ticket is currently claimed
+ * @param {object}  ticket      DB row (may be stale — use overrides for new values)
+ * @param {object}  overrides   { priority?, claimedBy? }
+ * @param {import('../client').TicketClient} client
+ */
+async function refreshTicketMessage(channel, isClaimed, ticket, overrides = {}, client) {
+  try {
+    const messages   = await channel.messages.fetch({ limit: 50 });
+    const openingMsg = messages.find(m =>
+      m.author.id === client.user.id &&
+      m.embeds.length > 0 &&
+      m.components.length > 0 &&
+      m.components[0].components.some(c =>
+        ['tb_close', 'tb_claim', 'tb_unclaim'].includes(c.customId)
+      )
+    );
+
+    if (!openingMsg) {
+      client.logger.warn('[refreshTicketMessage] Opening message not found.');
+      return;
+    }
+
+    const priority  = overrides.priority  ?? ticket.priority  ?? 'medium';
+    const claimedBy = overrides.claimedBy !== undefined ? overrides.claimedBy : ticket.claimed_by;
+
+    // ── Update embed ────────────────────────────────────────────────────────
+    const oldEmbed      = openingMsg.embeds[0];
+    const priorityLabel = client.t(`priorities.${priority}`);
+
+    // Extract the localized priority key from the locale template
+    // e.g. "**Priority:** {priority}" → key = "Priority"
+    //      "**Priorität:** {priority}" → key = "Priorität"
+    const descTemplate = client.locale?.embeds?.ticketOpened?.description ?? '';
+    const keyMatch     = descTemplate.match(/\*\*(.+?):\*\* \{priority\}/);
+    const priorityKey  = keyMatch ? keyMatch[1] : 'Priority';
+
+    // Replace the priority value in the description (matches any emoji-prefixed value)
+    const newDescription = (oldEmbed?.description ?? '').replace(
+      new RegExp(`\\*\\*${priorityKey}:\\*\\* .+`),
+      `**${priorityKey}:** ${priorityLabel}`
+    );
+
+    // Keep original question fields, remove stale "Claimed by" field, re-add if claimed
+    const CLAIM_FIELD = '🙋 Claimed by';
+    const fields      = (oldEmbed?.fields ?? []).filter(f => f.name !== CLAIM_FIELD);
+    if (claimedBy) fields.push({ name: CLAIM_FIELD, value: `<@${claimedBy}>`, inline: true });
+
+    const newEmbed = EmbedBuilder.from(oldEmbed)
+      .setDescription(newDescription)
+      .setFields(fields);
+
+    // ── Update buttons ───────────────────────────────────────────────────────
+    const newButtons = buildTicketButtons(client, isClaimed);
+
+    await openingMsg.edit({ embeds: [newEmbed], components: [newButtons] });
+  } catch (err) {
+    client?.logger?.warn(`[refreshTicketMessage] ${err.message}`);
+  }
+}
+
 // ─── Ticket Button Row ────────────────────────────────────────────────────────
 
 /**
  * Build the action row shown in every open ticket.
- * When the ticket is claimed the Claim button is replaced by an Unclaim button.
- *
  * @param {import('../client').TicketClient} client
  * @param {boolean} [isClaimed=false]
- * @returns {ActionRowBuilder}
  */
 function buildTicketButtons(client, isClaimed = false) {
   const cfg     = client.config;
@@ -90,7 +140,6 @@ function buildTicketButtons(client, isClaimed = false) {
 
   if (cfg.claimOption?.claimButton) {
     if (isClaimed) {
-      // Show Unclaim when the ticket is already claimed
       buttons.push(
         new ButtonBuilder()
           .setCustomId('tb_unclaim')
@@ -122,41 +171,6 @@ function buildTicketButtons(client, isClaimed = false) {
   return new ActionRowBuilder().addComponents(buttons);
 }
 
-/**
- * Find the ticket opening message and update its button row to reflect
- * the current claim state (Claim ↔ Unclaim toggle).
- *
- * The opening message is identified as the oldest bot message with a
- * tb_close component — that combination is unique to the opening embed.
- *
- * @param {import('discord.js').TextChannel} channel
- * @param {boolean} isClaimed
- * @param {import('../client').TicketClient} client
- */
-async function refreshTicketButtons(channel, isClaimed, client) {
-  try {
-    const messages = await channel.messages.fetch({ limit: 50 });
-
-    // Find the opening message: bot message containing the tb_close button
-    const openingMsg = messages.find(m =>
-      m.author.id === client.user.id &&
-      m.components.length > 0 &&
-      m.components[0].components.some(c =>
-        ['tb_close', 'tb_claim', 'tb_unclaim'].includes(c.customId)
-      )
-    );
-
-    if (!openingMsg) {
-      client.logger.warn('[refreshTicketButtons] Opening message not found.');
-      return;
-    }
-
-    await openingMsg.edit({ components: [buildTicketButtons(client, isClaimed)] });
-  } catch (err) {
-    client.logger.warn(`[refreshTicketButtons] ${err.message}`);
-  }
-}
-
 // ─── Open ─────────────────────────────────────────────────────────────────────
 
 async function openTicket(client, guild, user, ticketType, answers = []) {
@@ -169,7 +183,7 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     if (open.length >= cfg.maxTicketOpened) return null;
   }
 
-  const totalCount  = db.getTotalTicketCount(guild.id);
+  const totalCount   = db.getTotalTicketCount(guild.id);
   const ticketNumber = totalCount + 1;
 
   const nameTpl     = ticketType.ticketNameOption || cfg.ticketNameOption || 'ticket-USERNAME';
@@ -231,10 +245,9 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
   const ticket = db.getTicketByChannel(channel.id);
 
   // Set initial topic (medium priority, not claimed)
-  await updateChannelTopic(channel, ticket, {}, client);
+  updateChannelTopic(channel, ticket, {}, client); // fire-and-forget intentional
 
   const embed   = ticketOpenedEmbed(client, { user, ticketType, priority: 'medium', count: ticket.id, answers });
-  // New ticket is never claimed — show Claim button
   const buttons = buildTicketButtons(client, false);
 
   let pingContent = '';
@@ -242,9 +255,7 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     const pingRoles = (ticketType.staffRoles?.length > 0)
       ? ticketType.staffRoles
       : (cfg.roleToPingWhenOpenedId ?? []);
-    if (pingRoles.length > 0) {
-      pingContent = pingRoles.map(id => `<@&${id}>`).join(' ');
-    }
+    if (pingRoles.length > 0) pingContent = pingRoles.map(id => `<@&${id}>`).join(' ');
   }
 
   await channel.send({ content: pingContent || undefined, embeds: [embed], components: [buttons] });
@@ -397,7 +408,7 @@ async function performMove(client, channel, ticket, newType, movedBy) {
   for (const roleId of newStaffRoles) {
     await channel.permissionOverwrites.edit(roleId, {
       ViewChannel: true, SendMessages: true, ReadMessageHistory: true,
-      AttachFiles: true, EmbedLinks:   true, ManageMessages:     true,
+      AttachFiles: true, EmbedLinks: true, ManageMessages: true,
     }).catch(() => null);
   }
   for (const roleId of oldType?.cantAccess ?? []) {
@@ -446,7 +457,7 @@ module.exports = {
   performClose,
   performMove,
   buildTicketButtons,
-  refreshTicketButtons,
+  refreshTicketMessage,
   updateChannelTopic,
   getEffectiveStaffRoles,
 };

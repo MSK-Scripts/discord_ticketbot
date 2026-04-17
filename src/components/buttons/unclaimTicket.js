@@ -1,11 +1,11 @@
 /**
  * Button: tb_unclaim
- * Releases the claim on the ticket — shown in place of the Claim button
- * once the ticket has been claimed.
  */
 const { MessageFlags } = require('discord.js');
 const { getTicketByChannel, unclaimTicket } = require('../../database');
-const { updateChannelTopic, refreshTicketButtons } = require('../../utils/ticketActions');
+const { updateChannelTopic, refreshTicketMessage } = require('../../utils/ticketActions');
+
+const TOPIC_WARNING = '\n> ⚠️ *Das Channel-Topic wird gleich aktualisiert – Discord limitiert Topic-Änderungen auf 2 pro 10 Minuten, das kann einen Moment dauern.*';
 
 module.exports = {
   customId: 'tb_unclaim',
@@ -27,17 +27,17 @@ module.exports = {
 
     unclaimTicket(interaction.channelId);
 
+    // Reply immediately with rate-limit warning
     await interaction.reply(
-      client.t('messages.ticketUnclaimed', { user: `<@${interaction.user.id}>` })
+      client.t('messages.ticketUnclaimed', { user: `<@${interaction.user.id}>` }) + TOPIC_WARNING
     );
 
-    // Guarantee non-null channel for topic + button updates
     const channel = interaction.channel
       ?? await client.channels.fetch(interaction.channelId).catch(() => null);
 
     if (channel) {
-      await updateChannelTopic(channel, ticket, { claimedBy: null }, client);
-      await refreshTicketButtons(channel, false, client);
+      updateChannelTopic(channel, ticket, { claimedBy: null }, client);
+      await refreshTicketMessage(channel, false, ticket, { claimedBy: null }, client);
     }
   },
 };

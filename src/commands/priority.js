@@ -1,6 +1,9 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel, setPriority } = require('../database');
-const { updateChannelTopic } = require('../utils/ticketActions');
+const { updateChannelTopic, refreshTicketMessage } = require('../utils/ticketActions');
+
+// setTopic is rate-limited: 2 changes per 10 minutes per channel (same as rename)
+const TOPIC_WARNING = '\n> ⚠️ *Das Channel-Topic wird gleich aktualisiert – Discord limitiert Topic-Änderungen auf 2 pro 10 Minuten, das kann einen Moment dauern.*';
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -23,7 +26,7 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 
-    // Guarantee non-null channel — required for setTopic
+    // Guarantee non-null channel
     const channel = interaction.channel
       ?? await client.channels.fetch(interaction.channelId).catch(() => null);
 
@@ -48,10 +51,21 @@ module.exports = {
 
     const label = client.t(`priorities.${priority}`);
 
-    // Reply first, then update topic (setTopic has no rate-limit)
-    await interaction.reply(client.t('messages.priorityChanged', { priority: label }));
+    // Reply immediately with rate-limit warning
+    await interaction.reply(
+      client.t('messages.priorityChanged', { priority: label }) + TOPIC_WARNING
+    );
 
-    // Pass the current claimed_by from DB so the topic stays accurate
-    await updateChannelTopic(channel, ticket, { priority, claimedBy: ticket.claimed_by ?? null }, client);
+    // Update channel topic (fire-and-forget — rate-limited, may be queued)
+    updateChannelTopic(channel, ticket, { priority, claimedBy: ticket.claimed_by ?? null }, client);
+
+    // Update opening embed priority + button row (no rate-limit)
+    await refreshTicketMessage(
+      channel,
+      !!ticket.claimed_by,
+      ticket,
+      { priority, claimedBy: ticket.claimed_by ?? null },
+      client
+    );
   },
 };
