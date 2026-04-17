@@ -12,16 +12,17 @@ A modern, self-hosted Discord ticket bot built on **Discord.js v14** and **SQLit
 |---|---|
 | 🎫 Ticket Types | Up to 25 configurable types with individual emoji, color, category & questions |
 | 📋 Questionnaires | Modal forms (up to 5 questions) shown when opening a ticket |
-| 🙋 Claim System | Staff can claim and unclaim tickets — shown in channel topic |
-| 🔴 Priorities | Low / Medium / High / Urgent via `/priority` — shown in channel topic |
+| 🙋 Claim System | Staff can claim/unclaim — button toggles, embed & topic update automatically |
+| 🔴 Priorities | Low / Medium / High / Urgent via `/priority` — shown in channel topic & embed |
 | 📝 Staff Notes | Private notes via `/note add` / `/note list` |
 | 🔀 Move Ticket | Move to a different type/category via `/move` or button (staff only) |
 | 🛡️ Type-specific Staff Roles | Each ticket type can define its own staff roles |
-| 🖼️ Panel Banner | Optional banner image in the ticket panel, configurable in config |
+| 🖼️ Panel Logo & Banner | Optional logo thumbnail and/or banner image in the panel embed |
+| 🎛️ Panel Interaction Type | Choose between a Button or a direct Select Menu in the panel |
 | ⭐ Rating System | 1–5 star feedback after closing, automatically posted to a configured channel |
 | ⏰ Staff Reminder | Automatic ping inside the ticket if no staff responds within X hours |
 | ⏰ Auto-Close | Automatically close inactive tickets with a configurable warning period |
-| 📄 HTML Transcript | Full, beautifully styled HTML transcript sent to log channel and creator via DM |
+| 📄 HTML Transcript | Full HTML transcript sent to log channel and creator via DM |
 | 📊 Statistics | Server-wide stats and detailed per-user stats via `/stats` |
 | 🚫 Blacklist | `/blacklist add/remove/list` to block users from opening tickets |
 | 🌍 Multilingual | German and English included, easily extensible |
@@ -37,8 +38,9 @@ discord_ticketbot/
 ├── package.json
 ├── .env.example                # Environment variable template
 ├── ticketbot.service           # systemd unit file for Linux servers
-├── assets/                     # Static files (panel banner image, etc.)
-│   └── banner.png              # Example banner (place your own here)
+├── assets/                     # Static files (logo, banner images)
+│   ├── logo.png                # Panel logo thumbnail (place your own here)
+│   └── banner.png              # Panel banner image (place your own here)
 ├── config/
 │   └── config.example.jsonc    # Configuration template (with comments)
 ├── locales/
@@ -64,7 +66,7 @@ discord_ticketbot/
     │   ├── move.js             # /move       – Move ticket
     │   ├── rename.js           # /rename     – Rename channel
     │   ├── transcript.js       # /transcript – HTML transcript
-    │   ├── priority.js         # /priority   – Set priority (updates topic)
+    │   ├── priority.js         # /priority   – Set priority (topic + embed)
     │   ├── note.js             # /note       – Staff notes
     │   ├── blacklist.js        # /blacklist  – Block users
     │   └── stats.js            # /stats      – Statistics (server & user)
@@ -77,7 +79,7 @@ discord_ticketbot/
     │   │   ├── openTicket.js       # tb_open
     │   │   ├── closeTicket.js      # tb_close
     │   │   ├── claimTicket.js      # tb_claim
-    │   │   ├── unclaimTicket.js    # tb_claim
+    │   │   ├── unclaimTicket.js    # tb_unclaim
     │   │   ├── moveTicket.js       # tb_move       (opens type selection)
     │   │   ├── deleteTicket.js     # tb_delete     (confirmation step)
     │   │   ├── deleteConfirm.js    # tb_deleteConfirm
@@ -87,13 +89,14 @@ discord_ticketbot/
     │   │   ├── closeReason.js      # tb_modalClose
     │   │   └── ticketQuestions.js  # tb_modalQuestions:type
     │   └── menus/
-    │       ├── ticketType.js       # tb_selectType
+    │       ├── panelSelect.js      # tb_panelSelect  (SELECT_MENU mode)
+    │       ├── ticketType.js       # tb_selectType   (BUTTON mode, ephemeral)
     │       └── moveSelect.js       # tb_moveSelect
     └── utils/
         ├── logger.js           # Coloured console logger
         ├── embeds.js           # All embed constructors
         ├── transcript.js       # HTML transcript generator
-        └── ticketActions.js    # Core logic: openTicket, performClose, performMove, updateChannelTopic
+        └── ticketActions.js    # Core logic: openTicket, performClose, performMove, refreshTicketMessage
 ```
 
 ---
@@ -217,14 +220,14 @@ sudo journalctl -u ticketbot.service -f
 |---|---|---|
 | `/setup` | Administrator | Send the ticket panel |
 | `/close [reason]` | Configurable | Close the current ticket |
-| `/claim` | Staff | Claim a ticket (renames channel + updates topic) |
-| `/unclaim` | Staff | Release a claimed ticket (restores name + updates topic) |
+| `/claim` | Staff | Claim a ticket — updates topic & embed, button toggles to Unclaim |
+| `/unclaim` | Staff | Release a claimed ticket — updates topic & embed, button toggles back |
 | `/move` | Staff | Move ticket to a different type/category |
 | `/add <user>` | Staff | Add a user to the ticket |
 | `/remove <user>` | Staff | Remove a user from the ticket |
 | `/rename <n>` | Staff | Rename the ticket channel |
 | `/transcript` | Staff | Generate an HTML transcript |
-| `/priority <level>` | Staff | Set ticket priority (updates channel topic) |
+| `/priority <level>` | Staff | Set ticket priority (updates channel topic & embed) |
 | `/note add <text>` | Staff | Add a staff note |
 | `/note list` | Staff | List all notes for this ticket |
 | `/stats` | Staff | Server-wide ticket statistics |
@@ -241,8 +244,9 @@ Every ticket channel contains a button row at the top:
 
 | Button | Visible when | Description |
 |---|---|---|
-| 🔒 Close Ticket | Always (configurable) | Disables all buttons, generates transcript, closes ticket |
-| 🙋 Claim | `claimButton: true` | Staff claims the ticket, renames channel + updates topic |
+| 🔒 Close Ticket | Always (configurable) | Disables all buttons, generates transcript, closes & renames channel |
+| 🙋 Claim | `claimButton: true`, not yet claimed | Staff claims — topic & embed update, button becomes Unclaim |
+| 🙌 Unclaim | `claimButton: true`, already claimed | Staff releases — topic & embed update, button becomes Claim |
 | 🔀 Move | More than 1 ticket type | Staff opens type selection (staff only) |
 | 🗑️ Delete Ticket | After closing | Deletes the channel after confirmation |
 
@@ -250,31 +254,51 @@ Every ticket channel contains a button row at the top:
 
 ## 🛠️ Configuration Reference
 
-### Panel Banner
+### Panel Interaction Type
 
-An optional image can be shown at the bottom of the ticket panel embed.
+Controls how users open tickets from the panel.
 
 ```jsonc
 "panel": {
+  "interactionType": "BUTTON"    // "BUTTON" (default) or "SELECT_MENU"
+}
+```
+
+| Mode | Behaviour |
+|---|---|
+| `"BUTTON"` | A green button is shown. Clicking it opens an ephemeral select menu — always fresh, no Discord caching issue. |
+| `"SELECT_MENU"` | The select menu is shown directly in the panel. After every use it automatically resets to its default state, so users never need to restart Discord to open a second ticket of the same type. |
+
+### Panel Logo & Banner
+
+Optional images in the panel embed — place files in the `assets/` folder.
+
+```jsonc
+"panel": {
+  "logo": {
+    "enabled": true,        // Show as thumbnail in the top-right of the embed
+    "file": "logo.png"      // Filename inside assets/
+  },
   "banner": {
-    "enabled": true,        // Set to true to show the banner
-    "file": "banner.png"    // Filename inside the assets/ folder
+    "enabled": true,        // Show as image at the bottom of the embed
+    "file": "banner.png"    // Filename inside assets/
   }
 }
 ```
 
-Place the image file (PNG, JPG, GIF or WEBP) in the `assets/` folder, then run `/setup` again to apply. If the file is not found, the bot logs a warning and sends the panel without the banner.
+Supported formats: PNG, JPG, GIF, WEBP. Run `/setup` again after adding or changing images.
 
-### Priority & Channel Topic
+### Channel State Overview
 
-`/priority` no longer renames the channel — it updates the **channel topic** instead, which has no rate-limit. The topic is also updated automatically when a ticket is claimed or unclaimed.
+| State | Channel Name | Channel Topic | Opening Embed |
+|---|---|---|---|
+| Ticket opened | `ticket-username` | `🟡 Medium` | Priority: 🟡 Medium |
+| `/priority urgent` | `ticket-username` | `🔴 Urgent` | Priority: 🔴 Urgent |
+| `/claim` | `ticket-username` | `🟡 Medium \| 🙋 Claimed by @Staff` | Priority: 🟡 Medium + Claimed by field |
+| `/unclaim` | `ticket-username` | `🟡 Medium` | Priority: 🟡 Medium (field removed) |
+| Ticket closed | `closed-ticket-username` | unchanged | all buttons removed |
 
-| State | Channel Name | Channel Topic |
-|---|---|---|
-| Ticket opened | `ticket-username` | `🟡 Mittel` |
-| `/priority urgent` | `ticket-username` | `🔴 Dringend` |
-| `/claim` | `✔️ ticket-username` | `🟡 Mittel \| 🙋 Claimed by @Staff` |
-| `/unclaim` | `ticket-username` | `🟡 Mittel` |
+> **Note on rate-limits:** Discord limits channel topic changes to 2 per 10 minutes per channel (same bucket as channel renames). A warning is shown in the ticket when a topic update is queued. The update will appear automatically once the limit resets.
 
 ### Ticket Types
 

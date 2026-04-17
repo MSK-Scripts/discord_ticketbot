@@ -12,12 +12,13 @@ Ein moderner, selbst-gehosteter Discord-Ticket-Bot auf Basis von **Discord.js v1
 |---|---|
 | 🎫 Ticket-Typen | Bis zu 25 konfigurierbare Typen mit eigenem Emoji, Farbe, Kategorie & Fragen |
 | 📋 Fragebögen | Modale Formulare (bis zu 5 Fragen) bei Ticket-Erstellung |
-| 🙋 Claim-System | Staff kann Tickets beanspruchen & freigeben — wird im Channel-Topic angezeigt |
-| 🔴 Prioritäten | Low / Medium / High / Urgent per `/priority` — wird im Channel-Topic angezeigt |
+| 🙋 Claim-System | Claim/Unclaim per Button — togglet automatisch, Embed & Topic werden aktualisiert |
+| 🔴 Prioritäten | Low / Medium / High / Urgent per `/priority` — im Channel-Topic und im Embed sichtbar |
 | 📝 Staff-Notizen | Private Notizen per `/note add` / `/note list` |
 | 🔀 Ticket verschieben | Per `/move` oder Button in einen anderen Typ/Kategorie verschieben (Staff only) |
 | 🛡️ Typ-spezifische Staff-Rollen | Jeder Ticket-Typ kann eigene Staff-Rollen haben |
-| 🖼️ Panel-Banner | Optionales Banner-Bild im Ticket-Panel, konfigurierbar in der Config |
+| 🖼️ Panel Logo & Banner | Optionales Logo-Thumbnail und/oder Banner-Bild im Panel-Embed |
+| 🎛️ Panel-Interaktionstyp | Wahl zwischen Button oder direktem Select-Menu im Panel |
 | ⭐ Bewertungssystem | 1–5 Sterne Feedback nach Schließung, automatisch in konfigurierten Channel gepostet |
 | ⏰ Staff-Erinnerung | Automatischer Ping im Ticket wenn kein Staff nach X Stunden antwortet |
 | ⏰ Auto-Close | Inaktive Tickets automatisch schließen mit Warn-Vorlauf (konfigurierbar) |
@@ -37,8 +38,9 @@ discord_ticketbot/
 ├── package.json
 ├── .env.example                # Vorlage für Umgebungsvariablen
 ├── ticketbot.service           # systemd-Unit-Datei für Linux-Server
-├── assets/                     # Statische Dateien (Panel-Banner, etc.)
-│   └── banner.png              # Beispiel-Banner (eigenes Bild hier ablegen)
+├── assets/                     # Statische Dateien (Logo, Banner)
+│   ├── logo.png                # Panel-Logo-Thumbnail (eigenes Bild hier ablegen)
+│   └── banner.png              # Panel-Banner-Bild (eigenes Bild hier ablegen)
 ├── config/
 │   └── config.example.jsonc    # Konfigurationsvorlage (mit Kommentaren)
 ├── locales/
@@ -64,7 +66,7 @@ discord_ticketbot/
     │   ├── move.js             # /move       – Ticket verschieben
     │   ├── rename.js           # /rename     – Kanal umbenennen
     │   ├── transcript.js       # /transcript – HTML-Transcript
-    │   ├── priority.js         # /priority   – Priorität setzen (Topic)
+    │   ├── priority.js         # /priority   – Priorität setzen (Topic + Embed)
     │   ├── note.js             # /note       – Staff-Notizen
     │   ├── blacklist.js        # /blacklist  – Nutzer sperren
     │   └── stats.js            # /stats      – Statistiken (Server & Nutzer)
@@ -77,7 +79,7 @@ discord_ticketbot/
     │   │   ├── openTicket.js       # tb_open
     │   │   ├── closeTicket.js      # tb_close
     │   │   ├── claimTicket.js      # tb_claim
-    │   │   ├── unclaimTicket.js    # tb_claim
+    │   │   ├── unclaimTicket.js    # tb_unclaim
     │   │   ├── moveTicket.js       # tb_move       (öffnet Typ-Auswahl)
     │   │   ├── deleteTicket.js     # tb_delete     (Bestätigungsschritt)
     │   │   ├── deleteConfirm.js    # tb_deleteConfirm
@@ -87,13 +89,14 @@ discord_ticketbot/
     │   │   ├── closeReason.js      # tb_modalClose
     │   │   └── ticketQuestions.js  # tb_modalQuestions:type
     │   └── menus/
-    │       ├── ticketType.js       # tb_selectType
+    │       ├── panelSelect.js      # tb_panelSelect  (SELECT_MENU Modus)
+    │       ├── ticketType.js       # tb_selectType   (BUTTON Modus, ephemeral)
     │       └── moveSelect.js       # tb_moveSelect
     └── utils/
         ├── logger.js           # Farbiger Console-Logger
         ├── embeds.js           # Alle Embed-Konstruktoren
         ├── transcript.js       # HTML-Transcript-Generator
-        └── ticketActions.js    # Kernlogik: openTicket, performClose, performMove, updateChannelTopic
+        └── ticketActions.js    # Kernlogik: openTicket, performClose, performMove, refreshTicketMessage
 ```
 
 ---
@@ -209,14 +212,14 @@ sudo journalctl -u ticketbot.service -f
 |---|---|---|
 | `/setup` | Administrator | Ticket-Panel senden |
 | `/close [grund]` | Konfigurierbar | Ticket schließen |
-| `/claim` | Staff | Ticket beanspruchen (Kanal umbenennen + Topic aktualisieren) |
-| `/unclaim` | Staff | Ticket freigeben (Name wiederherstellen + Topic aktualisieren) |
+| `/claim` | Staff | Ticket beanspruchen — Topic & Embed aktualisieren, Button wechselt zu Unclaim |
+| `/unclaim` | Staff | Ticket freigeben — Topic & Embed aktualisieren, Button wechselt zurück zu Claim |
 | `/move` | Staff | Ticket in anderen Typ/Kategorie verschieben |
 | `/add <nutzer>` | Staff | Nutzer zum Ticket hinzufügen |
 | `/remove <nutzer>` | Staff | Nutzer aus Ticket entfernen |
 | `/rename <n>` | Staff | Kanal umbenennen |
 | `/transcript` | Staff | HTML-Transcript generieren |
-| `/priority <stufe>` | Staff | Priorität setzen (Channel-Topic aktualisieren) |
+| `/priority <stufe>` | Staff | Priorität setzen (Channel-Topic & Embed aktualisieren) |
 | `/note add <text>` | Staff | Notiz hinzufügen |
 | `/note list` | Staff | Alle Notizen anzeigen |
 | `/stats` | Staff | Server-weite Ticket-Statistiken |
@@ -233,8 +236,9 @@ Jedes Ticket enthält eine Button-Leiste direkt im Kanal:
 
 | Button | Sichtbar wenn | Beschreibung |
 |---|---|---|
-| 🔒 Ticket schließen | Immer (konfigurierbar) | Deaktiviert alle Buttons, erstellt Transcript, schließt Ticket |
-| 🙋 Beanspruchen | `claimButton: true` | Staff beansprucht Ticket — Kanal umbenennen + Topic aktualisieren |
+| 🔒 Ticket schließen | Immer (konfigurierbar) | Buttons deaktivieren, Transcript erstellen, Ticket schließen & Kanal umbenennen |
+| 🙋 Beanspruchen | `claimButton: true`, noch nicht geclaimt | Beanspruchen — Topic & Embed aktualisieren, Button wird zu Unclaim |
+| 🙌 Freigeben | `claimButton: true`, bereits geclaimt | Freigeben — Topic & Embed aktualisieren, Button wird zu Claim |
 | 🔀 Verschieben | Mehr als 1 Ticket-Typ | Staff öffnet Typ-Auswahl (nur Staff) |
 | 🗑️ Ticket löschen | Nach Schließung | Löscht den Kanal nach Bestätigung |
 
@@ -242,31 +246,51 @@ Jedes Ticket enthält eine Button-Leiste direkt im Kanal:
 
 ## 🛠️ Konfigurationsreferenz
 
-### Panel-Banner
+### Panel-Interaktionstyp
 
-Ein optionales Bild kann am unteren Ende des Ticket-Panel-Embeds angezeigt werden.
+Steuert wie Nutzer Tickets über das Panel öffnen.
 
 ```jsonc
 "panel": {
+  "interactionType": "BUTTON"    // "BUTTON" (Standard) oder "SELECT_MENU"
+}
+```
+
+| Modus | Verhalten |
+|---|---|
+| `"BUTTON"` | Ein grüner Button wird angezeigt. Klick öffnet ein ephemeral Select-Menu — immer frisch, kein Discord-Caching-Problem. |
+| `"SELECT_MENU"` | Das Select-Menu wird direkt im Panel angezeigt. Nach jeder Nutzung wird es automatisch zurückgesetzt — kein Discord-Neustart nötig um ein zweites Ticket der gleichen Kategorie zu öffnen. |
+
+### Panel Logo & Banner
+
+Optionale Bilder im Panel-Embed — Dateien in den `assets/`-Ordner legen.
+
+```jsonc
+"panel": {
+  "logo": {
+    "enabled": true,        // Als Thumbnail oben rechts im Embed anzeigen
+    "file": "logo.png"      // Dateiname im assets/-Ordner
+  },
   "banner": {
-    "enabled": true,        // true = Banner anzeigen
+    "enabled": true,        // Als Bild am unteren Ende des Embeds anzeigen
     "file": "banner.png"    // Dateiname im assets/-Ordner
   }
 }
 ```
 
-Bild (PNG, JPG, GIF oder WEBP) in den `assets/`-Ordner legen und `/setup` erneut ausführen. Falls die Datei nicht gefunden wird, loggt der Bot eine Warnung und sendet das Panel ohne Banner.
+Unterstützte Formate: PNG, JPG, GIF, WEBP. Nach dem Hinzufügen oder Ändern von Bildern `/setup` erneut ausführen.
 
-### Priorität & Channel-Topic
+### Kanalzustand-Übersicht
 
-`/priority` benennt den Kanal **nicht** um — stattdessen wird das **Channel-Topic** aktualisiert, das kein Rate-Limit hat. Das Topic wird auch beim Claim/Unclaim automatisch angepasst.
+| Zustand | Kanalname | Channel-Topic | Opening-Embed |
+|---|---|---|---|
+| Ticket geöffnet | `ticket-maxmuster` | `🟡 Mittel` | Priorität: 🟡 Mittel |
+| `/priority urgent` | `ticket-maxmuster` | `🔴 Dringend` | Priorität: 🔴 Dringend |
+| `/claim` | `ticket-maxmuster` | `🟡 Mittel \| 🙋 Claimed by @Staff` | Priorität: 🟡 Mittel + Claimed-by-Feld |
+| `/unclaim` | `ticket-maxmuster` | `🟡 Mittel` | Priorität: 🟡 Mittel (Feld entfernt) |
+| Ticket geschlossen | `closed-ticket-maxmuster` | unverändert | alle Buttons entfernt |
 
-| Zustand | Kanalname | Channel-Topic |
-|---|---|---|
-| Ticket geöffnet | `ticket-maxmuster` | `🟡 Mittel` |
-| `/priority urgent` | `ticket-maxmuster` | `🔴 Dringend` |
-| `/claim` | `✔️ ticket-maxmuster` | `🟡 Mittel \| 🙋 Claimed by @Staff` |
-| `/unclaim` | `ticket-maxmuster` | `🟡 Mittel` |
+> **Hinweis zu Rate-Limits:** Discord limitiert Topic-Änderungen auf 2 pro 10 Minuten pro Kanal (gleicher Bucket wie Kanalumbenennung). Wenn das Limit erreicht ist, erscheint eine Warnung im Ticket. Das Topic wird automatisch aktualisiert sobald das Limit zurückgesetzt ist.
 
 ### Ticket-Typen
 
@@ -309,6 +333,10 @@ Jeder Ticket-Typ kann eigene Staff-Rollen definieren, die steuern wer das Ticket
 ```
 
 Beim Verschieben eines Tickets (`/move`) werden die Berechtigungen automatisch auf den neuen Typ angepasst. Beim Ping bei Ticket-Öffnung werden die typ-spezifischen Rollen anstelle der globalen gepingt.
+
+### Ticket verschieben (`/move` & Button)
+
+Bei mehr als einem konfigurierten Ticket-Typ erscheint automatisch ein **🔀 Verschieben**-Button in jedem Ticket. Nur Staff kann ihn verwenden. Sowohl Button als auch `/move`-Command öffnen ein Auswahlmenü mit allen anderen verfügbaren Typen. Nach der Auswahl wird der Kanal in die neue Kategorie verschoben, Berechtigungen (inkl. `staffRoles`) werden aktualisiert und eine Nachricht im Ticket gepostet.
 
 ### Staff-Erinnerung
 
