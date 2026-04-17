@@ -17,9 +17,9 @@ locales/main.json
 
 # Assets
 assets/*.png
-assets/*.jpeg
-assets/*.svg
+assets/*.jpg
 assets/*.giv
+assets/*.webp
 
 # Logs
 *.log
