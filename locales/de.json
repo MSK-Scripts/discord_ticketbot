@@ -240,5 +240,24 @@
     "4": "⭐⭐⭐⭐ Gut",
     "5": "⭐⭐⭐⭐⭐ Ausgezeichnet",
     "commentField": "💬 Kommentar"
+  },
+  "transcript": {
+    "dateLocale": "de-DE",
+    "eyebrow": "Ticket-Transkript",
+    "ticket": "Ticket",
+    "conversation": "Verlauf",
+    "type": "Typ",
+    "createdBy": "Erstellt von",
+    "createdOn": "Erstellt am",
+    "closedOn": "Geschlossen am",
+    "closedBy": "Geschlossen von",
+    "claimedBy": "Beansprucht von",
+    "priority": "Priorität",
+    "messages": "Nachrichten",
+    "closeReason": "Schließgrund",
+    "empty": "Keine Nachrichten in diesem Ticket",
+    "generatedOn": "Generiert am",
+    "copy": "Kopieren",
+    "copied": "Kopiert!"
   }
 }

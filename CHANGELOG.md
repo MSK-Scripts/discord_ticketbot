@@ -22,6 +22,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (run `/setup` again).
 - **Hungarian translation** (`locales/hu.json`) — set `"lang": "hu"` in the config
   to use it. Thanks to @chad50001 ([#7](https://github.com/MSK-Scripts/discord_ticketbot/pull/7)).
+- **Hungarian HTML transcript** — `"transcriptLang": "hu"` now renders the
+  transcript UI (header labels, section title, footer, copy button) and date
+  format in Hungarian.
+
+### Changed
+- **Transcript UI strings moved into the locale files.** They were previously
+  hardcoded in `src/utils/transcript.js`; each language's transcript strings now
+  live under a `transcript` key in its `locales/<lang>.json`, so all of a
+  language's translations sit in one file. The transcript loads the strings for
+  `transcriptLang` from there, merged over English for any missing key. No config
+  change needed.
+
+### Fixed
+- **Role mentions in the transcript** now show the actual role name (e.g.
+  `@Support`) instead of a hardcoded `@role`. Role names are resolved for free
+  from the messages and otherwise looked up once from the guild; unknown roles
+  fall back to `@role`.
+- **Channel mentions in the transcript** now show the channel name (e.g.
+  `#support`) instead of the raw channel id. Resolved from the message or the
+  guild channel list; unknown channels fall back to the id.
 
 ## [2.3.0] - 2026-06-19
 

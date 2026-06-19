@@ -4,6 +4,8 @@
  * without any external CDN requests (Discord blocks cross-origin avatar loads).
  */
 
+const path = require('path');
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 // Neutral grey silhouette — always visible, zero external requests.
@@ -13,28 +15,62 @@ const PLACEHOLDER_AVATAR = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.or
 // Inline clipboard icon for the code-block copy button (no external requests).
 const COPY_ICON = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 
-// Transcript UI strings per language. Falls back to English for any language
-// that isn't translated here (the bot's locale files can have more languages).
-const TRANSCRIPT_I18N = {
-  en: {
-    dateLocale: 'en-GB',
-    eyebrow: 'Ticket Transcript', ticket: 'Ticket', conversation: 'Conversation',
-    type: 'Type', createdBy: 'Created by', createdOn: 'Created on',
-    closedOn: 'Closed on', closedBy: 'Closed by', claimedBy: 'Claimed by',
-    priority: 'Priority', messages: 'Messages', closeReason: 'Close reason',
-    empty: 'No messages in this ticket', generatedOn: 'Generated on',
-    copy: 'Copy', copied: 'Copied!',
-  },
-  de: {
-    dateLocale: 'de-DE',
-    eyebrow: 'Ticket-Transkript', ticket: 'Ticket', conversation: 'Verlauf',
-    type: 'Typ', createdBy: 'Erstellt von', createdOn: 'Erstellt am',
-    closedOn: 'Geschlossen am', closedBy: 'Geschlossen von', claimedBy: 'Beansprucht von',
-    priority: 'Priorität', messages: 'Nachrichten', closeReason: 'Schließgrund',
-    empty: 'Keine Nachrichten in diesem Ticket', generatedOn: 'Generiert am',
-    copy: 'Kopieren', copied: 'Kopiert!',
-  },
-};
+// Transcript UI strings live in the bot's locale files (locales/<lang>.json)
+// under the "transcript" key, so every language's strings sit in one place next
+// to the rest of its translations. English (en.json) is the fallback for any
+// missing language or individual key.
+const LOCALES_DIR = path.resolve(__dirname, '../../locales');
+const _stringCache = new Map();
+
+function loadEnglishTranscript() {
+  try {
+    return require(path.join(LOCALES_DIR, 'en.json')).transcript || {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Returns the transcript UI strings for a language, merged over the English
+ * defaults so any missing key falls back to English. Unknown/invalid langs
+ * resolve to English. Results are cached per language.
+ * @param {string} lang
+ * @returns {object}
+ */
+function getTranscriptStrings(lang) {
+  const key = (typeof lang === 'string' && /^[a-z]{2,5}$/.test(lang)) ? lang : 'en';
+  if (_stringCache.has(key)) return _stringCache.get(key);
+
+  const en = loadEnglishTranscript();
+  let chosen = en;
+  if (key !== 'en') {
+    try {
+      const loc = require(path.join(LOCALES_DIR, `${key}.json`));
+      if (loc && loc.transcript) chosen = loc.transcript;
+    } catch { /* unknown/missing locale file → English fallback */ }
+  }
+
+  const merged = { ...en, ...chosen };
+  _stringCache.set(key, merged);
+  return merged;
+}
+
+/**
+ * Whether a language has its own transcript translation (used for the
+ * <html lang> attribute — falls back to "en" when it doesn't).
+ * @param {string} lang
+ * @returns {boolean}
+ */
+function hasTranscriptLocale(lang) {
+  if (typeof lang !== 'string' || !/^[a-z]{2,5}$/.test(lang)) return false;
+  if (lang === 'en') return true;
+  try {
+    const loc = require(path.join(LOCALES_DIR, `${lang}.json`));
+    return !!(loc && loc.transcript);
+  } catch {
+    return false;
+  }
+}
 
 function escapeHtml(str) {
   if (!str) return '';
@@ -48,7 +84,7 @@ function escapeHtml(str) {
 // Custom Discord emoji syntax (in the raw, pre-escaped text): <:name:id> / <a:name:id>
 const EMOJI_RE = /<(a)?:(\w+):(\d+)>/g;
 
-function parseMarkdown(text, emojiMap, nameMap) {
+function parseMarkdown(text, emojiMap, nameMap, roleMap, channelMap) {
   if (!text) return '';
   let html = escapeHtml(text);
 
@@ -82,8 +118,16 @@ function parseMarkdown(text, emojiMap, nameMap) {
     const name = nameMap && nameMap.get(id);
     return `<span class="mention">@${name ? escapeHtml(name) : id}</span>`;
   });
-  html = html.replace(/&lt;#(\d+)&gt;/g, '<span class="mention">#$1</span>');
-  html = html.replace(/&lt;@&amp;(\d+)&gt;/g, '<span class="mention">@role</span>');
+  // Channel mentions — resolve to the channel name when known, else keep the id.
+  html = html.replace(/&lt;#(\d+)&gt;/g, (_full, id) => {
+    const name = channelMap && channelMap.get(id);
+    return `<span class="mention">#${name ? escapeHtml(name) : id}</span>`;
+  });
+  // Role mentions — resolve to the role name when known, else a neutral "@role".
+  html = html.replace(/&lt;@&amp;(\d+)&gt;/g, (_full, id) => {
+    const name = roleMap && roleMap.get(id);
+    return `<span class="mention">@${name ? escapeHtml(name) : 'role'}</span>`;
+  });
   html = html.replace(/(https?:\/\/[^\s<>"]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
   html = html.replace(/\n/g, '<br>');
 
@@ -277,6 +321,95 @@ async function buildNameMap(channel, messages, extraIds = []) {
   return map;
 }
 
+/**
+ * Build a map of { roleId → roleName } so that role mentions (`<@&id>`) render
+ * the actual role name instead of a hardcoded "@role". Role mentions Discord
+ * already resolved are taken for free; any remaining ids are looked up once from
+ * the guild role cache/API. Unresolved ids fall back to the neutral "@role" text.
+ *
+ * @param {import('discord.js').TextChannel} channel
+ * @param {import('discord.js').Message[]} messages
+ * @returns {Promise<Map<string, string>>}
+ */
+async function buildRoleMap(channel, messages) {
+  const map = new Map();
+  const ids = new Set();
+
+  const scan = (text) => {
+    if (!text) return;
+    const re = /<@&(\d+)>/g;
+    let m;
+    while ((m = re.exec(text)) !== null) ids.add(m[1]);
+  };
+
+  for (const msg of messages) {
+    // Free: roles Discord already resolved on the message.
+    if (msg.mentions?.roles) {
+      for (const r of msg.mentions.roles.values()) map.set(r.id, r.name);
+    }
+    scan(msg.content);
+    for (const e of msg.embeds) { scan(e.title); scan(e.description); }
+  }
+
+  const missing = [...ids].filter(id => !map.has(id));
+  if (missing.length > 0) {
+    try {
+      const roles = await channel.guild.roles.fetch();
+      for (const id of missing) {
+        const role = roles.get(id);
+        if (role) map.set(id, role.name);
+      }
+    } catch { /* leave unresolved → parseMarkdown falls back to "@role" */ }
+  }
+
+  return map;
+}
+
+/**
+ * Build a map of { channelId → channelName } so that channel mentions (`<#id>`)
+ * render the channel name instead of the raw id. Channels Discord already
+ * resolved on the message are taken for free; remaining ids are looked up from
+ * the guild channel cache/API. Unresolved ids fall back to the raw id.
+ *
+ * @param {import('discord.js').TextChannel} channel
+ * @param {import('discord.js').Message[]} messages
+ * @returns {Promise<Map<string, string>>}
+ */
+async function buildChannelMap(channel, messages) {
+  const map = new Map();
+  const ids = new Set();
+
+  const scan = (text) => {
+    if (!text) return;
+    const re = /<#(\d+)>/g;
+    let m;
+    while ((m = re.exec(text)) !== null) ids.add(m[1]);
+  };
+
+  for (const msg of messages) {
+    // Free: channels Discord already resolved on the message.
+    if (msg.mentions?.channels) {
+      for (const c of msg.mentions.channels.values()) {
+        if (c?.id && c?.name) map.set(c.id, c.name);
+      }
+    }
+    scan(msg.content);
+    for (const e of msg.embeds) { scan(e.title); scan(e.description); }
+  }
+
+  const missing = [...ids].filter(id => !map.has(id));
+  for (const id of missing) {
+    const cached = channel.guild.channels.cache.get(id);
+    if (cached?.name) { map.set(id, cached.name); continue; }
+    try {
+      const fetched = await channel.guild.channels.fetch(id);
+      if (fetched?.name) map.set(id, fetched.name);
+    } catch { /* leave unresolved → parseMarkdown falls back to the id */ }
+  }
+
+  return map;
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 /**
@@ -293,14 +426,14 @@ async function buildNameMap(channel, messages, extraIds = []) {
  *        ids fall back to the Discord URL.
  * @returns {string}
  */
-function buildMessageRows(messages, avatarMap, emojiMap, nameMap, attachmentUrls, locale) {
+function buildMessageRows(messages, avatarMap, emojiMap, nameMap, roleMap, channelMap, attachmentUrls, locale) {
   return messages.map(msg => {
     const avatarSrc = avatarMap.get(msg.author.id) ?? '';
     const isBot     = msg.author.bot ? '<span class="badge bot">BOT</span>' : '';
     const timestamp = formatDate(msg.createdAt, locale);
 
     const content = msg.content
-      ? `<div class="msg-content">${parseMarkdown(msg.content, emojiMap, nameMap)}</div>`
+      ? `<div class="msg-content">${parseMarkdown(msg.content, emojiMap, nameMap, roleMap, channelMap)}</div>`
       : '';
 
     const attachments = msg.attachments.size > 0
@@ -317,7 +450,7 @@ function buildMessageRows(messages, avatarMap, emojiMap, nameMap, attachmentUrls
 
     const embeds = msg.embeds.map(e => {
       const title = e.title       ? `<div class="embed-title">${escapeHtml(e.title)}</div>`             : '';
-      const desc  = e.description ? `<div class="embed-desc">${parseMarkdown(e.description, emojiMap, nameMap)}</div>`    : '';
+      const desc  = e.description ? `<div class="embed-desc">${parseMarkdown(e.description, emojiMap, nameMap, roleMap, channelMap)}</div>`    : '';
       const color = e.color != null
         ? `border-left: 4px solid #${e.color.toString(16).padStart(6, '0')}`
         : '';
@@ -660,21 +793,24 @@ function renderModern({ ticketInfo, channel, guildName, t, locale, lang, message
  * @param {string} [design]  "modern" (default) or "classic"
  * @param {Map<string,string>} [attachmentUrls]  Discord attachment id → relative
  *        URL of the locally-stored copy. See buildMessageRows.
- * @param {string} [lang]  Transcript UI language ("en", "de", …). Falls back to
- *        English for any language without a built-in translation.
+ * @param {string} [lang]  Transcript UI language ("en", "de", "hu", …) — read
+ *        from the matching locales/<lang>.json "transcript" section. Falls back
+ *        to English for any language without a transcript translation.
  * @returns {Promise<string>} Full HTML string
  */
 async function generateTranscript(channel, ticketInfo, guildName, design = 'modern', attachmentUrls = null, lang = 'en') {
-  const t      = TRANSCRIPT_I18N[lang] || TRANSCRIPT_I18N.en;
-  const locale = t.dateLocale;
+  const t      = getTranscriptStrings(lang);
+  const locale = t.dateLocale || 'en-GB';
 
   const messages  = await fetchAllMessages(channel);
   const avatarMap = await buildAvatarMap(messages);
   const emojiMap  = await buildEmojiMap(messages);
   const nameMap   = await buildNameMap(channel, messages,
     [ticketInfo.creator_id, ticketInfo.claimed_by, ticketInfo.closed_by]);
+  const roleMap    = await buildRoleMap(channel, messages);
+  const channelMap = await buildChannelMap(channel, messages);
 
-  const messageRows = buildMessageRows(messages, avatarMap, emojiMap, nameMap, attachmentUrls, locale);
+  const messageRows = buildMessageRows(messages, avatarMap, emojiMap, nameMap, roleMap, channelMap, attachmentUrls, locale);
   const openedAt    = formatDate(new Date(ticketInfo.created_at), locale);
   const closedAt    = ticketInfo.closed_at ? formatDate(new Date(ticketInfo.closed_at), locale) : '—';
 
@@ -688,7 +824,7 @@ async function generateTranscript(channel, ticketInfo, guildName, design = 'mode
   const reasonRaw   = (ticketInfo.close_reason ?? '').toString().trim();
   const ctx = {
     ticketInfo, channel, guildName, t, locale,
-    lang: TRANSCRIPT_I18N[lang] ? lang : 'en',
+    lang: hasTranscriptLocale(lang) ? lang : 'en',
     messageRows, messageCount: messages.length, openedAt, closedAt,
     createdBy:   nameOf(ticketInfo.creator_id),
     claimedBy:   ticketInfo.claimed_by ? nameOf(ticketInfo.claimed_by) : null,

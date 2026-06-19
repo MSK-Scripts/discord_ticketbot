@@ -240,5 +240,24 @@
     "4": "⭐⭐⭐⭐ Good",
     "5": "⭐⭐⭐⭐⭐ Excellent",
     "commentField": "💬 Comment"
+  },
+  "transcript": {
+    "dateLocale": "en-GB",
+    "eyebrow": "Ticket Transcript",
+    "ticket": "Ticket",
+    "conversation": "Conversation",
+    "type": "Type",
+    "createdBy": "Created by",
+    "createdOn": "Created on",
+    "closedOn": "Closed on",
+    "closedBy": "Closed by",
+    "claimedBy": "Claimed by",
+    "priority": "Priority",
+    "messages": "Messages",
+    "closeReason": "Close reason",
+    "empty": "No messages in this ticket",
+    "generatedOn": "Generated on",
+    "copy": "Copy",
+    "copied": "Copied!"
   }
 }

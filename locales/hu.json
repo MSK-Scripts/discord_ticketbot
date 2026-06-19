@@ -240,5 +240,24 @@
     "4": "⭐⭐⭐⭐ Jó",
     "5": "⭐⭐⭐⭐⭐ Kiváló",
     "commentField": "💬 Megjegyzés"
+  },
+  "transcript": {
+    "dateLocale": "hu-HU",
+    "eyebrow": "Ticket-napló",
+    "ticket": "Ticket",
+    "conversation": "Beszélgetés",
+    "type": "Típus",
+    "createdBy": "Létrehozta",
+    "createdOn": "Létrehozva",
+    "closedOn": "Lezárva",
+    "closedBy": "Lezárta",
+    "claimedBy": "Felvette",
+    "priority": "Prioritás",
+    "messages": "Üzenetek",
+    "closeReason": "Lezárás oka",
+    "empty": "Nincsenek üzenetek ebben a ticketben",
+    "generatedOn": "Generálva",
+    "copy": "Másolás",
+    "copied": "Másolva!"
   }
 }

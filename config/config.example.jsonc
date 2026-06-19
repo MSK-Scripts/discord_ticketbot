@@ -6,7 +6,7 @@
   "mainColor": "#5eb131",
   "lang": "en",                    // "de" or "en"
   "transcriptDesign": "modern",    // HTML transcript style: "modern" (new MSK design) or "classic" (old Discord-style)
-  "transcriptLang": "en",          // HTML transcript language: "en" or "de" (falls back to English if omitted/unsupported)
+  "transcriptLang": "en",          // HTML transcript language: "en", "de" or "hu" (falls back to English if omitted/unsupported)
 
   // ─── Ticket Panel ────────────────────────────────────────────────────────────
   "openTicketChannelId": "CHANNEL_ID_HERE",
