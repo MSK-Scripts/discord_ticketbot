@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `panel.autoUpdateOnStart` config key (default `true`). If the saved channel or
   message no longer exists, the record is cleared and a warning is logged
   (run `/setup` again).
+- **Hungarian translation** (`locales/hu.json`) — set `"lang": "hu"` in the config
+  to use it. Thanks to @chad50001 ([#7](https://github.com/MSK-Scripts/discord_ticketbot/pull/7)).
 
 ## [2.3.0] - 2026-06-19
 
