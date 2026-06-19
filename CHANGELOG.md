@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.5.0] - 2026-06-19
+
+### Changed
+- **Modern transcript accent now follows your `mainColor`.** The modern HTML
+  transcript previously used a hardcoded green accent; it now derives its accent
+  from the configured `mainColor`, so transcripts match your bot's branding.
+  Falls back to the previous MSK green (`#2ee676`) when `mainColor` is missing or
+  invalid. Both `#rrggbb` and shorthand `#rgb` are accepted. The `classic` design
+  is unchanged. No config change needed.
+
 ## [2.4.0] - 2026-06-19
 
 ### Added

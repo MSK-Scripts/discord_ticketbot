@@ -287,7 +287,7 @@ async function performClose(client, channel, ticket, closer, reason) {
     );
 
     try {
-      transcriptHtml = await generateTranscript(channel, ticket, channel.guild.name, client.config.transcriptDesign, attachmentUrls, client.config.transcriptLang);
+      transcriptHtml = await generateTranscript(channel, ticket, channel.guild.name, client.config.transcriptDesign, attachmentUrls, client.config.transcriptLang, client.config.mainColor);
     } catch (err) {
       client.logger.error('[performClose] Transcript generation error:', err);
     }
@@ -663,6 +663,7 @@ async function captureFinalTranscript(client, channel, ticket, deleter) {
     transcriptHtml = await generateTranscript(
       channel, ticket, channel.guild.name,
       client.config.transcriptDesign, attachmentUrls, client.config.transcriptLang,
+      client.config.mainColor,
     );
     if (transcriptHtml) {
       const result = await uploadTranscript({ ticketId: ticket.id, transcriptHtml, attachments });

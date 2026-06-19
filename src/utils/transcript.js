@@ -15,6 +15,34 @@ const PLACEHOLDER_AVATAR = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.or
 // Inline clipboard icon for the code-block copy button (no external requests).
 const COPY_ICON = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
 
+// Default accent for the "modern" transcript design (MSK green). Used as the
+// fallback when no/invalid mainColor is passed in.
+const DEFAULT_ACCENT_HEX = '#2ee676';
+const DEFAULT_ACCENT_RGB = '46, 230, 118';
+
+/**
+ * Normalize a configured hex color (e.g. "#5eb131", "5eb131", "#5b3") into the
+ * { hex, rgb } pair the modern transcript CSS needs. `hex` feeds `--accent`,
+ * `rgb` feeds `--accent-rgb` so every translucent derivative can be expressed as
+ * `rgba(var(--accent-rgb), .x)`. Invalid/missing input falls back to MSK green.
+ * @param {string} [color]
+ * @returns {{hex: string, rgb: string}}
+ */
+function resolveAccent(color) {
+  if (typeof color === 'string') {
+    let hex = color.trim().replace(/^#/, '');
+    // Expand shorthand (#abc → #aabbcc)
+    if (/^[0-9a-fA-F]{3}$/.test(hex)) hex = hex.split('').map(c => c + c).join('');
+    if (/^[0-9a-fA-F]{6}$/.test(hex)) {
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      return { hex: `#${hex.toLowerCase()}`, rgb: `${r}, ${g}, ${b}` };
+    }
+  }
+  return { hex: DEFAULT_ACCENT_HEX, rgb: DEFAULT_ACCENT_RGB };
+}
+
 // Transcript UI strings live in the bot's locale files (locales/<lang>.json)
 // under the "transcript" key, so every language's strings sit in one place next
 // to the rest of its translations. English (en.json) is the fallback for any
@@ -593,7 +621,7 @@ function renderClassic({ ticketInfo, channel, guildName, t, locale, lang, messag
  * Modern design — minimal MSK-branded layout. Self-contained (no external
  * requests / offline-safe), system + monospace fonts only.
  */
-function renderModern({ ticketInfo, channel, guildName, t, locale, lang, messageRows, messageCount, openedAt, closedAt, createdBy, claimedBy, closedBy, closeReason }) {
+function renderModern({ ticketInfo, channel, guildName, t, locale, lang, messageRows, messageCount, openedAt, closedAt, createdBy, claimedBy, closedBy, closeReason, accent }) {
   return `<!DOCTYPE html>
 <html lang="${escapeHtml(lang)}">
 <head>
@@ -609,8 +637,10 @@ function renderModern({ ticketInfo, channel, guildName, t, locale, lang, message
       --panel-2:     #2e333f;
       --line:        rgba(255,255,255,.10);
       --line-strong: rgba(255,255,255,.16);
-      --accent:      #2ee676;
-      --accent-dim:  rgba(46,230,118,.16);
+      /* Accent derives from the bot's configured mainColor (fallback: MSK green). */
+      --accent:      ${accent.hex};
+      --accent-rgb:  ${accent.rgb};
+      --accent-dim:  rgba(var(--accent-rgb), .16);
       --text:        #f3f4f7;
       --text-2:      #c7cad3;
       --muted:       #8b909c;
@@ -622,7 +652,7 @@ function renderModern({ ticketInfo, channel, guildName, t, locale, lang, message
     html { -webkit-text-size-adjust: 100%; }
     body {
       background:
-        radial-gradient(1100px 460px at 50% -240px, rgba(46,230,118,.14), transparent 70%),
+        radial-gradient(1100px 460px at 50% -240px, rgba(var(--accent-rgb),.14), transparent 70%),
         var(--bg);
       background-attachment: fixed;
       color: var(--text);
@@ -634,14 +664,14 @@ function renderModern({ ticketInfo, channel, guildName, t, locale, lang, message
     .wrap { max-width: 880px; margin: 0 auto; }
 
     a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; }
-    a:hover { border-bottom-color: rgba(46,230,118,.5); }
+    a:hover { border-bottom-color: rgba(var(--accent-rgb),.5); }
     code { background: var(--bg-2); padding: 1.5px 6px; border-radius: 5px; font-family: var(--mono); font-size: .85em; border: 1px solid var(--line); }
     pre { position: relative; background: var(--bg-2); padding: 40px 16px 14px; border-radius: 10px; overflow-x: auto; margin: 8px 0; border: 1px solid var(--line); }
     pre code { background: none; padding: 0; border: 0; }
     .code-lang { position: absolute; top: 10px; left: 14px; font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
     .copy-btn { position: absolute; top: 8px; right: 10px; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 24px; padding: 0; background: var(--panel-2); color: var(--text-2); border: 1px solid var(--line); border-radius: 7px; cursor: pointer; transition: color .12s, border-color .12s; }
     .copy-btn:hover { color: var(--text); border-color: var(--line-strong); }
-    .copy-btn.copied { color: var(--accent); border-color: rgba(46,230,118,.5); }
+    .copy-btn.copied { color: var(--accent); border-color: rgba(var(--accent-rgb),.5); }
     .emoji { width: 1.375em; height: 1.375em; vertical-align: bottom; object-fit: contain; }
     blockquote { border-left: 3px solid var(--accent); padding: 2px 14px; margin: 6px 0; color: var(--text-2); }
     strong { color: #fff; }
@@ -690,7 +720,7 @@ function renderModern({ ticketInfo, channel, guildName, t, locale, lang, message
       font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: .08em;
       padding: 2px 6px; border-radius: 5px; margin-left: 6px; vertical-align: middle; text-transform: uppercase;
     }
-    .badge.bot { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(46,230,118,.35); }
+    .badge.bot { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(var(--accent-rgb),.35); }
 
     /* ─── Messages ────────────────────────────────────────────────────── */
     .section-label {
@@ -796,9 +826,11 @@ function renderModern({ ticketInfo, channel, guildName, t, locale, lang, message
  * @param {string} [lang]  Transcript UI language ("en", "de", "hu", …) — read
  *        from the matching locales/<lang>.json "transcript" section. Falls back
  *        to English for any language without a transcript translation.
+ * @param {string} [accentColor]  Hex color (e.g. config.mainColor) used as the
+ *        modern design's accent. Invalid/missing → MSK green default.
  * @returns {Promise<string>} Full HTML string
  */
-async function generateTranscript(channel, ticketInfo, guildName, design = 'modern', attachmentUrls = null, lang = 'en') {
+async function generateTranscript(channel, ticketInfo, guildName, design = 'modern', attachmentUrls = null, lang = 'en', accentColor = null) {
   const t      = getTranscriptStrings(lang);
   const locale = t.dateLocale || 'en-GB';
 
@@ -825,6 +857,7 @@ async function generateTranscript(channel, ticketInfo, guildName, design = 'mode
   const ctx = {
     ticketInfo, channel, guildName, t, locale,
     lang: hasTranscriptLocale(lang) ? lang : 'en',
+    accent: resolveAccent(accentColor),
     messageRows, messageCount: messages.length, openedAt, closedAt,
     createdBy:   nameOf(ticketInfo.creator_id),
     claimedBy:   ticketInfo.claimed_by ? nameOf(ticketInfo.claimed_by) : null,

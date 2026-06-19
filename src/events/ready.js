@@ -156,7 +156,7 @@ async function runAutoClose(client, thresholdMs, warnMs, excludeClaimed) {
         let transcriptHtml = null;
 
         if (client.config.closeOption?.createTranscript) {
-          transcriptHtml = await generateTranscript(channel, ticket, channel.guild.name, client.config.transcriptDesign, null, client.config.transcriptLang).catch(() => null);
+          transcriptHtml = await generateTranscript(channel, ticket, channel.guild.name, client.config.transcriptDesign, null, client.config.transcriptLang, client.config.mainColor).catch(() => null);
         }
 
         closeTicket(ticket.channel_id, client.user.id, reason, transcriptHtml);

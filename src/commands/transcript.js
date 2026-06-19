@@ -19,7 +19,7 @@ module.exports = {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     try {
-      const html   = await generateTranscript(interaction.channel, ticket, interaction.guild.name, client.config.transcriptDesign, null, client.config.transcriptLang);
+      const html   = await generateTranscript(interaction.channel, ticket, interaction.guild.name, client.config.transcriptDesign, null, client.config.transcriptLang, client.config.mainColor);
       const file   = new AttachmentBuilder(Buffer.from(html, 'utf-8'), { name: `ticket-${ticket.id}.html` });
       await interaction.editReply({ content: client.t('messages.transcriptCreated'), files: [file] });
     } catch (err) {
