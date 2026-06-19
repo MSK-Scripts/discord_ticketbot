@@ -1,7 +1,8 @@
 const { ActivityType } = require('discord.js');
-const { getInactiveTickets, getTicketsNeedingStaffReminder, closeTicket, setStaffReminded, getStats } = require('../database');
+const { getInactiveTickets, getTicketsNeedingStaffReminder, closeTicket, setStaffReminded, getStats, getPanelMessage, deletePanelMessage } = require('../database');
 const { generateTranscript } = require('../utils/transcript');
 const { ticketClosedEmbed, ticketLogEmbed } = require('../utils/embeds');
+const { buildTicketPanel } = require('../utils/panel');
 
 const ACTIVITY_TYPE_MAP = {
   PLAYING:   ActivityType.Playing,
@@ -58,6 +59,14 @@ module.exports = {
       runAutoClose(client, thresholdMs, warnMs, excludeClaimed);
     }
 
+    // ── Auto-refresh ticket panel ─────────────────────────────────────────────
+    // Re-renders the already-sent /setup panel with the current config & locale,
+    // so changes to the embed/text after an update apply automatically — no need
+    // to re-run /setup. Controlled via panel.autoUpdateOnStart (default: true).
+    if (client.config.panel?.autoUpdateOnStart ?? true) {
+      refreshTicketPanel(client);
+    }
+
     // ── Staff-reminder loop ───────────────────────────────────────────────────
     const reminderCfg = client.config.staffReminder;
     if (reminderCfg?.enabled) {
@@ -78,6 +87,42 @@ module.exports = {
     console.log('\x1b[0m');
   },
 };
+
+// ─── Panel auto-refresh ─────────────────────────────────────────────────────────
+
+async function refreshTicketPanel(client) {
+  let record;
+  try {
+    record = getPanelMessage(process.env.GUILD_ID);
+  } catch (err) {
+    client.logger.error('[Panel] DB error:', err);
+    return;
+  }
+
+  // No panel sent yet — operator still has to run /setup once.
+  if (!record) return;
+
+  const channel = await client.channels.fetch(record.channel_id).catch(() => null);
+  if (!channel) {
+    client.logger.warn('[Panel] Saved panel channel no longer exists — clearing record. Run /setup again.');
+    deletePanelMessage(process.env.GUILD_ID);
+    return;
+  }
+
+  const message = await channel.messages.fetch(record.message_id).catch(() => null);
+  if (!message) {
+    client.logger.warn('[Panel] Saved panel message no longer exists — clearing record. Run /setup again.');
+    deletePanelMessage(process.env.GUILD_ID);
+    return;
+  }
+
+  const { embeds, components, files } = buildTicketPanel(client);
+
+  // attachments: [] clears the old logo/banner so re-attached files don't pile up.
+  await message.edit({ embeds, components, files, attachments: [] })
+    .then(() => client.logger.info('[Panel] Ticket panel refreshed on startup.'))
+    .catch(err => client.logger.warn(`[Panel] Failed to refresh panel: ${err.message}`));
+}
 
 // ─── Auto-close ───────────────────────────────────────────────────────────────
 

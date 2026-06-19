@@ -66,6 +66,13 @@ function initDatabase() {
       created_at INTEGER NOT NULL,
       FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS panel_messages (
+      guild_id   TEXT    PRIMARY KEY,
+      channel_id TEXT    NOT NULL,
+      message_id TEXT    NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
   `);
 
   const cols = db.pragma('table_info(tickets)').map(c => c.name);
@@ -315,6 +322,30 @@ function getRating(ticketId) {
   return db.prepare('SELECT * FROM ratings WHERE ticket_id = ?').get(ticketId);
 }
 
+// ─── Panel Message ────────────────────────────────────────────────────────────
+// Tracks where the ticket panel was sent (one per guild) so the bot can
+// auto-refresh that exact message on every boot — operators no longer have to
+// re-run /setup after an update that changes the panel embed/text.
+
+function savePanelMessage(guildId, channelId, messageId) {
+  return db.prepare(`
+    INSERT INTO panel_messages (guild_id, channel_id, message_id, updated_at)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(guild_id) DO UPDATE SET
+      channel_id = excluded.channel_id,
+      message_id = excluded.message_id,
+      updated_at = excluded.updated_at
+  `).run(guildId, channelId, messageId, Date.now());
+}
+
+function getPanelMessage(guildId) {
+  return db.prepare('SELECT * FROM panel_messages WHERE guild_id = ?').get(guildId);
+}
+
+function deletePanelMessage(guildId) {
+  return db.prepare('DELETE FROM panel_messages WHERE guild_id = ?').run(guildId);
+}
+
 module.exports = {
   initDatabase,
   createTicket, getTotalTicketCount, getTicketByChannel, getTicketById,
@@ -326,4 +357,5 @@ module.exports = {
   addToBlacklist, removeFromBlacklist, isBlacklisted, getBlacklist,
   addNote, getNotes,
   addRating, getRating,
+  savePanelMessage, getPanelMessage, deletePanelMessage,
 };

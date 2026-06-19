@@ -9,7 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
-## [Unreleased]
+## [2.4.0] - 2026-06-19
+
+### Added
+- **Auto-refreshing ticket panel.** The `/setup` panel now updates itself on every
+  bot start, so you only have to run `/setup` once — changes to the panel embed or
+  text (e.g. after an update) are applied automatically without re-running the
+  command. The bot remembers the panel message (channel + message ID) in a new
+  `panel_messages` table and re-renders it on boot. Controlled via the new
+  `panel.autoUpdateOnStart` config key (default `true`). If the saved channel or
+  message no longer exists, the record is cleared and a warning is logged
+  (run `/setup` again).
 
 ## [2.3.0] - 2026-06-19
 
@@ -36,8 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The **transcript link label** in the close DM and the log embed was hardcoded
   in German and wrongly implied a download; it is now localized and consistently
   means "open" (English "Open", German "Öffnen").
-
-## [Released]
 
 ## [2.2.2] - 2026-06-18
 

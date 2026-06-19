@@ -1,17 +1,10 @@
 const {
   SlashCommandBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
-  AttachmentBuilder,
   PermissionFlagsBits,
   MessageFlags,
 } = require('discord.js');
-const path = require('path');
-const fs   = require('fs');
-const { panelEmbed } = require('../utils/embeds');
+const { buildTicketPanel } = require('../utils/panel');
+const { savePanelMessage } = require('../database');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,70 +22,14 @@ module.exports = {
       return interaction.editReply(client.t('messages.panelChannelNotFound', { channel: channelId }));
     }
 
-    const embed = panelEmbed(client);
-    const files = [];
-
-    // ── Optional logo image ────────────────────────────────────────────────
-    const logoCfg = client.config.panel?.logo;
-    if (logoCfg?.enabled && logoCfg?.file) {
-      const logoPath = path.resolve(__dirname, '../../assets', logoCfg.file);
-      if (fs.existsSync(logoPath)) {
-        files.push(new AttachmentBuilder(logoPath, { name: logoCfg.file }));
-        embed.setThumbnail(`attachment://${logoCfg.file}`);
-      } else {
-        client.logger.warn(`[Setup] Logo file not found: ${logoPath}`);
-      }
-    }
-
-    // ── Optional banner image ──────────────────────────────────────────────
-    const bannerCfg = client.config.panel?.banner;
-    if (bannerCfg?.enabled && bannerCfg?.file) {
-      const bannerPath = path.resolve(__dirname, '../../assets', bannerCfg.file);
-      if (fs.existsSync(bannerPath)) {
-        files.push(new AttachmentBuilder(bannerPath, { name: bannerCfg.file }));
-        embed.setImage(`attachment://${bannerCfg.file}`);
-      } else {
-        client.logger.warn(`[Setup] Banner file not found: ${bannerPath}`);
-      }
-    }
-
-    // ── Interaction type ───────────────────────────────────────────────────
-    const interactionType = client.config.panel?.interactionType ?? 'BUTTON';
-    const types           = client.config.ticketTypes;
-
-    let row;
-
-    if (interactionType === 'SELECT_MENU' && types.length > 1) {
-      // Show the select menu directly in the panel — no button click needed.
-      // The handler (tb_panelSelect) resets the menu after every use so Discord
-      // never caches a previously selected value.
-      const options = types.map(t =>
-        new StringSelectMenuOptionBuilder()
-          .setLabel(t.name)
-          .setDescription(t.description?.substring(0, 100) ?? '')
-          .setValue(t.codeName)
-          .setEmoji(t.emoji || '🎫')
-      );
-
-      row = new ActionRowBuilder().addComponents(
-        new StringSelectMenuBuilder()
-          .setCustomId('tb_panelSelect')
-          .setPlaceholder(client.t('menus.ticketType'))
-          .addOptions(options)
-      );
-    } else {
-      // BUTTON mode (default): single green button opens ephemeral select or modal
-      row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId('tb_open')
-          .setLabel(client.t('buttons.openTicket'))
-          .setEmoji('🎫')
-          .setStyle(ButtonStyle.Success)
-      );
-    }
+    const { embeds, components, files } = buildTicketPanel(client);
 
     try {
-      await channel.send({ embeds: [embed], components: [row], files });
+      const sent = await channel.send({ embeds, components, files });
+      // Persist the panel location so it can auto-refresh on every boot
+      // (see refreshTicketPanel in src/events/ready.js) — no need to re-run
+      // /setup after an update that changes the embed/text.
+      savePanelMessage(interaction.guildId, channel.id, sent.id);
       await interaction.editReply(client.t('messages.panelSent', { channel: channel.id }));
     } catch (err) {
       client.logger.error('[Setup] Failed to send panel:', err);
