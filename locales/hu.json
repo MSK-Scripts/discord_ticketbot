@@ -1,0 +1,244 @@
+{
+  "buttons": {
+    "openTicket": "Ticket nyitása",
+    "close": "Ticket lezárása",
+    "closeEmoji": "🔒",
+    "claim": "Átvétel",
+    "claimEmoji": "🙋",
+    "unclaim": "Átvétel visszavonása",
+    "unclaimEmoji": "🙌",
+    "move": "Áthelyezés",
+    "moveEmoji": "🔀",
+    "delete": "Ticket törlése",
+    "deleteEmoji": "🗑️",
+    "reopen": "Újranyitás",
+    "reopenEmoji": "♻️",
+    "transcript": "Napló (Transcript)",
+    "transcriptEmoji": "📄",
+    "deleteConfirm": "Igen, ticket törlése",
+    "deleteCancel": "Mégse",
+    "notifyOn": "Értesítések be",
+    "notifyOff": "Értesítsen, ha a vezetőség válaszol"
+  },
+  "embeds": {
+    "panel": {
+      "title": "Ticket Nyitás",
+      "description": "Kattints az alábbi gombra egy ticket megnyitásához.\nEgy csapattag a lehető leghamarabb a segítségedre lesz.",
+      "footer": "© Atlas Roleplay - Minden jog fenntartva"
+    },
+    "ticketOpened": {
+      "title": "Ticket megnyitva",
+      "description": "Szia {user}! Köszönjük, hogy ticketet nyitottál.\nEgy csapattagunk hamarosan felveszi veled a kapcsolatot.\n\n**Típus:** {type}\n**Prioritás:** {priority}"
+    },
+    "ticketClosed": {
+      "title": "Ticket lezárva",
+      "description": "A ticketet lezárta: {closer}.\n**Indok:** {reason}"
+    },
+    "ticketClosedDM": {
+      "title": "A ticketed lezárásra került",
+      "description": "A(z) **#{count}** ({type}) számú ticketedet lezárta: {closer}.\n**Indok:** {reason}",
+      "transcript": "Transcript",
+      "transcriptLink": "Megnyitás"
+    },
+    "ticketReopened": {
+      "title": "Ticket újra megnyitva",
+      "description": "A ticketet {reopener} újra megnyitotta."
+    },
+    "ticketLog": {
+      "title": "A(z) #{count} számú ticket lezárva",
+      "transcriptLink": "Megnyitás",
+      "fields": {
+        "type": "Típus",
+        "creator": "Létrehozta",
+        "closer": "Lezárta",
+        "claimed": "Átvette",
+        "reason": "Indok",
+        "duration": "Időtartam",
+        "messages": "Üzenetek",
+        "transcript": "Transcript"
+      }
+    },
+    "ratingRequest": {
+      "title": "Milyen volt az ellátás?",
+      "description": "Kérjük, értékeld az ügyfélszolgálati tapasztalatodat a(z) **#{count}** számú ticketben.\nA visszajelzésed segít a fejlődésben."
+    },
+    "stats": {
+      "title": "📊 Ticket statisztikák",
+      "fields": {
+        "totalTickets": "Összes ticket",
+        "openTickets": "Nyitott",
+        "closedTickets": "Lezárt",
+        "avgRating": "Átlag értékelés",
+        "avgDuration": "Átlag időtartam",
+        "topStaff": "Legaktívabb staff"
+      }
+    },
+    "userStats": {
+      "title": "📊 Statisztikák — {user}",
+      "userSection": "**👤 Mint Felhasználó**",
+      "opened": "🎫 Nyitott ticketek",
+      "openNow": "🟢 Jelenleg nyitva",
+      "closedAsCreator": "🔴 Lezárt",
+      "favoriteType": "🏷️ Leggyakoribb típus",
+      "avgRatingGiven": "⭐ Adott átlag értékelés",
+      "staffSection": "**🛡️ Mint Csapattag**",
+      "closedAsStaff": "🔒 Lezárt ticketek",
+      "claimed": "🙋 Átvett ticketek",
+      "avgRatingReceived": "⭐ Kapott átlag értékelés"
+    },
+    "notifyOptIn": {
+      "description": "🔕 Kattints az alábbi gombra, ha szeretnél **DM (privát) értesítést** kapni, amikor a vezetőség válaszol a ticketedre."
+    },
+    "moved": {
+      "description": "🔀 A ticketet áthelyezte {user} a(z) **{from}** kategóriából a(z) **{to}** kategóriába."
+    },
+    "locked": {
+      "description": "🔒 **Ticket lezárva (zárolva)** {user} által",
+      "withReason": "🔒 **Ticket lezárva (zárolva)** {user} által\n**Indok:** {reason}"
+    },
+    "unlocked": {
+      "description": "🔓 **Ticket feloldva** {user} által"
+    },
+    "staffNotes": {
+      "title": "📝 Admin megjegyzések — #{count} Ticket",
+      "footer": "{shown}/{total} megjegyzés megjelenítése"
+    },
+    "blacklistList": {
+      "title": "🚫 Ticket feketelista",
+      "footer": "{count} bejegyzés"
+    },
+    "snippetList": {
+      "title": "📋 Elérhető gyorsválaszok (Snippets)",
+      "footer": "{count} gyorsválasz érhető el"
+    },
+    "ratingReceived": {
+      "title": "✅ Értékelés elmentve",
+      "description": "Köszönjük a visszajelzést! A következő értékelést adtad: **{label}**."
+    },
+    "ratingPost": {
+      "title": "⭐ Új értékelés — #{count} Ticket",
+      "userField": "Felhasználó",
+      "ratingField": "Értékelés"
+    },
+    "broadcast": {
+      "author": "📢 Felhívás — {user}",
+      "plain": "📢 **Felhívás:** {message}"
+    }
+  },
+  "modals": {
+    "closeReason": {
+      "title": "Ticket lezárása",
+      "label": "Lezárás indoka",
+      "placeholder": "Kérjük, add meg a ticket lezárásának okát."
+    },
+    "openTicket": {
+      "title": "Ticket nyitása",
+      "label": "A ticket nyitásának oka",
+      "placeholder": "Kérjük, röviden írd le a problémádat."
+    },
+    "rateComment": {
+      "title": "Ticket értékelése",
+      "label": "Megjegyzés (opcionális)",
+      "placeholder": "Szeretnél valamit hozzáfűzni az értékelésedhez?"
+    }
+  },
+  "menus": {
+    "ticketType": "Válassz egy ticket típust",
+    "moveTarget": "Válassz egy új ticket típust..."
+  },
+  "messages": {
+    "ticketCreated": "✅ A ticketed sikeresen létrejött: {channel}",
+    "ticketAlreadyClosed": "❌ Ez a ticket már le van zárva!",
+    "ticketAlreadyClaimed": "❌ Ezt a ticketet már átvette {user}!",
+    "ticketClaimed": "🙋 A ticketet átvette {user}.",
+    "ticketUnclaimed": "🙌 {user} visszavonta a ticket átvételét.",
+    "topicUpdateWarning": "\n> ⚠️ *A csatorna témája hamarosan frissül – A Discord csatornánként legfeljebb 2 módosítást engedélyez 10 percen belül, ez eltarthat egy pillanatig.*",
+    "ticketRenamed": "✏️ Ticket átnevezve a következőre: **{name}**.",
+    "ticketMoved": "🔀 A ticketet {user} áthelyezte ide: **{type}**.",
+    "ticketLimitReached": "❌ Egyszerre legfeljebb csak **{limit}** nyitott ticketed lehet.",
+    "blacklisted": "❌ Feketelistára vagy téve, így nem nyithatsz ticketet.",
+    "noPermission": "❌ Nincs jogosultságod ehhez a művelethez.",
+    "notATicket": "❌ Ez a csatorna nem egy ticket.",
+    "onlyStaff": "❌ Ezt a műveletet csak a vezetőség végezheti el.",
+    "userAdded": "✅ {user} hozzáadva a tickethez.",
+    "userRemoved": "✅ {user} eltávolítva a ticketből.",
+    "priorityChanged": "🔔 Prioritás átállítva a következőre: **{priority}**.",
+    "noteAdded": "📝 Admin megjegyzés hozzáadva.",
+    "transcriptCreated": "📄 A chatnapló elkészült.",
+    "generatingTranscript": "⏳ Chatnapló generálása...",
+    "autoCloseWarning": "⚠️ Ez a ticket inaktivitás miatt automatikusan lezárul **{hours}** órán belül.",
+    "blacklistAdded": "✅ {user} hozzáadva a feketelistához.",
+    "blacklistRemoved": "✅ {user} eltávolítva a feketelistáról.",
+    "blacklistAlreadyAdded": "❌ {user} már szerepel a feketelistán.",
+    "blacklistNotFound": "❌ {user} nem szerepel a feketelistán.",
+    "configError": "⚠️ Konfigurációs hiba. Kérjük, lépj kapcsolatba a bot üzemeltetőjével!",
+    "snippet_not_in_ticket": "❌ Ez a parancs csak nyitott ticketen belül használható.",
+    "snippet_list_empty": "ℹ️ Még nincsenek konfigurálva gyorsválaszok.\nMásold a `config/snippets.example.jsonc` fájlt a `config/snippets.jsonc` helyre és szabd testre.",
+    "snippet_not_found": "❌ A(z) **{name}** gyorsválasz nem található. Használd a `/snippet list` parancsot az áttekintéshez.",
+    "snippet_sent": "✅ A(z) **{name}** gyorsválasz elküldve.",
+    "ticketLocked": "🔒 Ez a ticket zárolva lett. Nem tudsz üzenetet küldeni, amíg egy csapattag fel nem oldja.",
+    "ticketUnlocked": "🔓 Ez a ticket fel lett oldva. Mostantól újra küldhetsz üzeneteket.",
+    "broadcastSent": "✅ Felhívás elküldve **{count}** ticketbe.",
+    "internalError": "❌ Rendszerhiba történt.",
+    "channelNotFound": "❌ A csatorna nem található.",
+    "unknownTicketType": "❌ Ismeretlen ticket típus.",
+    "noAccessToType": "❌ Nincs hozzáférésed ehhez a ticket típushoz.",
+    "ticketCreateFailed": "❌ Nem sikerült létrehozni a ticketet. Kérjük, próbáld újra.",
+    "renameEmpty": "❌ A név nem tartalmaz érvényes karaktereket (csak betűk, számok és kötőjelek engedélyezettek).",
+    "notClaimed": "❌ Ez a ticket nincs senki által átvéve.",
+    "alreadyThisType": "❌ Ez a ticket már eleve ebben a kategóriában van.",
+    "noOtherTypes": "❌ Nincs más ticket típus, ahová át lehetne helyezni.",
+    "blacklistEmpty": "✅ The blacklist is empty.",
+    "notesEmpty": "📝 Nincsenek megjegyzések ehhez a tickethez.",
+    "notInvalidRating": "❌ Érvénytelen értékelés.",
+    "ratingRefNotFound": "❌ Ticket hivatkozás nem található.",
+    "alreadyRated": "✅ Ezt a ticketet már értékelted.",
+    "onlyCreatorNotify": "❌ Csak a ticket létrehozója módosíthatja az értesítéseket.",
+    "deletingChannel": "🗑️ A csatorna törlés alatt áll...",
+    "deleteCancelled": "✅ Törlés megszakítva.",
+    "deleteConfirmPrompt": "⚠️ **Biztos vagy benne?** A ticket csatornája véglegesen törlődni fog.",
+    "closingTicket": "⏳ **A ticket lezárás alatt áll.**",
+    "reopeningTicket": "♻️ **A ticket újra megnyitása folyamatban...**",
+    "ticketNotClosed": "❌ Ez a ticket nincs lezárva.",
+    "reopenDisabled": "❌ A ticketek újbóli megnyitása le van tiltva ezen a szerveren.",
+    "selectCategory": "🎫 Kérjük, válassz egy kategóriát:",
+    "alreadyLocked": "❌ Ez a ticket már zárolva van.",
+    "notLocked": "❌ Ez a ticket nincs zárolva.",
+    "selectMoveTarget": "🔀 Hová legyen áthelyezve a ticket?",
+    "movingTo": "⏳ Áthelyezés a(z) **{type}** kategóriába...",
+    "movedTo": "✅ Ticket áthelyezve a(z) **{type}** kategóriába.",
+    "transcriptFailed": "❌ Nem sikerült legenerálni a chatnaplót.",
+    "priorityAlreadySet": "ℹ️ A prioritás már eleve a következőre van állítva: **{priority}**.",
+    "selectMoveTargetCurrent": "🔀 **Ticket áthelyezése** (jelenlegi: **{type}**)\nHová szeretnéd áthelyezni ezt a ticketet?",
+    "autoCloseReason": "Inaktivitás miatt automatikusan lezárva",
+    "deleteReason": "A ticketet törölte: {user}",
+    "staffReminderTitle": "⏰ **Nincs válasz a vezetőség részéről {hours} órája!**",
+    "staffReminderBody": "A(z) <#{channel}> számú ticket (típus: **{type}**, prioritás: **{priority}**) válaszra vár.",
+    "staffReplyTitle": "🔔 Admin válasz érkezett a ticketedre!",
+    "staffReplyBody": "Egy csapattag válaszolt a(z) **{type}** típusú ticketedben.\n\n[🔗 Ugrás a tickethez]({link})",
+    "broadcastNoTickets": "ℹ️ Nem találhatók nyitott ticketek.",
+    "broadcastResult": "✅ Felhívás elküldve **{sent}** ticketbe.",
+    "broadcastResultFailed": "✅ Felhívás elküldve **{sent}** ticketbe. *({failed} csatornánál sikertelen)*",
+    "panelChannelNotFound": "❌ A(z) `{channel}` csatorna nem található. Kérjük, ellenőrizd az `openTicketChannelId` beállítást a configban.",
+    "panelSent": "✅ A ticket panel elküldve a(z) <#{channel}> csatornára.",
+    "panelSendFailed": "❌ Nem sikerült elküldeni a panelt. Megfelelőek a bot jogosultságai?",
+    "noReasonGiven": "Nem lett indok megadva",
+    "userAddFailed": "❌ Nem sikerült hozzáadni a felhasználót.",
+    "userRemoveFailed": "❌ Nem sikerült eltávolítani a felhasználót.",
+    "cannotRemoveCreator": "❌ A ticket létrehozóját nem lehet eltávolítani."
+  },
+  "priorities": {
+    "low": "🟢 Alacsony",
+    "medium": "🟡 Közepes",
+    "high": "🟠 Magas",
+    "urgent": "🔴 Sürgős"
+  },
+  "ratings": {
+    "1": "⭐ Nagyon rossz",
+    "2": "⭐⭐ Rossz",
+    "3": "⭐⭐⭐ Elfogadható",
+    "4": "⭐⭐⭐⭐ Jó",
+    "5": "⭐⭐⭐⭐⭐ Kiváló",
+    "commentField": "💬 Megjegyzés"
+  }
+}
