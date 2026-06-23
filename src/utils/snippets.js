@@ -7,9 +7,12 @@ const SNIPPETS_PATH = path.join(__dirname, '../../config/snippets.jsonc');
 let _cache = null;
 
 // ─── JSONC Parser ─────────────────────────────────────────────────────────────
-// Identical to the implementation in src/config.js.
+// Kept in sync with the implementation in src/config.js (position-preserving).
 // Strips // and /* … */ comments while preserving content inside string literals
-// (e.g. URLs like https://docu.msk-scripts.de), then removes trailing commas.
+// (e.g. URLs like https://docu.msk-scripts.de), then neutralizes trailing commas.
+// Comments/commas are replaced with blanks (never deleted) so the output has the
+// same length/line layout as the source — a JSON.parse() offset then maps 1:1 to
+// the line/column the user sees (see describeParseError()).
 
 function stripJsonComments(text) {
   let result   = '';
@@ -40,17 +43,27 @@ function stripJsonComments(text) {
       continue;
     }
 
-    // Single-line comment (//)
+    // Single-line comment (//) — blank out, keep length, stop at newline
     if (ch === '/' && text[i + 1] === '/') {
-      while (i < text.length && text[i] !== '\n') i++;
+      while (i < text.length && text[i] !== '\n') {
+        result += ' ';
+        i++;
+      }
       continue;
     }
 
-    // Multi-line comment (/* … */)
+    // Multi-line comment (/* … */) — blank out, preserve newlines/length
     if (ch === '/' && text[i + 1] === '*') {
+      result += '  ';
       i += 2;
-      while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++;
-      i += 2;
+      while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) {
+        result += text[i] === '\n' ? '\n' : ' ';
+        i++;
+      }
+      if (i < text.length) {   // consume the closing */
+        result += '  ';
+        i += 2;
+      }
       continue;
     }
 
@@ -58,10 +71,39 @@ function stripJsonComments(text) {
     i++;
   }
 
-  // Remove trailing commas before } or ]
-  result = result.replace(/,(\s*[}\]])/g, '$1');
+  // Neutralize trailing commas before } or ] (comma → space, positions stay aligned)
+  result = result.replace(/,(\s*[}\]])/g, ' $1');
 
   return result;
+}
+
+/**
+ * Build a human-friendly description of a JSON.parse() failure, pointing at the
+ * exact line/column with a caret (^). Kept in sync with src/config.js.
+ *
+ * @param {string} source  The (position-preserving) stripped JSON string
+ * @param {Error}  err     The error thrown by JSON.parse
+ * @returns {string}       Multi-line message
+ */
+function describeParseError(source, err) {
+  const match = /at position (\d+)/i.exec(err.message);
+  if (!match) return `Invalid JSON: ${err.message}`;
+
+  const pos    = Math.min(Number(match[1]), source.length - 1);
+  const before = source.slice(0, pos);
+  const line   = before.split('\n').length;
+  const col    = pos - before.lastIndexOf('\n');   // 1-based column
+
+  const lines  = source.split('\n');
+  const gutter = n => `  ${String(n).padStart(4)} │ `;
+  const out    = [`Syntax error at line ${line}, column ${col}:`, ''];
+
+  if (line > 1)            out.push(gutter(line - 1) + lines[line - 2]);
+  out.push(gutter(line) + (lines[line - 1] ?? ''));
+  out.push(' '.repeat(gutter(line).length + col - 1) + '^');
+  if (line < lines.length) out.push(gutter(line + 1) + lines[line]);
+
+  return out.join('\n');
 }
 
 // ─── Loader ───────────────────────────────────────────────────────────────────
@@ -90,10 +132,11 @@ function loadSnippets() {
   }
 
   let parsed;
+  const stripped = stripJsonComments(raw);
   try {
-    parsed = JSON.parse(stripJsonComments(raw));
+    parsed = JSON.parse(stripped);
   } catch (err) {
-    throw new Error(`[Snippets] Invalid JSON in snippets.jsonc: ${err.message}`);
+    throw new Error(`[Snippets] snippets.jsonc — ${describeParseError(stripped, err)}`);
   }
 
   if (!Array.isArray(parsed?.snippets)) {

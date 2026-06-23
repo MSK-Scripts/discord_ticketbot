@@ -15,8 +15,14 @@ const EXAMPLE_PATH = path.resolve(__dirname, '../config/config.example.jsonc');
  *  - Handles escaped quotes (\")
  *  - Removes trailing commas left by the last item in objects/arrays
  *
+ * IMPORTANT — position-preserving: comments and trailing commas are replaced
+ * with blanks (spaces), never deleted, and newlines inside block comments are
+ * kept. The returned string therefore has the EXACT same length and line layout
+ * as the source file, so a JSON.parse() error offset maps 1:1 to the line/column
+ * the user actually sees in config.jsonc (see describeParseError()).
+ *
  * @param {string} text  Raw JSONC source
- * @returns {string}     Valid JSON string
+ * @returns {string}     Valid JSON string (same length/lines as input)
  */
 function stripJsonComments(text) {
   let result   = '';
@@ -48,17 +54,27 @@ function stripJsonComments(text) {
       continue;
     }
 
-    // ── Single-line comment (//) ────────────────────────────────────────────
+    // ── Single-line comment (//) — blank out, keep length, stop at newline ───
     if (ch === '/' && text[i + 1] === '/') {
-      while (i < text.length && text[i] !== '\n') i++;
+      while (i < text.length && text[i] !== '\n') {
+        result += ' ';
+        i++;
+      }
       continue;
     }
 
-    // ── Multi-line comment (/* ... */) ──────────────────────────────────────
+    // ── Multi-line comment (/* ... */) — blank out, preserve newlines/length ─
     if (ch === '/' && text[i + 1] === '*') {
+      result += '  ';
       i += 2;
-      while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++;
-      i += 2;
+      while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) {
+        result += text[i] === '\n' ? '\n' : ' ';
+        i++;
+      }
+      if (i < text.length) {   // consume the closing */
+        result += '  ';
+        i += 2;
+      }
       continue;
     }
 
@@ -66,12 +82,46 @@ function stripJsonComments(text) {
     i++;
   }
 
-  // ── Remove trailing commas before } or ] ───────────────────────────────────
-  // e.g.  { "a": 1, }  →  { "a": 1 }
-  //        [ "x",  ]   →  [ "x"  ]
-  result = result.replace(/,(\s*[}\]])/g, '$1');
+  // ── Neutralize trailing commas before } or ] ───────────────────────────────
+  // e.g.  { "a": 1, }  →  { "a": 1  }   (comma → space, so positions stay aligned)
+  //        [ "x",  ]   →  [ "x"   ]
+  result = result.replace(/,(\s*[}\]])/g, ' $1');
 
   return result;
+}
+
+/**
+ * Build a human-friendly, multi-line description of a JSON.parse() failure,
+ * pointing at the exact line/column in the source with a caret (^).
+ *
+ * @param {string} source  The (position-preserving) stripped JSON string
+ * @param {Error}  err     The error thrown by JSON.parse
+ * @returns {string[]}     Lines ready to print
+ */
+function describeParseError(source, err) {
+  const match = /at position (\d+)/i.exec(err.message);
+  if (!match) {
+    // Position not available — fall back to the raw engine message.
+    return [`[Config] Failed to parse config.jsonc: ${err.message}`];
+  }
+
+  const pos    = Math.min(Number(match[1]), source.length - 1);
+  const before = source.slice(0, pos);
+  const line   = before.split('\n').length;
+  const col    = pos - before.lastIndexOf('\n');   // 1-based column
+
+  const lines  = source.split('\n');
+  const gutter = n => `  ${String(n).padStart(4)} │ `;
+  const out    = [];
+
+  out.push(`[Config] Syntax error in config.jsonc at line ${line}, column ${col}.`);
+  out.push('');
+  if (line > 1)            out.push(gutter(line - 1) + lines[line - 2]);
+  out.push(gutter(line) + (lines[line - 1] ?? ''));
+  out.push(' '.repeat(gutter(line).length + col - 1) + '^');
+  if (line < lines.length) out.push(gutter(line + 1) + lines[line]);
+
+  return out;
 }
 
 /**
@@ -92,12 +142,19 @@ function loadConfig() {
     }
   }
 
-  const raw = fs.readFileSync(CONFIG_PATH, 'utf-8');
+  const raw      = fs.readFileSync(CONFIG_PATH, 'utf-8');
+  const stripped = stripJsonComments(raw);
   try {
-    return JSON.parse(stripJsonComments(raw));
+    return JSON.parse(stripped);
   } catch (err) {
-    console.error('[Config] Failed to parse config.jsonc:', err.message);
-    console.error('[Config] Tip: Check for stray commas or invalid characters near the position shown above.');
+    console.error('');
+    describeParseError(stripped, err).forEach(l => console.error(l));
+    console.error('');
+    console.error('[Config] Most common causes:');
+    console.error('[Config]   • a missing comma between two entries');
+    console.error('[Config]   • one comma too many (e.g. after the last entry)');
+    console.error('[Config]   • an unclosed "quote" or a missing { } / [ ] bracket');
+    console.error('[Config] Fix the spot marked with ^ above, then restart the bot.');
     process.exit(1);
   }
 }
@@ -125,7 +182,17 @@ function validateConfig(config) {
       errors.push(`Missing required field: "${key}"`);
     } else if (actualType !== type) {
       errors.push(`Field "${key}" must be a ${type}, got ${actualType}`);
+    } else if (type === 'string' && val.trim() === '') {
+      errors.push(`Field "${key}" is empty — please set a value.`);
     }
+  }
+
+  // mainColor must be a hex color (#rgb or #rrggbb) — otherwise EmbedBuilder
+  // throws at runtime when sending the first embed (bot starts but every
+  // command crashes), which is hard to diagnose. Fail fast with a clear message.
+  if (typeof config.mainColor === 'string' && config.mainColor.trim() !== ''
+      && !/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(config.mainColor.trim())) {
+    errors.push(`Field "mainColor" must be a hex color like "#2ee676", got "${config.mainColor}".`);
   }
 
   if (Array.isArray(config.ticketTypes)) {
