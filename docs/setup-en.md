@@ -10,7 +10,7 @@ Optionally, Premium users can serve transcripts under their own custom domain.
 
 1. [What is the Transcript Service?](#1-what-is-the-transcript-service)
 2. [Subscription Tiers](#2-subscription-tiers)
-3. [Step 1 – Create a GitHub OAuth App](#3-step-1--create-a-github-oauth-app)
+3. [Step 1 – Set up Stripe (subscriptions)](#3-step-1--set-up-stripe-subscriptions)
 4. [Step 2 – Create a Discord OAuth App](#4-step-2--create-a-discord-oauth-app)
 5. [Step 3 – Verify on the Website](#5-step-3--verify-on-the-website)
 6. [Step 4 – Add the API Key to the Bot](#6-step-4--add-the-api-key-to-the-bot)
@@ -35,7 +35,7 @@ configure a **custom domain** so transcripts are served under their own URL.
 
 ## 2. Subscription Tiers
 
-| Feature | Basic (free) | Premium ($4/month) | Premium+ ($8/month) |
+| Feature | Basic (free) | Premium (€3.99/month) | Premium+ (€6.99/month) |
 |---|---|---|---|
 | Transcript as link | ✅ | ✅ | ✅ |
 | Max. transcript size | 10 MB | 100 MB | 250 MB |
@@ -45,41 +45,40 @@ configure a **custom domain** so transcripts are served under their own URL.
 | Storage duration | 30 days | 60 days | 90 days |
 | **Hosted bot management** | ❌ | ✅ | ✅ |
 
-> Premium and Premium+ are unlocked via **GitHub Sponsors**.  
-> Sponsor here: [github.com/sponsors/MSK-Scripts](https://github.com/sponsors/MSK-Scripts)
+> Premium and Premium+ are subscribed in your dashboard via **Stripe**, with a **14-day free trial**  
+> for new customers (cancel anytime). Manage or cancel anytime via the Stripe customer portal.
 
 ---
 
-## 3. Step 1 – Create a GitHub OAuth App
+## 3. Step 1 – Set up Stripe (subscriptions)
 
-> **Purpose:** The website verifies your GitHub account to check your sponsorship status  
-> and link it to your Discord server.
+> **Purpose:** Premium and Premium+ are billed via Stripe. This step is only needed  
+> if you self-host the website — on the official **msk-scripts.de** it is already configured.
 
 ### Instructions
 
-1. Open [github.com/settings/developers](https://github.com/settings/developers)
-2. Click **"OAuth Apps"** in the left sidebar
-3. Click **"New OAuth App"**
-4. Fill in the fields:
+1. In the [Stripe Dashboard](https://dashboard.stripe.com) → **Products**, create two products,
+   each with a **recurring monthly price**:
+   - `Ticketbot Premium` → €3.99 / month
+   - `Ticketbot Premium+` → €6.99 / month
 
-   | Field | Value |
-   |---|---|
-   | **Application name** | `MSK Ticket Bot` (or any name you like) |
-   | **Homepage URL** | `https://www.msk-scripts.de` |
-   | **Authorization callback URL** | `https://www.msk-scripts.de/api/auth/github/callback` |
-   | **Enable Device Flow** | Leave unchecked |
-
-5. Click **"Register application"**
-6. Copy the **Client ID**
-7. Click **"Generate a new client secret"** and copy the **Client Secret**
+   Copy each **Price ID** (`price_…`). Do **not** configure a trial on the price — the
+   14-day trial is applied automatically in code for new customers.
+2. **Developers → API keys** → copy your **Secret key** (`sk_…`).
+3. **Settings → Billing → Customer portal** → enable it (allow cancellation + plan changes).
+4. **Developers → Webhooks** → add an endpoint `https://www.msk-scripts.de/api/webhook/stripe`
+   with the events `checkout.session.completed`, `customer.subscription.created/updated/deleted`,
+   `invoice.payment_succeeded`, `invoice.payment_failed`. Copy the **signing secret** (`whsec_…`).
 
 ### Where to add these
 
 These values go into `.env.local` on the **web server** (not the bot's `.env`):
 
 ```env
-GITHUB_CLIENT_ID=your_client_id_here
-GITHUB_CLIENT_SECRET=your_client_secret_here
+STRIPE_SECRET_KEY=sk_live_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+STRIPE_PRICE_PREMIUM=price_xxx
+STRIPE_PRICE_PREMIUM_PLUS=price_xxx
 ```
 
 ---
@@ -125,18 +124,7 @@ Go to **[www.msk-scripts.de/verify](https://www.msk-scripts.de/verify)** in your
 
 ---
 
-### 5.2 Connect GitHub
-
-Click **"Sign in with GitHub"**.  
-You will be redirected to GitHub and asked to authorize the application.  
-You will be automatically redirected back afterwards.
-
-> ℹ️ If you are using GitHub Sponsors for Premium or Premium+, you must use the **same GitHub account**  
-> you sponsor with. This is how your tier is verified automatically.
-
----
-
-### 5.3 Connect Discord
+### 5.2 Connect Discord
 
 Click **"Sign in with Discord"**.  
 You will be redirected to Discord — click **"Authorize"**.
@@ -147,7 +135,7 @@ The app requests two permissions:
 
 ---
 
-### 5.4 Select your server
+### 5.3 Select your server
 
 You will see a list of all Discord servers where you have **Administrator** permissions.  
 Select the server you want the API key for and click **"Generate API Key"**.
@@ -157,7 +145,7 @@ Select the server you want the API key for and click **"Generate API Key"**.
 
 ---
 
-### 5.5 Save your API Key
+### 5.4 Save your API Key
 
 After generation, your personal API key is displayed.  
 **Copy it immediately** — it will not be shown again.
@@ -304,8 +292,9 @@ Connecting to Discord...
 No. Without an API key the bot works normally and sends the transcript as a file via DM.  
 The API key is only needed if you want transcripts stored as public links.
 
-**What happens when my sponsorship expires?**  
-Your tier is automatically downgraded to Basic. Existing transcripts remain accessible  
+**What happens when I cancel my subscription?**  
+At the end of the paid period your tier is automatically downgraded to Basic (cancelling  
+during the 14-day free trial incurs no charge). Existing transcripts remain accessible  
 until their individual expiry date. Custom domains are deactivated.
 
 **Can I use the same API key for multiple servers?**  

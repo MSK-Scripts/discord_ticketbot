@@ -58,7 +58,7 @@ Instead of sending transcripts as file attachments via DM, the bot can upload th
 
 ### Subscription Tiers
 
-| Feature | Basic (free) | Premium ($4/mo) | Premium+ ($8/mo) |
+| Feature | Basic (free) | Premium (€3.99/mo) | Premium+ (€6.99/mo) |
 |---|---|---|---|
 | Transcript as link | ✅ | ✅ | ✅ |
 | Max. transcript size | 10 MB | 100 MB | 250 MB |
@@ -69,14 +69,15 @@ Instead of sending transcripts as file attachments via DM, the bot can upload th
 | Uploads per hour | 30 | 60 | 300 |
 | **Hosted bot management** | ❌ | ✅ | ✅ |
 
-> Premium and Premium+ are unlocked via **[GitHub Sponsors](https://github.com/sponsors/MSK-Scripts)**.
+> Premium and Premium+ are subscribed directly in your dashboard via **Stripe** — with a **14-day free trial** for new customers, cancellable anytime.
 
 ### Getting your API Key
 
 1. Visit **[www.msk-scripts.de/verify](https://www.msk-scripts.de/verify)**
-2. Sign in with your GitHub account
-3. Connect your Discord account
-4. Select your server → your API key is generated instantly
+2. Sign in with your Discord account
+3. Select your server → your API key is generated instantly
+
+To upgrade to Premium/Premium+, open your **[dashboard](https://www.msk-scripts.de/dashboard)** and start the free trial — billing is handled by Stripe.
 
 Then add it to your `.env`:
 ```env
@@ -114,16 +115,6 @@ Premium and Premium+ customers can have their bot instance **fully hosted by MSK
 ### How to get hosted
 
 Contact MSK Scripts via [Discord](https://discord.gg/5hHSBRHvJE) to arrange a hosted Premium+ plan. Once set up, the hosted management panel appears automatically in your dashboard.
-
----
-
-## 💖 Sponsors
-
-Thank you to everyone who supports this project!
-
-<!-- sponsors -->
-
-<!-- sponsors -->
 
 ---
 

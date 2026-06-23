@@ -58,7 +58,7 @@ Anstatt Transkripte als Dateianhang per DM zu versenden, kann der Bot sie auf **
 
 ### Abo-Modelle
 
-| Feature | Basic (kostenlos) | Premium (4 $/Monat) | Premium+ (8 $/Monat) |
+| Feature | Basic (kostenlos) | Premium (3,99 €/Monat) | Premium+ (6,99 €/Monat) |
 |---|---|---|---|
 | Transkript als Link | ✅ | ✅ | ✅ |
 | Max. Transkriptgröße | 10 MB | 100 MB | 250 MB |
@@ -69,14 +69,15 @@ Anstatt Transkripte als Dateianhang per DM zu versenden, kann der Bot sie auf **
 | Uploads pro Stunde | 30 | 60 | 300 |
 | **Gehostetes Bot-Management** | ❌ | ✅ | ✅ |
 
-> Premium und Premium+ werden über **[GitHub Sponsors](https://github.com/sponsors/MSK-Scripts)** freigeschaltet.
+> Premium und Premium+ werden direkt im Dashboard über **Stripe** abonniert — mit **14 Tagen kostenloser Testphase** für Neukunden, jederzeit kündbar.
 
 ### API Key erhalten
 
 1. **[www.msk-scripts.de/verify](https://www.msk-scripts.de/verify)** aufrufen
-2. Mit GitHub-Account anmelden
-3. Discord-Account verbinden
-4. Server auswählen → API Key wird sofort generiert
+2. Mit Discord-Account anmelden
+3. Server auswählen → API Key wird sofort generiert
+
+Zum Upgrade auf Premium/Premium+ im **[Dashboard](https://www.msk-scripts.de/dashboard)** die Testphase starten — die Abrechnung läuft über Stripe.
 
 Dann in die `.env` eintragen:
 ```env
@@ -112,16 +113,6 @@ Premium- und Premium+-Kunden können ihre Bot-Instanz **vollständig von MSK Scr
 ### Wie man gehostet wird
 
 Kontaktiere MSK Scripts über [Discord](https://discord.gg/5hHSBRHvJE) für ein gehostetes Premium+-Paket. Sobald eingerichtet, erscheint das Management-Panel automatisch in deinem Dashboard.
-
----
-
-## 💖 Sponsoren
-
-Vielen Dank an alle, die dieses Projekt unterstützen!
-
-<!-- sponsors -->
-
-<!-- sponsors -->
 
 ---
 
