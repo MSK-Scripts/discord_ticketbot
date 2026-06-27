@@ -29,7 +29,7 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.ratingRefNotFound'), flags: MessageFlags.Ephemeral });
     }
 
-    if (getRating(ticketId)) {
+    if (await getRating(ticketId)) {
       return interaction.reply({ content: client.t('messages.alreadyRated'), flags: MessageFlags.Ephemeral });
     }
 

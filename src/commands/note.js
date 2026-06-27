@@ -21,7 +21,7 @@ module.exports = {
     if (!client.isStaff(interaction.member)) {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
-    const ticket = getTicketByChannel(interaction.channelId);
+    const ticket = await getTicketByChannel(interaction.channelId);
     if (!ticket) {
       return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
     }
@@ -29,12 +29,12 @@ module.exports = {
     const sub = interaction.options.getSubcommand();
 
     if (sub === 'add') {
-      addNote(ticket.id, interaction.user.id, interaction.options.getString('text'));
+      await addNote(ticket.id, interaction.user.id, interaction.options.getString('text'));
       return interaction.reply({ content: client.t('messages.noteAdded'), flags: MessageFlags.Ephemeral });
     }
 
     if (sub === 'list') {
-      const notes = getNotes(ticket.id); // chronological (oldest first)
+      const notes = await getNotes(ticket.id); // chronological (oldest first)
       if (notes.length === 0) {
         return interaction.reply({ content: client.t('messages.notesEmpty'), flags: MessageFlags.Ephemeral });
       }

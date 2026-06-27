@@ -27,13 +27,13 @@ module.exports = {
     const user = interaction.options.getUser('user');
 
     if (sub === 'add') {
-      if (isBlacklisted(user.id, interaction.guildId)) {
+      if (await isBlacklisted(user.id, interaction.guildId)) {
         return interaction.reply({
           content: client.t('messages.blacklistAlreadyAdded', { user: `<@${user.id}>` }),
           flags: MessageFlags.Ephemeral,
         });
       }
-      addToBlacklist({
+      await addToBlacklist({
         userId:  user.id,
         guildId: interaction.guildId,
         reason:  interaction.options.getString('reason') ?? null,
@@ -43,18 +43,18 @@ module.exports = {
     }
 
     if (sub === 'remove') {
-      if (!isBlacklisted(user.id, interaction.guildId)) {
+      if (!await isBlacklisted(user.id, interaction.guildId)) {
         return interaction.reply({
           content: client.t('messages.blacklistNotFound', { user: `<@${user.id}>` }),
           flags: MessageFlags.Ephemeral,
         });
       }
-      removeFromBlacklist(user.id);
+      await removeFromBlacklist(user.id);
       return interaction.reply(client.t('messages.blacklistRemoved', { user: `<@${user.id}>` }));
     }
 
     if (sub === 'list') {
-      const list = getBlacklist(interaction.guildId);
+      const list = await getBlacklist(interaction.guildId);
       if (list.length === 0) {
         return interaction.reply({ content: client.t('messages.blacklistEmpty'), flags: MessageFlags.Ephemeral });
       }

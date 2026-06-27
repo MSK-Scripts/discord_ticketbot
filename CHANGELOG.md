@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.6.0] - 2026-06-27
+
+### Added
+- **MySQL/MariaDB and PostgreSQL support.** The bot now runs on an external
+  MySQL/MariaDB or PostgreSQL database in addition to the bundled SQLite file.
+  Pick the backend with a single `DATABASE_URL` in `.env`:
+  - `mysql://user:pass@host:3306/ticketbot` (MySQL/MariaDB)
+  - `postgres://user:pass@host:5432/ticketbot` (PostgreSQL)
+  - unset / empty → SQLite (`data/tickets.db`), unchanged default.
+
+  Append `?ssl=true` (or `?sslmode=require`) for managed databases that require
+  TLS. The schema is created automatically on first start for every engine.
+- **Data migration script** (`npm run db:migrate`). Copies an existing SQLite
+  database into the configured target, primary keys preserved and PostgreSQL id
+  sequences reset, so closed-ticket history and stats survive the switch. Refuses
+  to write into a non-empty target unless `--force` is passed. Supports
+  `--from <path>` and `--to <url>` overrides.
+
+### Changed
+- The database layer (`src/database/`) is now engine-agnostic and fully async.
+  Queries are written once with `?` placeholders and dispatched to a per-engine
+  driver (SQLite/MySQL/PostgreSQL); the public function API is unchanged. SQLite
+  installs behave exactly as before — no config change required.
+
+### Notes
+- Adds `mysql2` and `pg` as dependencies. `npm audit` reports 0 vulnerabilities.
+
 ## [2.5.1] - 2026-06-27
 
 ### Changed

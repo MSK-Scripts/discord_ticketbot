@@ -15,7 +15,7 @@ module.exports = {
   customId: 'tb_notifyToggle',
 
   async execute(client, interaction) {
-    const ticket = getTicketByChannel(interaction.channelId);
+    const ticket = await getTicketByChannel(interaction.channelId);
 
     if (!ticket) {
       return interaction.reply({
@@ -33,7 +33,7 @@ module.exports = {
     }
 
     const newValue = ticket.notify_on_reply ? 0 : 1;
-    setNotifyOnReply(interaction.channelId, newValue);
+    await setNotifyOnReply(interaction.channelId, newValue);
 
     const newRow = new ActionRowBuilder().addComponents(
       buildNotifyButton(newValue === 1, client)

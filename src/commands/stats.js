@@ -20,11 +20,11 @@ module.exports = {
     const targetUser = interaction.options.getUser('user');
 
     if (targetUser) {
-      const stats = getUserStats(targetUser.id, interaction.guildId);
+      const stats = await getUserStats(targetUser.id, interaction.guildId);
       return interaction.reply({ embeds: [userStatsEmbed(client, targetUser, stats)] });
     }
 
-    const stats = getStats(interaction.guildId);
+    const stats = await getStats(interaction.guildId);
     return interaction.reply({ embeds: [statsEmbed(client, stats)] });
   },
 };

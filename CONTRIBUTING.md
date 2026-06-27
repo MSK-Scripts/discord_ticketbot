@@ -133,7 +133,7 @@ index.js                ← entry point (dotenv + TicketClient.start())
 src/
 ├── client.js           ← boot flow (banner, version/API check, config, login)
 ├── config.js           ← JSONC parser + validateConfig()
-├── database.js         ← complete SQLite layer (tables, queries, inline migrations)
+├── database/           ← engine-agnostic async DB layer (SQLite/MySQL/PostgreSQL)
 ├── commands/           ← slash commands ({ data, execute })
 ├── components/         ← buttons / menus / modals (convention-based loader)
 ├── events/             ← interactionCreate, messageCreate, ready
@@ -195,16 +195,22 @@ very welcome.
 
 ## Database Changes
 
-The schema lives entirely in `src/database.js` and uses **inline migrations** — no
-external migration tool.
+The schema lives in `src/database/schema.js` and uses **inline migrations** — no
+external migration tool. The layer is engine-agnostic (SQLite by default, MySQL/
+MariaDB and PostgreSQL via `DATABASE_URL`), so changes must work across all three.
 
-- **New column:** add an existence check via
-  `pragma('table_info(...)').map(c => c.name)` + `ALTER TABLE` inside `initDatabase()`.
-- **New table:** add a `CREATE TABLE IF NOT EXISTS` block inside `initDatabase()`.
+- **New column:** add it to the matching `CREATE TABLE` (for fresh installs) **and**
+  to `getMigrations()` (which `ALTER TABLE`s it onto existing databases). Use the
+  per-dialect type tokens (`ts`, `bool`, `id`, …), never a hardcoded SQL type.
+- **New table:** add a `CREATE TABLE IF NOT EXISTS` to `getCreateStatements()` for
+  all three dialects.
+- **Queries** go in `src/database/index.js`, are `async`, and use `?` placeholders
+  (the PostgreSQL driver rewrites them to `$1, $2, …`). Coerce `COUNT()`/`AVG()`
+  results with `Number()`. Upserts branch on `activeDriver.family`.
 
-This keeps existing users' `data/tickets.db` files upgradeable without manual steps.
-Closed tickets are kept in the DB for statistics — the lifecycle ends at channel
-rename + move, not deletion.
+This keeps existing users' databases upgradeable without manual steps. Closed
+tickets are kept in the DB for statistics — the lifecycle ends at channel rename +
+move, not deletion.
 
 ---
 

@@ -30,13 +30,13 @@ module.exports = {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     // Re-check limits in case user opened another ticket while filling the form
-    if (isBlacklisted(interaction.user.id, interaction.guildId)) {
+    if (await isBlacklisted(interaction.user.id, interaction.guildId)) {
       return interaction.editReply(client.t('messages.blacklisted'));
     }
 
     const cfg = client.config;
     if (cfg.maxTicketOpened > 0) {
-      const open = getOpenTicketsByUser(interaction.user.id, interaction.guildId);
+      const open = await getOpenTicketsByUser(interaction.user.id, interaction.guildId);
       if (open.length >= cfg.maxTicketOpened) {
         return interaction.editReply(
           client.t('messages.ticketLimitReached', { limit: String(cfg.maxTicketOpened) })

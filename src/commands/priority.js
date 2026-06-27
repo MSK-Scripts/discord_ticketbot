@@ -31,7 +31,7 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.channelNotFound'), flags: MessageFlags.Ephemeral });
     }
 
-    const ticket = getTicketByChannel(interaction.channelId);
+    const ticket = await getTicketByChannel(interaction.channelId);
     if (!ticket) {
       return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
     }
@@ -44,7 +44,7 @@ module.exports = {
       });
     }
 
-    setPriority(interaction.channelId, priority);
+    await setPriority(interaction.channelId, priority);
 
     const label = client.t(`priorities.${priority}`);
 

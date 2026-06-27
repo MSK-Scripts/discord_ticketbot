@@ -17,7 +17,7 @@ module.exports = {
     // reopen would be lost (the close-time transcript would be stale). A ticket
     // that is already 'closed' has a complete transcript, so we skip it.
     try {
-      const ticket = getTicketByChannel(interaction.channelId);
+      const ticket = await getTicketByChannel(interaction.channelId);
       if (ticket && ticket.status === 'open') {
         await captureFinalTranscript(client, interaction.channel, ticket, interaction.user);
       }

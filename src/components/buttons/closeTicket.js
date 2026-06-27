@@ -13,7 +13,7 @@ module.exports = {
   customId: 'tb_close',
 
   async execute(client, interaction) {
-    const ticket = getTicketByChannel(interaction.channelId);
+    const ticket = await getTicketByChannel(interaction.channelId);
 
     if (!ticket) {
       return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });

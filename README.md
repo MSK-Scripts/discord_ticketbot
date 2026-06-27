@@ -4,7 +4,7 @@
 
 # 🎫 Discord Ticket Bot
 
-A modern, self-hosted Discord ticket bot built on **Discord.js v14** and **SQLite** — no external database, no telemetry, full feature set out of the box.
+A modern, self-hosted Discord ticket bot built on **Discord.js v14** — SQLite out of the box (no external database required), with optional **MySQL/MariaDB** and **PostgreSQL** support. No telemetry, full feature set out of the box.
 
 [![Version](https://img.shields.io/github/v/release/MSK-Scripts/discord_ticketbot?style=flat-square&label=Version&color=5eb131)](https://github.com/MSK-Scripts/discord_ticketbot/releases)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blueviolet?style=flat-square)](https://www.gnu.org/licenses/agpl-3.0)
@@ -47,7 +47,7 @@ A modern, self-hosted Discord ticket bot built on **Discord.js v14** and **SQLit
 | 🔔 User Notifications | Optional DM notification for users when a staff member replies |
 | 🎮 Dynamic Bot Status | Automatically display the number of open tickets in the bot status |
 | 🌍 Multilingual | German and English included, easily extensible |
-| 🗄️ SQLite | No external database required — file is created automatically |
+| 🗄️ Flexible Database | SQLite out of the box (zero setup) — optional MySQL/MariaDB or PostgreSQL via `DATABASE_URL`, with a migration script |
 | 🔄 Auto-Update Check | Checks for new GitHub releases on startup and notifies with update instructions |
 
 ---
@@ -126,6 +126,8 @@ discord_ticketbot/
 ├── package.json
 ├── .env.example                # Environment variable template
 ├── ticketbot.service           # systemd unit file for Linux servers
+├── scripts/
+│   └── migrate-db.js           # `npm run db:migrate` — SQLite → MySQL/PostgreSQL
 ├── assets/                     # Static files (logo, banner images)
 │   ├── logo.png
 │   └── banner.png
@@ -139,11 +141,15 @@ discord_ticketbot/
 │   ├── de.json
 │   └── en.json
 ├── data/
-│   └── tickets.db              # SQLite database (auto-created)
+│   └── tickets.db              # SQLite database (auto-created; default backend)
 └── src/
     ├── client.js
     ├── config.js
-    ├── database.js
+    ├── database/               # Engine-agnostic DB layer (SQLite/MySQL/PostgreSQL)
+    │   ├── index.js            # Public async API + all queries
+    │   ├── url.js              # DATABASE_URL parsing → driver selection
+    │   ├── schema.js           # Per-dialect schema + migrations
+    │   └── drivers/            # sqlite.js / mysql.js / postgres.js
     ├── handlers/
     │   ├── commandHandler.js
     │   ├── eventHandler.js
@@ -233,7 +239,19 @@ GUILD_ID="your_server_id"
 # Optional — MSK Transcript Service
 MSK_API_KEY="your_msk_api_key"
 MSK_API_URL="https://www.msk-scripts.de"
+
+# Optional — Database (leave unset to use the bundled SQLite file)
+# MySQL/MariaDB:  mysql://user:pass@host:3306/ticketbot
+# PostgreSQL:     postgres://user:pass@host:5432/ticketbot
+# DATABASE_URL=""
 ```
+
+> **Database backends.** By default the bot stores everything in a local SQLite
+> file (`data/tickets.db`) — no setup needed. To use **MySQL/MariaDB** or
+> **PostgreSQL** instead, set `DATABASE_URL` (append `?ssl=true` for managed
+> databases that need TLS). The schema is created automatically. To move an
+> existing SQLite database into the new backend, run `npm run db:migrate` (it
+> preserves your ticket history and stats).
 
 ### 3. Set up the configuration
 
@@ -512,7 +530,10 @@ Each ticket type may define a `priority` that new tickets of that type start wit
 
 ## 🗄️ Database Schema
 
-The SQLite database is created automatically at `data/tickets.db`. Columns are added automatically via migration if they are missing.
+The database is created automatically. By default this is a local **SQLite** file
+(`data/tickets.db`); set `DATABASE_URL` to use **MySQL/MariaDB** or **PostgreSQL**
+instead (see [Installation](#-installation)). The same schema and migrations apply
+to every backend. Missing columns are added automatically on start.
 
 | Table | Contents |
 |---|---|

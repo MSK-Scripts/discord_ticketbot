@@ -33,14 +33,14 @@ module.exports = {
     const user = interaction.user;
 
     // ── Guard checks — reset menu first so the panel is always usable ─────────
-    if (isBlacklisted(user.id, interaction.guildId)) {
+    if (await isBlacklisted(user.id, interaction.guildId)) {
       await resetMenu(interaction, client);
       return interaction.followUp({ content: client.t('messages.blacklisted'), flags: MessageFlags.Ephemeral });
     }
 
     const cfg = client.config;
     if (cfg.maxTicketOpened > 0) {
-      const open = getOpenTicketsByUser(user.id, interaction.guildId);
+      const open = await getOpenTicketsByUser(user.id, interaction.guildId);
       if (open.length >= cfg.maxTicketOpened) {
         await resetMenu(interaction, client);
         return interaction.followUp({

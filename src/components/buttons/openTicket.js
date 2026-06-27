@@ -25,12 +25,12 @@ module.exports = {
     const user = interaction.user;
 
     // ── Guard checks ──────────────────────────────────────────────────────────
-    if (isBlacklisted(user.id, interaction.guildId)) {
+    if (await isBlacklisted(user.id, interaction.guildId)) {
       return interaction.reply({ content: client.t('messages.blacklisted'), flags: MessageFlags.Ephemeral });
     }
 
     if (cfg.maxTicketOpened > 0) {
-      const open = getOpenTicketsByUser(user.id, interaction.guildId);
+      const open = await getOpenTicketsByUser(user.id, interaction.guildId);
       if (open.length >= cfg.maxTicketOpened) {
         return interaction.reply({
           content: client.t('messages.ticketLimitReached', { limit: String(cfg.maxTicketOpened) }),

@@ -11,12 +11,12 @@ module.exports = {
 
     // Track last activity for auto-close
     const ticket = client.db
-      ? getTicketByChannel(message.channelId)
+      ? await getTicketByChannel(message.channelId)
       : null;
 
     if (ticket && ticket.status === 'open') {
       try {
-        updateLastActivity(message.channelId);
+        await updateLastActivity(message.channelId);
       } catch { /* ignore */ }
 
       // Ticket is active again → clear any auto-close warning flag so a future
@@ -44,7 +44,7 @@ module.exports = {
                     timestamp: new Date().toISOString(),
                   }],
                 }).catch(() => null);
-                setLastNotifySent(ticket.channel_id);
+                await setLastNotifySent(ticket.channel_id);
               }
             }
           }

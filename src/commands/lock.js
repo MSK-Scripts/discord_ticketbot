@@ -36,7 +36,7 @@ module.exports = {
       });
     }
 
-    const ticket = getTicketByChannel(interaction.channelId);
+    const ticket = await getTicketByChannel(interaction.channelId);
 
     if (!ticket) {
       return interaction.reply({
@@ -81,7 +81,7 @@ module.exports = {
         SendMessages: false,
       }).catch(err => client.logger.warn(`[Lock] Permission edit failed: ${err.message}`));
 
-      lockTicket(interaction.channelId);
+      await lockTicket(interaction.channelId);
 
       return interaction.reply({
         embeds: [{
@@ -107,7 +107,7 @@ module.exports = {
         SendMessages: true,
       }).catch(err => client.logger.warn(`[Unlock] Permission edit failed: ${err.message}`));
 
-      unlockTicket(interaction.channelId);
+      await unlockTicket(interaction.channelId);
 
       return interaction.reply({
         embeds: [{

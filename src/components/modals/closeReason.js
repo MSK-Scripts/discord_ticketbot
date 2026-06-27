@@ -12,7 +12,7 @@ module.exports = {
   async execute(client, interaction) {
     const reason = interaction.fields.getTextInputValue('close_reason') || null;
 
-    const ticket = getTicketByChannel(interaction.channelId);
+    const ticket = await getTicketByChannel(interaction.channelId);
     if (!ticket || ticket.status !== 'open') {
       return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), flags: MessageFlags.Ephemeral });
     }

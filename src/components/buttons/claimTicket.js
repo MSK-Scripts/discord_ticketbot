@@ -12,7 +12,7 @@ module.exports = {
     if (!client.isStaff(interaction.member)) {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
-    const ticket = getTicketByChannel(interaction.channelId);
+    const ticket = await getTicketByChannel(interaction.channelId);
     if (!ticket) {
       return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
     }
@@ -26,7 +26,7 @@ module.exports = {
       });
     }
 
-    claimTicket(interaction.channelId, interaction.user.id);
+    await claimTicket(interaction.channelId, interaction.user.id);
 
     // Reply immediately with rate-limit warning
     await interaction.reply(

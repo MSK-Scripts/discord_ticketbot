@@ -92,7 +92,7 @@ module.exports = {
 async function refreshTicketPanel(client) {
   let record;
   try {
-    record = getPanelMessage(process.env.GUILD_ID);
+    record = await getPanelMessage(process.env.GUILD_ID);
   } catch (err) {
     client.logger.error('[Panel] DB error:', err);
     return;
@@ -104,14 +104,14 @@ async function refreshTicketPanel(client) {
   const channel = await client.channels.fetch(record.channel_id).catch(() => null);
   if (!channel) {
     client.logger.warn('[Panel] Saved panel channel no longer exists — clearing record. Run /setup again.');
-    deletePanelMessage(process.env.GUILD_ID);
+    await deletePanelMessage(process.env.GUILD_ID);
     return;
   }
 
   const message = await channel.messages.fetch(record.message_id).catch(() => null);
   if (!message) {
     client.logger.warn('[Panel] Saved panel message no longer exists — clearing record. Run /setup again.');
-    deletePanelMessage(process.env.GUILD_ID);
+    await deletePanelMessage(process.env.GUILD_ID);
     return;
   }
 
@@ -136,7 +136,7 @@ async function runAutoClose(client, thresholdMs, warnMs, excludeClaimed) {
   if (!client.autoCloseWarned) client.autoCloseWarned = new Set();
 
   try {
-    tickets = getInactiveTickets(warnThreshold, excludeClaimed);
+    tickets = await getInactiveTickets(warnThreshold, excludeClaimed);
   } catch (err) {
     client.logger.error('[AutoClose] DB error:', err);
     return;
@@ -184,7 +184,7 @@ async function updateDynamicStatus(client) {
   const guildId = process.env.GUILD_ID;
   if (!guildId) return;
   try {
-    const stats        = getStats(guildId);
+    const stats        = await getStats(guildId);
     const statusCfg    = client.config.status;
     const textTemplate = statusCfg.dynamicText ?? '🎫 {open} open tickets';
     const text         = textTemplate
@@ -211,7 +211,7 @@ async function runStaffReminder(client, reminderMs) {
   let tickets;
 
   try {
-    tickets = getTicketsNeedingStaffReminder(reminderMs);
+    tickets = await getTicketsNeedingStaffReminder(reminderMs);
   } catch (err) {
     client.logger.error('[StaffReminder] DB error:', err);
     return;
@@ -243,7 +243,7 @@ async function runStaffReminder(client, reminderMs) {
 
       await channel.send({ content }).catch(() => null);
 
-      setStaffReminded(ticket.channel_id);
+      await setStaffReminded(ticket.channel_id);
 
       client.logger.info(`[StaffReminder] Reminded ticket #${ticket.id} (${hoursIdle}h idle)`);
     } catch (err) {

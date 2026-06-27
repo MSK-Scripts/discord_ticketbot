@@ -70,7 +70,7 @@ module.exports = {
     }
 
     // ── Must be inside an open ticket ──────────────────────────────────────────
-    const ticket = getTicketByChannel(interaction.channelId);
+    const ticket = await getTicketByChannel(interaction.channelId);
 
     if (!ticket || ticket.status !== 'open') {
       return interaction.reply({

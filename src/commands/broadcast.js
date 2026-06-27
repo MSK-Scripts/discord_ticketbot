@@ -46,7 +46,7 @@ module.exports = {
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const tickets = getAllOpenTickets(interaction.guildId, typeFilter);
+    const tickets = await getAllOpenTickets(interaction.guildId, typeFilter);
 
     if (tickets.length === 0) {
       return interaction.editReply(client.t('messages.broadcastNoTickets'));

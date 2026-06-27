@@ -29,7 +29,7 @@ module.exports = {
       // Persist the panel location so it can auto-refresh on every boot
       // (see refreshTicketPanel in src/events/ready.js) — no need to re-run
       // /setup after an update that changes the embed/text.
-      savePanelMessage(interaction.guildId, channel.id, sent.id);
+      await savePanelMessage(interaction.guildId, channel.id, sent.id);
       await interaction.editReply(client.t('messages.panelSent', { channel: channel.id }));
     } catch (err) {
       client.logger.error('[Setup] Failed to send panel:', err);

@@ -124,8 +124,8 @@ class TicketClient extends Client {
     // Configure logger visibility
     this.logger.configure({ showLog: this.config.showLog ?? true });
 
-    // Init database
-    this.db = initDatabase();
+    // Init database (SQLite by default; MySQL/MariaDB/PostgreSQL via DATABASE_URL)
+    this.db = await initDatabase();
     this.logger.info('Database initialized.');
 
     // Load handlers

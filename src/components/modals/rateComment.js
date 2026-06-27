@@ -17,14 +17,14 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.notInvalidRating'), flags: MessageFlags.Ephemeral });
     }
 
-    if (getRating(ticketId)) {
+    if (await getRating(ticketId)) {
       return interaction.reply({ content: client.t('messages.alreadyRated'), flags: MessageFlags.Ephemeral });
     }
 
     const rawComment = interaction.fields.getTextInputValue('rate_comment')?.trim();
     const comment    = rawComment ? rawComment : null;
 
-    addRating(ticketId, interaction.user.id, rating, comment);
+    await addRating(ticketId, interaction.user.id, rating, comment);
 
     const label = client.t(`ratings.${rating}`);
 

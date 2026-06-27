@@ -180,14 +180,14 @@ function buildClosedButtons(client) {
 async function openTicket(client, guild, user, ticketType, answers = []) {
   const cfg = client.config;
 
-  if (db.isBlacklisted(user.id, guild.id)) return null;
+  if (await db.isBlacklisted(user.id, guild.id)) return null;
 
   if (cfg.maxTicketOpened > 0) {
-    const open = db.getOpenTicketsByUser(user.id, guild.id);
+    const open = await db.getOpenTicketsByUser(user.id, guild.id);
     if (open.length >= cfg.maxTicketOpened) return null;
   }
 
-  const totalCount   = db.getTotalTicketCount(guild.id);
+  const totalCount   = await db.getTotalTicketCount(guild.id);
   const ticketNumber = totalCount + 1;
 
   const nameTpl     = ticketType.ticketNameOption || cfg.ticketNameOption || 'ticket-USERNAME';
@@ -248,8 +248,8 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
   // Predefined priority per ticket type (falls back to 'medium' on missing/invalid value)
   const priority = VALID_PRIORITIES.has(ticketType.priority) ? ticketType.priority : 'medium';
 
-  db.createTicket({ channelId: channel.id, guildId: guild.id, creatorId: user.id, type: ticketType.codeName, priority });
-  const ticket = db.getTicketByChannel(channel.id);
+  await db.createTicket({ channelId: channel.id, guildId: guild.id, creatorId: user.id, type: ticketType.codeName, priority });
+  const ticket = await db.getTicketByChannel(channel.id);
 
   updateChannelTopic(channel, ticket, {}, client); // fire-and-forget
 
@@ -358,8 +358,8 @@ async function performClose(client, channel, ticket, closer, reason) {
   }
 
   // 3. Update DB
-  db.closeTicket(channel.id, closer.id, reason, transcriptHtml);
-  const updatedTicket = db.getTicketByChannel(channel.id);
+  await db.closeTicket(channel.id, closer.id, reason, transcriptHtml);
+  const updatedTicket = await db.getTicketByChannel(channel.id);
 
   // 4. Post closed embed + delete button (+ optional reopen button)
   const deleteRow = buildClosedButtons(client);
@@ -483,8 +483,8 @@ async function performReopen(client, channel, ticket, reopener) {
   }).catch(() => null);
 
   // 2. Update DB (clears closed_by/closed_at/close_reason, status → open)
-  db.reopenTicket(channel.id);
-  const updated = db.getTicketByChannel(channel.id);
+  await db.reopenTicket(channel.id);
+  const updated = await db.getTicketByChannel(channel.id);
 
   // 3. Move back to the ticket type's category (if configured)
   const ticketType = cfg.ticketTypes.find(t => t.codeName === updated.type);
@@ -521,7 +521,7 @@ async function performMove(client, channel, ticket, newType, movedBy) {
     return;
   }
 
-  db.setType(channel.id, newType.codeName);
+  await db.setType(channel.id, newType.codeName);
 
   const cfg      = client.config;
   const allTypes = cfg.ticketTypes;
@@ -691,13 +691,13 @@ async function captureFinalTranscript(client, channel, ticket, deleter) {
   }
 
   // Record the close so the (about-to-be-deleted) ticket isn't left as "open".
-  db.closeTicket(channel.id, deleter?.id ?? client.user.id, ticket.close_reason, transcriptHtml);
+  await db.closeTicket(channel.id, deleter?.id ?? client.user.id, ticket.close_reason, transcriptHtml);
 
   // Post to the log channel with the (replaced) transcript link.
   if (transcriptUrl && client.config.logs && client.config.logsChannelId) {
     const logChannel = await channel.guild.channels.fetch(client.config.logsChannelId).catch(() => null);
     if (logChannel) {
-      const updated  = db.getTicketByChannel(channel.id) ?? ticket;
+      const updated  = await db.getTicketByChannel(channel.id) ?? ticket;
       const duration = (updated.closed_at ?? Date.now()) - updated.created_at;
       await logChannel.send({
         embeds: [ticketLogEmbed(client, { ticket: updated, closer: deleter, reason: ticket.close_reason, duration, transcriptUrl })],
