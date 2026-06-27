@@ -1,8 +1,7 @@
 const { ActivityType } = require('discord.js');
-const { getInactiveTickets, getTicketsNeedingStaffReminder, closeTicket, setStaffReminded, getStats, getPanelMessage, deletePanelMessage } = require('../database');
-const { generateTranscript } = require('../utils/transcript');
-const { ticketClosedEmbed, ticketLogEmbed } = require('../utils/embeds');
+const { getInactiveTickets, getTicketsNeedingStaffReminder, setStaffReminded, getStats, getPanelMessage, deletePanelMessage } = require('../database');
 const { buildTicketPanel } = require('../utils/panel');
+const { performClose } = require('../utils/ticketActions');
 
 const ACTIVITY_TYPE_MAP = {
   PLAYING:   ActivityType.Playing,
@@ -153,39 +152,13 @@ async function runAutoClose(client, thresholdMs, warnMs, excludeClaimed) {
 
       if (shouldClose) {
         const reason = client.t('messages.autoCloseReason');
-        let transcriptHtml = null;
 
-        if (client.config.closeOption?.createTranscript) {
-          transcriptHtml = await generateTranscript(channel, ticket, channel.guild.name, client.config.transcriptDesign, null, client.config.transcriptLang, client.config.mainColor).catch(() => null);
-        }
+        // Run the full manual-close flow (transcript upload, permission removal,
+        // closed embed + delete/reopen buttons, log channel, DM, rating, category
+        // move + rename) with the bot itself as the closer.
+        await performClose(client, channel, ticket, client.user, reason);
 
-        closeTicket(ticket.channel_id, client.user.id, reason, transcriptHtml);
-
-        await channel.send({ embeds: [ticketClosedEmbed(client, { closer: client.user, reason })] }).catch(() => null);
-
-        const closedCatId = client.config.closeOption?.closeTicketCategoryId;
-        if (closedCatId) {
-          await channel.setParent(closedCatId, { lockPermissions: false }).catch(() => null);
-        }
-
-        if (client.config.logs && client.config.logsChannelId) {
-          const logChannel = await client.channels.fetch(client.config.logsChannelId).catch(() => null);
-          if (logChannel) {
-            const { AttachmentBuilder } = require('discord.js');
-            const files = transcriptHtml
-              ? [new AttachmentBuilder(Buffer.from(transcriptHtml, 'utf-8'), { name: `ticket-${ticket.id}.html` })]
-              : [];
-            await logChannel.send({
-              embeds: [ticketLogEmbed(client, {
-                ticket, closer: client.user, reason,
-                duration: Date.now() - ticket.created_at, transcriptUrl: null,
-              })],
-              files,
-            }).catch(() => null);
-          }
-        }
-
-        // Ticket is gone — drop its warn flag so the Set never grows unbounded.
+        // Ticket is closed — drop its warn flag so the Set never grows unbounded.
         client.autoCloseWarned.delete(ticket.channel_id);
 
         client.logger.info(`[AutoClose] Closed ticket #${ticket.id}`);

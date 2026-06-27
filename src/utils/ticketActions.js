@@ -142,6 +142,39 @@ function buildTicketButtons(client, isClaimed = false) {
   return new ActionRowBuilder().addComponents(buttons);
 }
 
+// ─── Closed Button Row ──────────────────────────────────────────────────────────
+
+/**
+ * Build the action row shown beneath the "ticket closed" embed:
+ * an optional reopen button (gated on reopenOption) followed by the delete button.
+ * Shared between performClose and the auto-close loop so both closing paths
+ * offer the same delete/reopen controls.
+ */
+function buildClosedButtons(client) {
+  const closedButtons = [];
+
+  const reopenCfg = client.config.reopenOption ?? {};
+  if (reopenCfg.enabled && reopenCfg.button !== false) {
+    closedButtons.push(
+      new ButtonBuilder()
+        .setCustomId('tb_reopen')
+        .setLabel(client.t('buttons.reopen'))
+        .setEmoji(client.t('buttons.reopenEmoji'))
+        .setStyle(ButtonStyle.Success)
+    );
+  }
+
+  closedButtons.push(
+    new ButtonBuilder()
+      .setCustomId('tb_delete')
+      .setLabel(client.t('buttons.delete'))
+      .setEmoji(client.t('buttons.deleteEmoji'))
+      .setStyle(ButtonStyle.Danger)
+  );
+
+  return new ActionRowBuilder().addComponents(closedButtons);
+}
+
 // ─── Open ─────────────────────────────────────────────────────────────────────
 
 async function openTicket(client, guild, user, ticketType, answers = []) {
@@ -329,28 +362,7 @@ async function performClose(client, channel, ticket, closer, reason) {
   const updatedTicket = db.getTicketByChannel(channel.id);
 
   // 4. Post closed embed + delete button (+ optional reopen button)
-  const closedButtons = [];
-
-  const reopenCfg = client.config.reopenOption ?? {};
-  if (reopenCfg.enabled && reopenCfg.button !== false) {
-    closedButtons.push(
-      new ButtonBuilder()
-        .setCustomId('tb_reopen')
-        .setLabel(client.t('buttons.reopen'))
-        .setEmoji(client.t('buttons.reopenEmoji'))
-        .setStyle(ButtonStyle.Success)
-    );
-  }
-
-  closedButtons.push(
-    new ButtonBuilder()
-      .setCustomId('tb_delete')
-      .setLabel(client.t('buttons.delete'))
-      .setEmoji(client.t('buttons.deleteEmoji'))
-      .setStyle(ButtonStyle.Danger)
-  );
-
-  const deleteRow = new ActionRowBuilder().addComponents(closedButtons);
+  const deleteRow = buildClosedButtons(client);
 
   await channel.send({
     embeds:     [ticketClosedEmbed(client, { closer, reason })],
@@ -727,6 +739,7 @@ module.exports = {
   performMove,
   captureFinalTranscript,
   buildTicketButtons,
+  buildClosedButtons,
   refreshTicketMessage,
   updateChannelTopic,
   getEffectiveStaffRoles,

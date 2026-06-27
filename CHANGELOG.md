@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.5.1] - 2026-06-27
+
+### Changed
+- **Auto-close now behaves exactly like a manual `/close`.** Inactivity-closed
+  tickets previously used a separate, reduced closing path: the closing message
+  had no delete/reopen button (forcing staff to delete the channel manually),
+  the creator kept channel access, transcripts were never uploaded to the MSK
+  service, and no close DM/rating request was sent. The auto-close loop now calls
+  the shared `performClose()` flow with the bot as the closer, so auto-closed
+  tickets get the full treatment: delete (and optional reopen) button, creator
+  access removal, MSK transcript upload with file fallback, log-channel entry,
+  close DM, rating request, closed-category move, and `closed-` rename.
+
+### Added
+- Shared `buildClosedButtons()` helper in `src/utils/ticketActions.js` for the
+  closed-embed button row (delete + optional reopen), used by `performClose()`.
+
 ## [2.5.0] - 2026-06-19
 
 ### Changed
