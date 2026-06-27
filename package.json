@@ -15,5 +15,8 @@
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5"
   },
+  "overrides": {
+    "undici": "^6.27.0"
+  },
   "license": "SEE LICENSE IN LICENSE.md"
 }

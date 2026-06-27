@@ -26,6 +26,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared `buildClosedButtons()` helper in `src/utils/ticketActions.js` for the
   closed-embed button row (delete + optional reopen), used by `performClose()`.
 
+### Security
+- **Patched 4 `undici` advisories (1 high, 3 moderate)** pulled in transitively
+  through `discord.js` (via `@discordjs/rest`/`@discordjs/ws`, pinned to the
+  vulnerable `undici@6.24.1`): HTTP header injection via `Set-Cookie`
+  percent-decoding (GHSA-p88m-4jfj-68fv, high), WebSocket DoS via fragment-count
+  bypass (GHSA-vxpw-j846-p89q), HTTP response-queue poisoning via keep-alive
+  socket reuse (GHSA-35p6-xmwp-9g52), and `SameSite` attribute downgrade
+  (GHSA-g8m3-5g58-fq7m). Resolved with a `package.json` `overrides` entry forcing
+  `undici@^6.27.0` across the tree — no `discord.js` downgrade, API-compatible
+  within the 6.x line. `npm audit` now reports 0 vulnerabilities.
+
 ## [2.5.0] - 2026-06-19
 
 ### Changed
