@@ -1,0 +1,158 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * MSK design language — dark, green accent. shadcn/ui token names mapped onto the
+ * MSK palette so every shadcn component inherits the brand automatically. The
+ * dashboard is dark-only, so the dark palette lives directly in :root.
+ *
+ * Fonts (DM Sans / Space Mono / Syne) are imported locally in main.jsx via
+ * @fontsource — no external font CDN, which the strict CSP forbids anyway.
+ */
+
+:root {
+  --radius: 0.75rem;
+
+  --background: #0a0b0d;
+  --foreground: #f0ede8;
+
+  --card: #131317;
+  --card-foreground: #f0ede8;
+
+  --popover: #17171c;
+  --popover-foreground: #f0ede8;
+
+  --primary: #5eb131;            /* MSK green */
+  --primary-foreground: #08110b;
+
+  --secondary: #1b1b1f;
+  --secondary-foreground: #f0ede8;
+
+  --muted: #1b1b1f;
+  --muted-foreground: #8b8b93;
+
+  --accent: #23271d;             /* subtle green-tinted hover surface */
+  --accent-foreground: #f0ede8;
+
+  --destructive: #ed4245;
+  --destructive-foreground: #ffffff;
+
+  --border: rgba(255, 255, 255, 0.09);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #5eb131;
+
+  --warn: #fee75c;
+
+  --prio-low: #57f287;
+  --prio-medium: #fee75c;
+  --prio-high: #faa61a;
+  --prio-urgent: #ed4245;
+
+  /* Sidebar */
+  --sidebar: #101014;
+  --sidebar-foreground: #b0adb8;
+  --sidebar-primary: #5eb131;
+  --sidebar-primary-foreground: #08110b;
+  --sidebar-accent: rgba(94, 177, 49, 0.14);
+  --sidebar-accent-foreground: #5eb131;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #5eb131;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-warn: var(--warn);
+
+  --color-prio-low: var(--prio-low);
+  --color-prio-medium: var(--prio-medium);
+  --color-prio-high: var(--prio-high);
+  --color-prio-urgent: var(--prio-urgent);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: 'Syne', 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  /* Thin, modern scrollbars everywhere — replaces the clunky native Windows bar
+     (with up/down arrows) that looked broken in scroll regions. Only appears when
+     content actually overflows. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.28); background-clip: content-box; }
+}
+
+/* Terminal log console keeps its own monospace + wrapping. */
+.ansi-console {
+  font-family: var(--font-mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Syntax highlighting tokens for the file editor (see lib/highlight.js). */
+.tok-comment { color: #6b7280; font-style: italic; }
+.tok-key     { color: #5eb131; }          /* MSK green — object keys / env keys */
+.tok-string  { color: #e6b673; }          /* warm gold */
+.tok-number  { color: #7cc7ff; }          /* cyan */
+.tok-keyword { color: #d98cf0; }          /* true / false / null */
+.tok-punc    { color: #9a97a3; }

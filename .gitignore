@@ -19,6 +19,12 @@
 # Production
 /dist
 
+# Dashboard UI (web/)
+# NOTE: web/dist is deliberately NOT ignored — the built UI is committed so a
+# self-hoster never has to run a build step on their server. Only the sources'
+# dependencies are ignored.
+web/node_modules
+
 # Environment Files
 .env
 .env*.local

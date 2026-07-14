@@ -67,6 +67,34 @@ async function uploadTranscript({ ticketId, transcriptHtml, attachments = [] }) 
 }
 
 /**
+ * Fetch the hosted transcript URL for a ticket from the MSK server.
+ *
+ * The dashboard uses this to offer an "Open transcript" link for closed tickets.
+ * The server derives the guild from the API key and returns the URL it already
+ * stored at upload time — so the bot never has to persist the URL itself, and it
+ * works for tickets that were closed before this feature existed.
+ *
+ * @param {number|string} ticketId
+ * @returns {Promise<string|null>} the public URL, or null if none / not premium
+ */
+async function getTranscriptUrl(ticketId) {
+  const apiKey = process.env.MSK_API_KEY ?? '';
+  if (!apiKey) return null;
+
+  try {
+    const response = await fetch(`${MSK_API_URL}/api/transcript/url?ticketId=${encodeURIComponent(ticketId)}`, {
+      method:  'GET',
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data?.url ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Check the validity and tier of the configured API key.
  * Called once at bot startup to inform the user of their premium status.
  *
@@ -99,4 +127,4 @@ async function checkApiKey() {
   }
 }
 
-module.exports = { uploadTranscript, checkApiKey };
+module.exports = { uploadTranscript, checkApiKey, getTranscriptUrl };

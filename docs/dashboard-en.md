@@ -1,0 +1,182 @@
+# Web Dashboard
+
+Manage tickets, statistics and the bot configuration in your browser instead of
+editing files over SSH.
+
+The dashboard is **optional and disabled by default**. If you never enable it,
+nothing about your bot changes.
+
+---
+
+## What it can do
+
+| Area | What you get |
+|---|---|
+| **My tickets** | Every member sees the tickets they opened and can reply to the open ones. Their reply is posted in the Discord channel under their own name. |
+| **Tickets** | Full list with filters, ticket detail with the live conversation, claim / close / reopen / move / lock / priority. |
+| **Statistics** | Totals, average rating, average handling time, and a team ranking by tickets closed. |
+| **Configuration** | Edit `config.jsonc`, `snippets.jsonc` and `.env`, with a panel that resolves Discord role/channel/category **names** so you never have to hunt for raw IDs. |
+| **Bot control** | Start, stop, restart and update the bot, plus a live console. |
+| **Permissions** | Decide which roles and users may use the dashboard, and what they may do. |
+
+---
+
+## Quick start
+
+```bash
+npm run dashboard:setup   # guided setup — generates secrets, writes .env
+npm run dashboard         # starts the bot WITH the dashboard
+```
+
+`npm start` keeps working exactly as before and runs the plain bot with no web
+server at all.
+
+The setup wizard asks how you want to reach the dashboard and writes the right
+configuration for you. It **refuses** to write an unsafe combination.
+
+---
+
+## How it runs
+
+The dashboard is **not** inside the bot process. It is the **parent** process and
+runs the bot as a child:
+
+```
+node dashboard.js   ← the dashboard (web server + supervisor)
+   └── index.js     ← the bot
+```
+
+This is why the dashboard can restart the bot at all. A dashboard living inside
+the bot could not restart the process it is served from, and would be gone
+exactly when you need it most: after a crash. With the split, the dashboard stays
+up, shows you the crash in the console, and lets you start the bot again.
+
+---
+
+## Security
+
+The dashboard can restart your bot and edit your `.env`. Treat it like an admin
+panel, because that is what it is.
+
+### It is safe by default
+
+* **Disabled** unless you set `DASHBOARD_ENABLED=true`.
+* **Bound to `127.0.0.1`**, so it is not reachable from the internet at all.
+* **Refuses to start** if you bind it to a public interface without HTTPS.
+  You will get a clear error telling you how to fix it, rather than a silently
+  exposed panel.
+* The signing secret (`SESSION_SECRET`) is **generated per installation**. There
+  is no shipped default — a shared default would let anyone forge a login on
+  every installation at once.
+
+### Reaching it
+
+**Option A — SSH tunnel (simplest, nothing exposed):**
+
+```bash
+ssh -L 3010:127.0.0.1:3010 user@your-server
+```
+
+Then open `http://127.0.0.1:3010` on your own computer.
+
+**Option B — reverse proxy with HTTPS (for real use):**
+
+Keep `DASHBOARD_HOST=127.0.0.1`. Your web server talks to the dashboard locally,
+so the port never has to be open to the internet. `npm run dashboard:setup`
+prints a ready-to-use Apache config and the matching `certbot` command.
+
+> **Do not** simply set `DASHBOARD_HOST=0.0.0.0` and open the port. Without TLS
+> your session cookie and everything you type travels in plaintext. The bot will
+> refuse to start in that configuration anyway.
+
+---
+
+## Login and permissions
+
+Login is **Discord OAuth** using the application you already created for the bot.
+You only need to:
+
+1. Add the redirect URI shown by the setup wizard in the
+   [Discord Developer Portal](https://discord.com/developers/applications)
+   under **OAuth2 → Redirects**.
+2. Copy the **Client Secret** from **OAuth2 → Client Secret** into `CLIENT_SECRET`.
+
+Your Discord roles are resolved **server-side by the bot**. The dashboard never
+takes your word for what permissions you have.
+
+### The permission model
+
+* The **server owner** always has every permission and can never be locked out.
+* You grant access to **roles** or to individual **users**.
+* **A user entry overrides that person's role entries completely.** This is the
+  point of having both: it lets you take a single permission *away* from one
+  person that their role grants them.
+* Someone with no entry at all still sees **their own tickets** and can reply to
+  them — nothing more.
+
+| Permission | Allows |
+|---|---|
+| `tickets.view` | See the ticket list and ticket details |
+| `tickets.act` | Claim, close, reopen, move, lock, set priority |
+| `tickets.reply` | Reply in a ticket as the bot |
+| `stats.view` | See statistics and team performance |
+| `config.view` / `config.edit` | Read / write the config files |
+| `bot.control` | Start, stop, restart, update the bot |
+| `blacklist.manage` | Manage the blacklist |
+| `access.manage` | Manage these permissions |
+
+You cannot remove your own `access.manage`, deactivate yourself, or grant
+yourself a permission you do not already have. Granting permissions to *other*
+people is unrestricted.
+
+Every change made through the dashboard is written to an audit log.
+
+---
+
+## Environment variables
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `DASHBOARD_ENABLED` | `false` | Master switch |
+| `DASHBOARD_HOST` | `127.0.0.1` | Bind address. Leave it alone unless you know why. |
+| `DASHBOARD_PORT` | `3010` | Port |
+| `DASHBOARD_PUBLIC_URL` | `http://127.0.0.1:<port>` | The URL your browser uses. Must match the Discord redirect URI. |
+| `DASHBOARD_ALLOW_INSECURE` | `false` | Only if you terminate TLS somewhere the bot cannot see |
+| `SESSION_SECRET` | *generated* | Cookie signing key. Never share or reuse it. |
+| `CLIENT_SECRET` | — | Discord OAuth2 client secret |
+
+---
+
+## Running it as a service
+
+Use `dashboard.js` instead of `index.js` as the entry point. systemd then keeps
+the dashboard alive, and the dashboard keeps the bot alive:
+
+```ini
+[Service]
+ExecStart=/usr/bin/node /opt/discord_ticketbot/dashboard.js
+```
+
+---
+
+## Troubleshooting
+
+**"Refusing to start — configuration is not safe"**
+You bound the dashboard to a public interface without HTTPS. Either go back to
+`DASHBOARD_HOST=127.0.0.1` and use a reverse proxy, or set `DASHBOARD_PUBLIC_URL`
+to your `https://` address.
+
+**Login redirects back with an error**
+The redirect URI in the Discord portal must match `DASHBOARD_PUBLIC_URL` +
+`/auth/callback` **exactly**, including `https` and any trailing path.
+
+**The conversation in a ticket is empty**
+The bot needs the **Message Content** intent (Developer Portal → Bot →
+Privileged Gateway Intents) and `Read Message History` in the ticket channels.
+Without the latter Discord returns an empty list rather than an error.
+
+**Replies posted under a user's name do not appear**
+The bot needs the **Manage Webhooks** permission. Discord offers no way to post
+*as* a user, so the reply is sent through a webhook carrying that user's name and
+avatar. It will still show an `APP` badge — that is Discord's anti-impersonation
+protection and cannot be removed.

@@ -195,6 +195,47 @@ function validateConfig(config) {
     errors.push(`Field "mainColor" must be a hex color like "#2ee676", got "${config.mainColor}".`);
   }
 
+  // ── Discord IDs must actually be Discord IDs ────────────────────────────────
+  // Without this, the example placeholders ("ROLE_ID_TEAM", "CHANNEL_ID_HERE")
+  // sail straight through: the bot starts happily and then dies on the FIRST
+  // ticket with a cryptic discord.js error ("Supplied parameter is not a cached
+  // User or Role"), which tells the operator nothing about what to fix.
+  // Fail here instead, naming the exact field.
+  const SNOWFLAKE = /^\d{17,20}$/;
+  const isPlaceholder = (v) => typeof v === 'string' && /_HERE$|^ROLE_ID|^CHANNEL_ID|^CATEGORY_ID/.test(v);
+
+  const checkId = (value, field) => {
+    if (value === undefined || value === null || value === '') return; // optional/empty is fine
+    if (SNOWFLAKE.test(String(value))) return;
+    errors.push(
+      isPlaceholder(value)
+        ? `Field "${field}" is still the example placeholder ("${value}"). Replace it with a real Discord ID.`
+        : `Field "${field}" is not a valid Discord ID: "${value}" (expected 17–20 digits).`,
+    );
+  };
+  const checkIdList = (list, field) => {
+    if (!Array.isArray(list)) return;
+    list.forEach((v, i) => checkId(v, `${field}[${i}]`));
+  };
+
+  checkId(config.openTicketChannelId, 'openTicketChannelId');
+  if (config.logs)                 checkId(config.logsChannelId, 'logsChannelId');
+  if (config.ratingSystem?.enabled) checkId(config.ratingSystem.ratingsChannelId, 'ratingSystem.ratingsChannelId');
+  checkId(config.claimOption?.categoryWhenClaimed, 'claimOption.categoryWhenClaimed');
+  checkId(config.closeOption?.closeTicketCategoryId, 'closeOption.closeTicketCategoryId');
+
+  checkIdList(config.rolesWhoHaveAccessToTheTickets, 'rolesWhoHaveAccessToTheTickets');
+  checkIdList(config.rolesWhoCanNotCreateTickets, 'rolesWhoCanNotCreateTickets');
+  if (config.pingRoleWhenOpened) checkIdList(config.roleToPingWhenOpenedId, 'roleToPingWhenOpenedId');
+
+  if (Array.isArray(config.ticketTypes)) {
+    config.ticketTypes.forEach((t, i) => {
+      checkId(t?.categoryId, `ticketTypes[${i}].categoryId`);
+      checkIdList(t?.staffRoles, `ticketTypes[${i}].staffRoles`);
+      checkIdList(t?.cantAccess, `ticketTypes[${i}].cantAccess`);
+    });
+  }
+
   if (Array.isArray(config.ticketTypes)) {
     if (config.ticketTypes.length === 0) {
       errors.push('ticketTypes must contain at least one entry.');
@@ -219,4 +260,7 @@ function validateConfig(config) {
   return errors;
 }
 
-module.exports = { loadConfig, validateConfig };
+// stripJsonComments is exported so the dashboard can validate an edited
+// config.jsonc with exactly the same parser the bot boots with — a file the
+// dashboard accepts must never be one the bot then refuses to start on.
+module.exports = { loadConfig, validateConfig, stripJsonComments, describeParseError };

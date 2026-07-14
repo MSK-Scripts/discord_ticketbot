@@ -73,6 +73,21 @@ class TicketClient extends Client {
         GatewayIntentBits.MessageContent,
       ],
       partials: [Partials.Channel, Partials.Message],
+
+      // Global mention policy — the safety net for every outgoing message.
+      //
+      // 'users' + 'roles' stay enabled because the bot legitimately pings staff
+      // roles (ticket open ping, staff reminder). 'everyone' is deliberately
+      // absent, so neither a snippet, a broadcast, nor any future user-supplied
+      // text can ever trigger an @everyone/@here ping — not even if a call site
+      // forgets to pass allowedMentions.
+      //
+      // Untrusted, user-generated content (e.g. dashboard replies) must ADDITIONALLY
+      // pass a per-message zero-ping override:
+      //   { parse: [], roles: [], users: [], repliedUser: false }
+      // Filtering the string for "@everyone" is NOT enough — role (<@&id>) and
+      // user (<@id>) mentions bypass any such text filter.
+      allowedMentions: { parse: ['users', 'roles'] },
     });
 
     /** @type {Collection<string, object>} Slash commands */

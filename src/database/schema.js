@@ -62,13 +62,18 @@ function getCreateStatements(dialect) {
       last_notify_sent  ${t.ts}
     )`,
 
+    // UNIQUE is (guild_id, user_id), NOT user_id alone: several bot instances can
+    // share one external database, and each guild must be able to blacklist the
+    // same user independently. A global UNIQUE(user_id) would let only the first
+    // guild's row exist and silently swallow every other guild's blacklist entry.
     `CREATE TABLE IF NOT EXISTS blacklist (
       id       ${t.pk},
-      user_id  ${t.id} UNIQUE NOT NULL,
+      user_id  ${t.id} NOT NULL,
       guild_id ${t.id} NOT NULL,
       reason   ${t.text},
       added_by ${t.id} NOT NULL,
-      added_at ${t.ts} NOT NULL
+      added_at ${t.ts} NOT NULL,
+      UNIQUE (guild_id, user_id)
     )`,
 
     `CREATE TABLE IF NOT EXISTS staff_notes (
@@ -95,6 +100,46 @@ function getCreateStatements(dialect) {
       channel_id ${t.id} NOT NULL,
       message_id ${t.id} NOT NULL,
       updated_at ${t.ts} NOT NULL
+    )`,
+
+    // ── Web dashboard ────────────────────────────────────────────────────────
+    // Who may access the dashboard, and with which permissions.
+    //
+    // subject_type is 'user' or 'role'. Resolution order (see src/dashboard/permissions.js):
+    //   1. the guild owner always has every permission and can never be locked out
+    //   2. an explicit 'user' row OVERRIDES all role rows for that user — this is
+    //      what makes it possible to revoke a single permission from one staff
+    //      member that their role would otherwise grant
+    //   3. otherwise: the union of the permissions of all matching 'role' rows
+    //   4. no row at all: no dashboard permissions
+    //
+    // `permissions` holds a JSON array of permission strings. It is stored as
+    // text (not a native JSON column) so the same statement works on all three
+    // engines; unknown entries are filtered out on read, so a permission removed
+    // from the code can never come back to life through a stale DB row.
+    `CREATE TABLE IF NOT EXISTS dashboard_access (
+      id           ${t.pk},
+      guild_id     ${t.id}    NOT NULL,
+      subject_type ${t.label} NOT NULL,
+      subject_id   ${t.id}    NOT NULL,
+      permissions  ${t.text}  NOT NULL,
+      active       ${t.bool}  NOT NULL DEFAULT 1,
+      created_at   ${t.ts}    NOT NULL,
+      created_by   ${t.id}    NOT NULL,
+      UNIQUE (guild_id, subject_type, subject_id)
+    )`,
+
+    // Append-only audit trail. Every dashboard mutation writes one row.
+    // Writes are fire-and-forget: a failing audit insert must never fail the
+    // action that already happened.
+    `CREATE TABLE IF NOT EXISTS dashboard_audit (
+      id         ${t.pk},
+      guild_id   ${t.id}    NOT NULL,
+      actor_id   ${t.id}    NOT NULL,
+      action     ${t.label} NOT NULL,
+      target     ${t.label},
+      detail     ${t.text},
+      created_at ${t.ts}    NOT NULL
     )`,
   ];
 }

@@ -2,6 +2,8 @@ const { ActivityType } = require('discord.js');
 const { getInactiveTickets, getTicketsNeedingStaffReminder, setStaffReminded, getStats, getPanelMessage, deletePanelMessage } = require('../database');
 const { buildTicketPanel } = require('../utils/panel');
 const { performClose } = require('../utils/ticketActions');
+const { registerBotBridge } = require('../dashboard/botBridge');
+const { checkBotPermissions } = require('../utils/permissionCheck');
 
 const ACTIVITY_TYPE_MAP = {
   PLAYING:   ActivityType.Playing,
@@ -18,6 +20,14 @@ module.exports = {
   async execute(client) {
     client.logger.success(`[Ready] Logged in as ${client.user.tag}`);
     client.logger.info(`[Ready] Serving ${client.guilds.cache.size} guild(s).`);
+
+    // Tell the operator NOW if the bot lacks a permission it needs, instead of
+    // letting them discover it as a bare 403 on their first ticket.
+    checkBotPermissions(client);
+
+    // Listen for dashboard commands — but only when the supervisor forked us.
+    // A standalone `node index.js` has no IPC channel, so this is a no-op there.
+    registerBotBridge(client);
 
     const reset  = '\x1b[0m';
     const gray   = '\x1b[90m';
@@ -136,7 +146,7 @@ async function runAutoClose(client, thresholdMs, warnMs, excludeClaimed) {
   if (!client.autoCloseWarned) client.autoCloseWarned = new Set();
 
   try {
-    tickets = await getInactiveTickets(warnThreshold, excludeClaimed);
+    tickets = await getInactiveTickets(warnThreshold, excludeClaimed, process.env.GUILD_ID);
   } catch (err) {
     client.logger.error('[AutoClose] DB error:', err);
     return;
@@ -211,7 +221,7 @@ async function runStaffReminder(client, reminderMs) {
   let tickets;
 
   try {
-    tickets = await getTicketsNeedingStaffReminder(reminderMs);
+    tickets = await getTicketsNeedingStaffReminder(reminderMs, process.env.GUILD_ID);
   } catch (err) {
     client.logger.error('[StaffReminder] DB error:', err);
     return;

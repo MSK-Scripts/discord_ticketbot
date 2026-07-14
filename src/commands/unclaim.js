@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
-const { getTicketByChannel, unclaimTicket } = require('../database');
-const { updateChannelTopic, refreshTicketMessage } = require('../utils/ticketActions');
+const { getTicketByChannel } = require('../database');
+const { performUnclaim } = require('../utils/ticketActions');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -19,8 +19,6 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.notClaimed'), flags: MessageFlags.Ephemeral });
     }
 
-    await unclaimTicket(interaction.channelId);
-
     // Reply immediately with rate-limit warning
     await interaction.reply(
       client.t('messages.ticketUnclaimed', { user: `<@${interaction.user.id}>` }) + client.t('messages.topicUpdateWarning')
@@ -29,12 +27,6 @@ module.exports = {
     const channel = interaction.channel
       ?? await client.channels.fetch(interaction.channelId).catch(() => null);
 
-    if (channel) {
-      // Update topic (fire-and-forget — rate-limited)
-      updateChannelTopic(channel, ticket, { claimedBy: null }, client);
-
-      // Update embed + buttons (no rate-limit)
-      await refreshTicketMessage(channel, false, ticket, { claimedBy: null }, client);
-    }
+    await performUnclaim(client, channel, ticket);
   },
 };

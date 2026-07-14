@@ -35,6 +35,80 @@ async function applySchema(driver) {
       await driver.exec(`ALTER TABLE ${m.table} ADD COLUMN ${m.column} ${m.definition}`);
     }
   }
+  await migrateBlacklistUnique(driver);
+}
+
+/**
+ * Upgrade the blacklist UNIQUE constraint from the old global `UNIQUE(user_id)`
+ * to `UNIQUE(guild_id, user_id)`.
+ *
+ * A fresh install already has the composite key from getCreateStatements, so this
+ * only affects databases created before the fix. MySQL/Postgres can swap the
+ * index in place; SQLite cannot drop a column-level constraint, so it needs a
+ * full table rebuild. Idempotent: it detects the old shape and no-ops otherwise.
+ */
+async function migrateBlacklistUnique(driver) {
+  if (driver.dialect === 'sqlite') {
+    const row = await driver.get(
+      "SELECT sql FROM sqlite_master WHERE type='table' AND name='blacklist'");
+    // The old schema had `user_id ... UNIQUE` inline; the new one has none there.
+    if (!row || !/user_id[^,\n]*\bUNIQUE\b/i.test(row.sql)) return;
+
+    // No dedup needed: the old UNIQUE(user_id) guaranteed there are no duplicate
+    // user ids to collide on the new composite key.
+    await driver.exec(`
+      BEGIN;
+      CREATE TABLE blacklist_new (
+        id       INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id  TEXT NOT NULL,
+        guild_id TEXT NOT NULL,
+        reason   TEXT,
+        added_by TEXT NOT NULL,
+        added_at INTEGER NOT NULL,
+        UNIQUE (guild_id, user_id)
+      );
+      INSERT INTO blacklist_new (id, user_id, guild_id, reason, added_by, added_at)
+        SELECT id, user_id, guild_id, reason, added_by, added_at FROM blacklist;
+      DROP TABLE blacklist;
+      ALTER TABLE blacklist_new RENAME TO blacklist;
+      COMMIT;
+    `);
+    return;
+  }
+
+  // MySQL / Postgres: replace the index only if a single-column unique on user_id
+  // still exists. Wrapped in try/catch because the index name differs per engine
+  // and a fresh schema simply has nothing to drop.
+  try {
+    if (driver.family === 'mysql') {
+      const idx = await driver.all('SHOW INDEX FROM blacklist WHERE Column_name = ? AND Non_unique = 0', ['user_id']);
+      const soloUnique = (idx ?? []).filter(r => r.Key_name !== 'PRIMARY');
+      // A composite key lists user_id as one of several columns; a solo unique is
+      // its own key with just user_id. Only drop the latter.
+      for (const r of soloUnique) {
+        const cols = await driver.all('SHOW INDEX FROM blacklist WHERE Key_name = ?', [r.Key_name]);
+        if ((cols ?? []).length === 1) {
+          await driver.exec(`ALTER TABLE blacklist DROP INDEX \`${r.Key_name}\``);
+          await driver.exec('ALTER TABLE blacklist ADD UNIQUE (guild_id, user_id)');
+        }
+      }
+    } else {
+      // Postgres: drop the auto-named single-column unique if present, add composite.
+      const rows = await driver.all(
+        `SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'blacklist'`);
+      const solo = (rows ?? []).find(r => /UNIQUE/i.test(r.indexdef) && /\(user_id\)/i.test(r.indexdef));
+      const composite = (rows ?? []).some(r => /\(guild_id, ?user_id\)/i.test(r.indexdef));
+      if (solo && !composite) {
+        await driver.exec(`DROP INDEX IF EXISTS ${solo.indexname}`);
+        await driver.exec('ALTER TABLE blacklist ADD UNIQUE (guild_id, user_id)');
+      }
+    }
+  } catch (err) {
+    // A failed reindex must not stop the bot from booting; the worst case is the
+    // old constraint lingering on a shared DB, which the CREATE covers for fresh
+    // installs anyway. Surface it so it is not silent.
+    console.warn(`[Database] Could not migrate blacklist UNIQUE constraint: ${err.message}`);
+  }
 }
 
 /**
@@ -165,22 +239,26 @@ async function setStaffReminded(channelId) {
   return activeDriver.run('UPDATE tickets SET staff_reminded_at = ? WHERE channel_id = ?', [Date.now(), channelId]);
 }
 
-async function getInactiveTickets(thresholdMs, excludeClaimed = true) {
+async function getInactiveTickets(thresholdMs, excludeClaimed = true, guildId = null) {
   const cutoff = Date.now() - thresholdMs;
+  // guild_id filter: on a shared database this loop must only ever act on the
+  // calling process's own guild, or it would auto-close another tenant's tickets.
+  const scope = guildId ? ' AND guild_id = ?' : '';
   const query = excludeClaimed
-    ? "SELECT * FROM tickets WHERE status = 'open' AND last_activity < ? AND claimed_by IS NULL"
-    : "SELECT * FROM tickets WHERE status = 'open' AND last_activity < ?";
-  return activeDriver.all(query, [cutoff]);
+    ? `SELECT * FROM tickets WHERE status = 'open' AND last_activity < ? AND claimed_by IS NULL${scope}`
+    : `SELECT * FROM tickets WHERE status = 'open' AND last_activity < ?${scope}`;
+  return activeDriver.all(query, guildId ? [cutoff, guildId] : [cutoff]);
 }
 
-async function getTicketsNeedingStaffReminder(reminderMs) {
+async function getTicketsNeedingStaffReminder(reminderMs, guildId = null) {
   const cutoff = Date.now() - reminderMs;
+  const scope = guildId ? ' AND guild_id = ?' : '';
   return activeDriver.all(
     `SELECT * FROM tickets
      WHERE status = 'open'
        AND last_activity < ?
-       AND (staff_reminded_at IS NULL OR staff_reminded_at < ?)`,
-    [cutoff, cutoff],
+       AND (staff_reminded_at IS NULL OR staff_reminded_at < ?)${scope}`,
+    guildId ? [cutoff, cutoff, guildId] : [cutoff, cutoff],
   );
 }
 
@@ -272,11 +350,14 @@ async function addToBlacklist({ userId, guildId, reason, addedBy }) {
   return activeDriver.run(
     `INSERT INTO blacklist (user_id, guild_id, reason, added_by, added_at)
      VALUES (?, ?, ?, ?, ?)
-     ON CONFLICT (user_id) DO NOTHING`, params);
+     ON CONFLICT (guild_id, user_id) DO NOTHING`, params);
 }
 
-async function removeFromBlacklist(userId) {
-  return activeDriver.run('DELETE FROM blacklist WHERE user_id = ?', [userId]);
+async function removeFromBlacklist(userId, guildId) {
+  // Scoped by guild: on a shared database an unscoped DELETE would wipe another
+  // guild's blacklist row for the same user id.
+  return activeDriver.run(
+    'DELETE FROM blacklist WHERE user_id = ? AND guild_id = ?', [userId, guildId]);
 }
 
 async function isBlacklisted(userId, guildId) {
@@ -357,6 +438,132 @@ async function deletePanelMessage(guildId) {
   return activeDriver.run('DELETE FROM panel_messages WHERE guild_id = ?', [guildId]);
 }
 
+// ─── Dashboard: ticket queries ───────────────────────────────────────────────
+
+/**
+ * All tickets created by one user (open and/or closed). Backs the end-user
+ * portal ("my tickets") — the existing getOpenTicketsByUser only covers open
+ * ones and there was no way to list a user's closed tickets at all.
+ * @param {string} userId
+ * @param {string} guildId
+ * @param {'open'|'closed'|null} status  null = both
+ */
+async function getTicketsByUser(userId, guildId, status = null) {
+  if (status) {
+    return activeDriver.all(
+      `SELECT * FROM tickets WHERE creator_id = ? AND guild_id = ? AND status = ?
+       ORDER BY created_at DESC`, [userId, guildId, status]);
+  }
+  return activeDriver.all(
+    `SELECT * FROM tickets WHERE creator_id = ? AND guild_id = ?
+     ORDER BY created_at DESC`, [userId, guildId]);
+}
+
+// LIMIT/OFFSET are inlined as clamped integers, never as placeholders: mysql2
+// does not accept bound parameters there. They are parsed and clamped, so no
+// raw input ever reaches the SQL string.
+const clampInt = (v, def, min, max) => {
+  const n = parseInt(v, 10);
+  return Math.min(Math.max(Number.isFinite(n) ? n : def, min), max);
+};
+
+function ticketFilterSql(guildId, { status, type, priority, claimedBy } = {}) {
+  const where = ['guild_id = ?'];
+  const params = [guildId];
+  if (status)    { where.push('status = ?');     params.push(status); }
+  if (type)      { where.push('type = ?');       params.push(type); }
+  if (priority)  { where.push('priority = ?');   params.push(priority); }
+  if (claimedBy) { where.push('claimed_by = ?'); params.push(claimedBy); }
+  return { sql: where.join(' AND '), params };
+}
+
+/** Filtered, paginated ticket list for the staff dashboard. */
+async function listTickets(guildId, filters = {}) {
+  const { sql, params } = ticketFilterSql(guildId, filters);
+  const limit  = clampInt(filters.limit, 50, 1, 100);
+  const offset = clampInt(filters.offset, 0, 0, Number.MAX_SAFE_INTEGER);
+  return activeDriver.all(
+    `SELECT * FROM tickets WHERE ${sql} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
+    params);
+}
+
+/** Total row count for the same filters — used for pagination. */
+async function countTickets(guildId, filters = {}) {
+  const { sql, params } = ticketFilterSql(guildId, filters);
+  const row = await activeDriver.get(
+    `SELECT COUNT(*) AS c FROM tickets WHERE ${sql}`, params);
+  return num(row?.c) ?? 0;
+}
+
+// ─── Dashboard: access control ───────────────────────────────────────────────
+
+/** Active access rows for a guild. Loaded live on every request so that a
+ *  revoked permission takes effect immediately (permissions are never baked
+ *  into the session). */
+async function getDashboardAccess(guildId) {
+  return activeDriver.all(
+    'SELECT * FROM dashboard_access WHERE guild_id = ? AND active = 1', [guildId]);
+}
+
+/** All rows incl. deactivated ones — for the management UI. */
+async function listDashboardAccess(guildId) {
+  return activeDriver.all(
+    `SELECT * FROM dashboard_access WHERE guild_id = ?
+     ORDER BY subject_type ASC, created_at DESC`, [guildId]);
+}
+
+async function upsertDashboardAccess({ guildId, subjectType, subjectId, permissions, active = 1, createdBy }) {
+  const params = [
+    guildId, subjectType, subjectId,
+    JSON.stringify(permissions ?? []),
+    active ? 1 : 0, Date.now(), createdBy,
+  ];
+  if (activeDriver.family === 'mysql') {
+    return activeDriver.run(
+      `INSERT INTO dashboard_access (guild_id, subject_type, subject_id, permissions, active, created_at, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         permissions = VALUES(permissions), active = VALUES(active)`, params);
+  }
+  return activeDriver.run(
+    `INSERT INTO dashboard_access (guild_id, subject_type, subject_id, permissions, active, created_at, created_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT (guild_id, subject_type, subject_id) DO UPDATE SET
+       permissions = excluded.permissions, active = excluded.active`, params);
+}
+
+async function deleteDashboardAccess(guildId, subjectType, subjectId) {
+  return activeDriver.run(
+    'DELETE FROM dashboard_access WHERE guild_id = ? AND subject_type = ? AND subject_id = ?',
+    [guildId, subjectType, subjectId]);
+}
+
+// ─── Dashboard: audit log ────────────────────────────────────────────────────
+
+/**
+ * Append one audit row. Deliberately fire-and-forget: the mutation it records
+ * has already happened, so a failing audit insert must never turn a successful
+ * action into an error response.
+ */
+async function writeDashboardAudit({ guildId, actorId, action, target = null, detail = null }) {
+  try {
+    return await activeDriver.run(
+      `INSERT INTO dashboard_audit (guild_id, actor_id, action, target, detail, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [guildId, actorId, action, target, detail ? JSON.stringify(detail) : null, Date.now()]);
+  } catch (err) {
+    console.error('[Dashboard/Audit] failed to write audit row:', err.message);
+    return null;
+  }
+}
+
+async function getDashboardAudit(guildId, limit = 100) {
+  const lim = clampInt(limit, 100, 1, 200);
+  return activeDriver.all(
+    `SELECT * FROM dashboard_audit WHERE guild_id = ?
+     ORDER BY created_at DESC, id DESC LIMIT ${lim}`, [guildId]);
+}
+
 module.exports = {
   initDatabase, openDatabase, closeDatabase,
   createTicket, getTotalTicketCount, getTicketByChannel, getTicketById,
@@ -369,4 +576,8 @@ module.exports = {
   addNote, getNotes,
   addRating, getRating,
   savePanelMessage, getPanelMessage, deletePanelMessage,
+  // Dashboard
+  getTicketsByUser, listTickets, countTickets,
+  getDashboardAccess, listDashboardAccess, upsertDashboardAccess, deleteDashboardAccess,
+  writeDashboardAudit, getDashboardAudit,
 };

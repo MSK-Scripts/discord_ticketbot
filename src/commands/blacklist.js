@@ -49,7 +49,7 @@ module.exports = {
           flags: MessageFlags.Ephemeral,
         });
       }
-      await removeFromBlacklist(user.id);
+      await removeFromBlacklist(user.id, interaction.guildId);
       return interaction.reply(client.t('messages.blacklistRemoved', { user: `<@${user.id}>` }));
     }
 

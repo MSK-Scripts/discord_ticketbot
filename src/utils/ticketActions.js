@@ -217,7 +217,30 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     ? ticketType.staffRoles
     : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
 
-  for (const roleId of staffRoles) {
+  /**
+   * Only pass roles that actually exist in this guild.
+   *
+   * discord.js rejects the WHOLE channel creation with
+   * "Supplied parameter is not a cached User or Role" if a single overwrite id
+   * is unknown. A role that was deleted in Discord after the config was written
+   * would therefore break EVERY ticket — so drop the unknown ones, warn loudly,
+   * and still create the ticket.
+   */
+  const existingRoles = (ids, field) => {
+    const kept = [];
+    for (const roleId of ids ?? []) {
+      if (guild.roles.cache.has(roleId)) kept.push(roleId);
+      else {
+        client.logger.warn(
+          `[openTicket] ${field}: role "${roleId}" does not exist in this guild — skipping it. ` +
+          'Fix it in config.jsonc, otherwise these staff will not see the ticket.',
+        );
+      }
+    }
+    return kept;
+  };
+
+  for (const roleId of existingRoles(staffRoles, 'staffRoles')) {
     overwrites.push({
       id:    roleId,
       allow: [
@@ -228,7 +251,7 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
     });
   }
 
-  for (const roleId of ticketType.cantAccess ?? []) {
+  for (const roleId of existingRoles(ticketType.cantAccess, 'cantAccess')) {
     overwrites.push({ id: roleId, deny: [PermissionFlagsBits.ViewChannel] });
   }
 
@@ -285,7 +308,36 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
 
 // ─── Close ────────────────────────────────────────────────────────────────────
 
+// Channels whose close is in progress. The Discord button, /close, the dashboard
+// IPC bridge and the 30-min auto-close loop can all target the same ticket, and
+// they all run in this single bot process — so an in-memory guard is enough to
+// stop a double close (which would otherwise produce two transcripts, two DMs and
+// two rating requests).
+const closingChannels = new Set();
+
 async function performClose(client, channel, ticket, closer, reason) {
+  const channelId = ticket?.channel_id ?? channel?.id ?? null;
+
+  if (channelId) {
+    if (closingChannels.has(channelId)) return null; // already closing, concurrent caller
+    closingChannels.add(channelId);
+  }
+
+  try {
+    // Re-read the status right before doing the work: closes the small window
+    // between a caller's own open-check and this call (e.g. staff clicks Close in
+    // Discord a beat before the auto-close loop reaches the same ticket).
+    if (ticket?.id != null) {
+      const fresh = await db.getTicketById(ticket.id);
+      if (fresh && fresh.status !== 'open') return null;
+    }
+    return await performCloseInner(client, channel, ticket, closer, reason);
+  } finally {
+    if (channelId) closingChannels.delete(channelId);
+  }
+}
+
+async function performCloseInner(client, channel, ticket, closer, reason) {
   const cfg = client.config.closeOption ?? {};
 
   // 1. Disable all ticket buttons immediately
@@ -732,11 +784,47 @@ function getEffectiveStaffRoles(ticketType, cfg) {
     : (cfg.rolesWhoHaveAccessToTheTickets ?? []);
 }
 
+/**
+ * Claim a ticket for a staff member.
+ *
+ * Extracted from /claim so the slash command, the claim button and the web
+ * dashboard all go through ONE implementation — the side effects (topic, embed,
+ * category move) must not drift apart between entry points.
+ *
+ * The caller is responsible for the permission check and for rejecting a ticket
+ * that is closed or already claimed.
+ */
+async function performClaim(client, channel, ticket, staffId) {
+  await db.claimTicket(ticket.channel_id, staffId);
+  if (!channel) return;
+
+  // Fire-and-forget: Discord rate-limits topic edits hard (and a slow topic
+  // update must not hold up the reply).
+  updateChannelTopic(channel, ticket, { claimedBy: staffId }, client);
+  await refreshTicketMessage(channel, true, ticket, { claimedBy: staffId }, client);
+
+  const cfg = client.config.claimOption;
+  if (cfg?.categoryWhenClaimed) {
+    await channel.setParent(cfg.categoryWhenClaimed, { lockPermissions: false }).catch(() => null);
+  }
+}
+
+/** Release a claimed ticket. Counterpart to performClaim. */
+async function performUnclaim(client, channel, ticket) {
+  await db.unclaimTicket(ticket.channel_id);
+  if (!channel) return;
+
+  updateChannelTopic(channel, ticket, { claimedBy: null }, client);
+  await refreshTicketMessage(channel, false, ticket, { claimedBy: null }, client);
+}
+
 module.exports = {
   openTicket,
   performClose,
   performReopen,
   performMove,
+  performClaim,
+  performUnclaim,
   captureFinalTranscript,
   buildTicketButtons,
   buildClosedButtons,
