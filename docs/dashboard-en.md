@@ -12,10 +12,10 @@ nothing about your bot changes.
 
 | Area | What you get |
 |---|---|
-| **My tickets** | Every member sees the tickets they opened and can reply to the open ones. Their reply is posted in the Discord channel under their own name. |
+| **My tickets** | Every member sees the tickets they opened and can reply to the open ones. Their reply is posted in the Discord channel under their own name. Closed tickets offer a transcript download and, on premium, an "Open transcript" link. |
 | **Tickets** | Full list with filters, ticket detail with the live conversation, claim / close / reopen / move / lock / priority. |
 | **Statistics** | Totals, average rating, average handling time, and a team ranking by tickets closed. |
-| **Configuration** | Edit `config.jsonc`, `snippets.jsonc` and `.env`, with a panel that resolves Discord role/channel/category **names** so you never have to hunt for raw IDs. |
+| **Configuration** | Edit `config.jsonc`, `snippets.jsonc`, `.env` and the locale files in either a structured **form** view or a raw **file** view (with line numbers and syntax highlighting). Form edits preserve the `//` comments, and a side panel resolves Discord role/channel/category **names** so you never have to hunt for raw IDs. |
 | **Bot control** | Start, stop, restart and update the bot, plus a live console. |
 | **Permissions** | Decide which roles and users may use the dashboard, and what they may do. |
 
@@ -24,7 +24,7 @@ nothing about your bot changes.
 ## Quick start
 
 ```bash
-npm run dashboard:setup   # guided setup — generates secrets, writes .env
+npm run dashboard:setup   # guided setup: generates secrets, writes .env
 npm run dashboard         # starts the bot WITH the dashboard
 ```
 
@@ -66,12 +66,12 @@ panel, because that is what it is.
   You will get a clear error telling you how to fix it, rather than a silently
   exposed panel.
 * The signing secret (`SESSION_SECRET`) is **generated per installation**. There
-  is no shipped default — a shared default would let anyone forge a login on
-  every installation at once.
+  is no shipped default, because a shared default would let anyone forge a login
+  on every installation at once.
 
 ### Reaching it
 
-**Option A — SSH tunnel (simplest, nothing exposed):**
+**Option A: SSH tunnel (simplest, nothing exposed)**
 
 ```bash
 ssh -L 3010:127.0.0.1:3010 user@your-server
@@ -79,7 +79,7 @@ ssh -L 3010:127.0.0.1:3010 user@your-server
 
 Then open `http://127.0.0.1:3010` on your own computer.
 
-**Option B — reverse proxy with HTTPS (for real use):**
+**Option B: reverse proxy with HTTPS (for real use)**
 
 Keep `DASHBOARD_HOST=127.0.0.1`. Your web server talks to the dashboard locally,
 so the port never has to be open to the internet. `npm run dashboard:setup`
@@ -112,7 +112,7 @@ takes your word for what permissions you have.
   point of having both: it lets you take a single permission *away* from one
   person that their role grants them.
 * Someone with no entry at all still sees **their own tickets** and can reply to
-  them — nothing more.
+  them, nothing more.
 
 | Permission | Allows |
 |---|---|
@@ -143,7 +143,7 @@ Every change made through the dashboard is written to an audit log.
 | `DASHBOARD_PUBLIC_URL` | `http://127.0.0.1:<port>` | The URL your browser uses. Must match the Discord redirect URI. |
 | `DASHBOARD_ALLOW_INSECURE` | `false` | Only if you terminate TLS somewhere the bot cannot see |
 | `SESSION_SECRET` | *generated* | Cookie signing key. Never share or reuse it. |
-| `CLIENT_SECRET` | — | Discord OAuth2 client secret |
+| `CLIENT_SECRET` | (none) | Discord OAuth2 client secret |
 
 ---
 
@@ -161,7 +161,7 @@ ExecStart=/usr/bin/node /opt/discord_ticketbot/dashboard.js
 
 ## Troubleshooting
 
-**"Refusing to start — configuration is not safe"**
+**The dashboard refuses to start, saying the configuration is not safe**
 You bound the dashboard to a public interface without HTTPS. Either go back to
 `DASHBOARD_HOST=127.0.0.1` and use a reverse proxy, or set `DASHBOARD_PUBLIC_URL`
 to your `https://` address.
@@ -178,5 +178,5 @@ Without the latter Discord returns an empty list rather than an error.
 **Replies posted under a user's name do not appear**
 The bot needs the **Manage Webhooks** permission. Discord offers no way to post
 *as* a user, so the reply is sent through a webhook carrying that user's name and
-avatar. It will still show an `APP` badge — that is Discord's anti-impersonation
+avatar. It will still show an `APP` badge, which is Discord's anti-impersonation
 protection and cannot be removed.

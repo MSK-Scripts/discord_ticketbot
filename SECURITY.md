@@ -9,8 +9,8 @@ bot also checks for new releases on startup).
 
 | Version | Supported          |
 |---------|--------------------|
-| 2.2.x   | :white_check_mark: |
-| < 2.2.0 | :x:                |
+| 2.7.x   | :white_check_mark: |
+| < 2.7.0 | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -54,3 +54,9 @@ mind when self-hosting:
   hosted-bot management) is operated separately under
   [msk-scripts.de](https://www.msk-scripts.de); vulnerabilities in that hosted
   platform can be reported through the same channels above.
+- The optional **web dashboard** is an admin panel: it can restart the bot and
+  edit your `.env`. It is off by default and binds to `127.0.0.1`; if you expose
+  it, put it behind a reverse proxy with HTTPS (it refuses to start on a public
+  interface without HTTPS). Keep `SESSION_SECRET` and `CLIENT_SECRET` private, and
+  grant dashboard permissions sparingly. See
+  [docs/dashboard-en.md](docs/dashboard-en.md) for the full security model.

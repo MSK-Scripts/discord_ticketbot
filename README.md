@@ -49,6 +49,7 @@ A modern, self-hosted Discord ticket bot built on **Discord.js v14** — SQLite 
 | 🌍 Multilingual | German and English included, easily extensible |
 | 🗄️ Flexible Database | SQLite out of the box (zero setup) — optional MySQL/MariaDB or PostgreSQL via `DATABASE_URL`, with a migration script |
 | 🔄 Auto-Update Check | Checks for new GitHub releases on startup and notifies with update instructions |
+| 🖥️ Web Dashboard | Optional self-hosted browser dashboard (off by default): tickets, statistics, a form/file config editor, bot control and per-role/user permissions |
 
 ---
 
@@ -118,16 +119,55 @@ Contact MSK Scripts via [Discord](https://discord.gg/5hHSBRHvJE) to arrange a ho
 
 ---
 
+## 🖥️ Self-Hosted Web Dashboard
+
+Running the bot yourself? The optional web dashboard lets you manage everything in the browser instead of editing files over SSH. It is **disabled by default**, so if you never turn it on, nothing about your bot changes.
+
+| Area | What you get |
+|---|---|
+| **Tickets** | Filterable list, ticket detail with the live conversation, and claim / close / reopen / move / lock / priority. |
+| **My tickets** | Every member sees the tickets they opened and can reply to the open ones. Their reply is posted in the Discord channel under their own name. |
+| **Statistics** | Totals, average rating, average handling time and a team ranking by tickets closed. |
+| **Configuration** | A structured **form** editor and a raw **file** editor for `config.jsonc`, `snippets.jsonc`, `.env` and the locale files, with line numbers, syntax highlighting and a Discord role/channel/category name lookup. |
+| **Bot control** | Start, stop, restart and update the bot, plus a live console. |
+| **Permissions** | Grant access to roles or single users, where a user entry can override that person's role to revoke a single permission. |
+
+### Quick start
+
+```bash
+npm run dashboard:setup   # guided setup: generates the secret, writes .env, prints a ready-to-use reverse-proxy config
+npm run dashboard         # starts the bot WITH the dashboard
+```
+
+`npm start` keeps running the plain bot with no web server at all, exactly as before.
+
+### Safe by default
+
+- **Disabled** unless you set `DASHBOARD_ENABLED=true`.
+- **Bound to `127.0.0.1`**, so it is not reachable from the internet. Use an SSH tunnel or a reverse proxy with HTTPS.
+- **Refuses to start** on a public interface without HTTPS, with a clear message telling you how to fix it.
+- The signing secret is **generated per installation**, never shipped as a default.
+
+Login is Discord OAuth using the application you already created for the bot. Your roles are resolved server-side, the server owner always has full access and cannot be locked out, and every change is written to an audit log.
+
+> 📖 Full guide: [docs/dashboard-en.md](docs/dashboard-en.md) · [docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/dashboard)
+
+---
+
 ## 📁 Project Structure
 
 ```
 discord_ticketbot/
-├── index.js                    # Entry point
+├── index.js                    # Entry point (the plain bot)
+├── dashboard.js                # Optional dashboard entry (npm run dashboard) that supervises the bot
 ├── package.json
 ├── .env.example                # Environment variable template
 ├── ticketbot.service           # systemd unit file for Linux servers
 ├── scripts/
-│   └── migrate-db.js           # `npm run db:migrate` — SQLite → MySQL/PostgreSQL
+│   ├── migrate-db.js           # `npm run db:migrate`; SQLite → MySQL/PostgreSQL
+│   └── dashboard-setup.js      # `npm run dashboard:setup`; guided dashboard setup
+├── tests/                      # node:test suites (npm test); no extra dependencies
+├── web/                        # Dashboard UI (React + Vite). web/dist is committed; no build needed on the server
 ├── assets/                     # Static files (logo, banner images)
 │   ├── logo.png
 │   └── banner.png
@@ -136,7 +176,8 @@ discord_ticketbot/
 │   └── snippets.example.jsonc  # Canned responses template
 ├── docs/
 │   ├── setup-en.md
-│   └── setup-de.md
+│   ├── setup-de.md
+│   └── dashboard-en.md         # Full web dashboard guide
 ├── locales/
 │   ├── de.json
 │   └── en.json
@@ -150,6 +191,15 @@ discord_ticketbot/
     │   ├── url.js              # DATABASE_URL parsing → driver selection
     │   ├── schema.js           # Per-dialect schema + migrations
     │   └── drivers/            # sqlite.js / mysql.js / postgres.js
+    ├── dashboard/              # Optional web dashboard (only loaded when enabled)
+    │   ├── server.js           # Express app + one central security middleware chain
+    │   ├── supervisor.js       # Forks and manages the bot process
+    │   ├── security.js         # Session, CSRF, rate limit, client IP
+    │   ├── permissions.js      # Role/user permission model
+    │   ├── auth.js             # Discord OAuth (identify scope)
+    │   ├── discord.js          # REST client + name resolution
+    │   ├── routes.js           # API routes
+    │   └── botBridge.js        # Bot-side IPC handlers (Discord actions)
     ├── handlers/
     │   ├── commandHandler.js
     │   ├── eventHandler.js
@@ -202,6 +252,7 @@ discord_ticketbot/
         ├── transcript.js       # Self-contained HTML (avatars embedded as Base64)
         ├── mskApi.js
         ├── ticketActions.js
+        ├── permissionCheck.js  # Startup Discord-permission check + invite URL
         ├── versionCheck.js     # Startup update check against GitHub releases
         └── snippets.js         # Snippet loader & placeholder engine
 ```
@@ -244,6 +295,10 @@ MSK_API_URL="https://www.msk-scripts.de"
 # MySQL/MariaDB:  mysql://user:pass@host:3306/ticketbot
 # PostgreSQL:     postgres://user:pass@host:5432/ticketbot
 # DATABASE_URL=""
+
+# Optional: Web Dashboard (off unless enabled; run `npm run dashboard:setup`)
+# DASHBOARD_ENABLED="false"
+# See docs/dashboard-en.md for the full list.
 ```
 
 > **Database backends.** By default the bot stores everything in a local SQLite
@@ -563,6 +618,8 @@ to every backend. Missing columns are added automatically on start.
 ## 📖 Documentation
 
 Full documentation: **[docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started)**
+
+- Web dashboard: **[docs/dashboard-en.md](docs/dashboard-en.md)**
 
 ---
 
