@@ -1,0 +1,263 @@
+{
+  "buttons": {
+    "openTicket": "Ouvrir un ticket",
+    "close": "Fermer le ticket",
+    "closeEmoji": "🔒",
+    "claim": "Prendre en charge",
+    "claimEmoji": "🙋",
+    "unclaim": "Abandonner",
+    "unclaimEmoji": "🙌",
+    "move": "Déplacer",
+    "moveEmoji": "🔀",
+    "delete": "Supprimer le ticket",
+    "deleteEmoji": "🗑️",
+    "reopen": "Rouvrir",
+    "reopenEmoji": "♻️",
+    "transcript": "Transcription",
+    "transcriptEmoji": "📄",
+    "deleteConfirm": "Oui, supprimer le ticket",
+    "deleteCancel": "Annuler",
+    "notifyOn": "Notifications activées",
+    "notifyOff": "Me prévenir quand le staff répond"
+  },
+  "embeds": {
+    "panel": {
+      "title": "Ticket de support",
+      "description": "Cliquez sur le bouton ci-dessous pour ouvrir un ticket.\nUn membre de l'équipe vous aidera dès que possible.",
+      "footer": "© MSK Scripts - Tous droits réservés"
+    },
+    "ticketOpened": {
+      "title": "Ticket ouvert",
+      "description": "Bonjour {user} ! Merci d'avoir ouvert un ticket.\nUn membre de l'équipe sera avec vous sous peu.\n\n**Type :** {type}\n**Priorité :** {priority}"
+    },
+    "ticketClosed": {
+      "title": "Ticket fermé",
+      "description": "Le ticket a été fermé par {closer}.\n**Raison :** {reason}"
+    },
+    "ticketClosedDM": {
+      "title": "Votre ticket a été fermé",
+      "description": "Votre ticket **#{count}** ({type}) a été fermé par {closer}.\n**Raison :** {reason}",
+      "transcript": "Transcription",
+      "transcriptLink": "Ouvrir"
+    },
+    "ticketReopened": {
+      "title": "Ticket rouvert",
+      "description": "Le ticket a été rouvert par {reopener}."
+    },
+    "ticketLog": {
+      "title": "Ticket #{count} fermé",
+      "transcriptLink": "Ouvrir",
+      "fields": {
+        "type": "Type",
+        "creator": "Créé par",
+        "closer": "Fermé par",
+        "claimed": "Pris en charge par",
+        "reason": "Raison",
+        "duration": "Durée",
+        "messages": "Messages",
+        "transcript": "Transcription"
+      }
+    },
+    "ratingRequest": {
+      "title": "Comment s'est passé votre support ?",
+      "description": "Merci d'évaluer votre expérience de support pour le ticket **#{count}**.\nVotre retour nous aide à nous améliorer."
+    },
+    "stats": {
+      "title": "📊 Statistiques des tickets",
+      "fields": {
+        "totalTickets": "Total des tickets",
+        "openTickets": "Ouverts",
+        "closedTickets": "Fermés",
+        "avgRating": "Note moyenne",
+        "avgDuration": "Durée moyenne",
+        "topStaff": "Meilleur staff"
+      }
+    },
+    "userStats": {
+      "title": "📊 Statistiques — {user}",
+      "userSection": "**👤 En tant qu'utilisateur**",
+      "opened": "🎫 Tickets ouverts",
+      "openNow": "🟢 Actuellement ouverts",
+      "closedAsCreator": "🔴 Fermés",
+      "favoriteType": "🏷️ Type le plus fréquent",
+      "avgRatingGiven": "⭐ Note moyenne donnée",
+      "staffSection": "**🛡️ En tant que staff**",
+      "closedAsStaff": "🔒 Tickets fermés",
+      "claimed": "🙋 Tickets pris en charge",
+      "avgRatingReceived": "⭐ Note moyenne reçue"
+    },
+    "notifyOptIn": {
+      "description": "🔕 Cliquez sur le bouton ci-dessous si vous souhaitez recevoir une **notification en MP** lorsqu'un membre du staff répond à votre ticket."
+    },
+    "moved": {
+      "description": "🔀 Ticket déplacé par {user} de **{from}** vers **{to}**."
+    },
+    "locked": {
+      "description": "🔒 **Ticket verrouillé** par {user}",
+      "withReason": "🔒 **Ticket verrouillé** par {user}\n**Raison :** {reason}"
+    },
+    "unlocked": {
+      "description": "🔓 **Ticket déverrouillé** par {user}"
+    },
+    "staffNotes": {
+      "title": "📝 Notes du staff — Ticket #{count}",
+      "footer": "Affichage de {shown}/{total} notes"
+    },
+    "blacklistList": {
+      "title": "🚫 Liste noire des tickets",
+      "footer": "{count} entrées"
+    },
+    "snippetList": {
+      "title": "📋 Réponses prédéfinies disponibles",
+      "footer": "{count} réponse(s) disponible(s)"
+    },
+    "ratingReceived": {
+      "title": "✅ Évaluation reçue",
+      "description": "Merci pour votre retour ! Vous avez noté **{label}**."
+    },
+    "ratingPost": {
+      "title": "⭐ Nouvelle évaluation — Ticket #{count}",
+      "userField": "Utilisateur",
+      "ratingField": "Note"
+    },
+    "broadcast": {
+      "author": "📢 Annonce — {user}",
+      "plain": "📢 **Annonce :** {message}"
+    }
+  },
+  "modals": {
+    "closeReason": {
+      "title": "Fermer le ticket",
+      "label": "Raison de la fermeture",
+      "placeholder": "Veuillez indiquer une raison pour la fermeture de ce ticket."
+    },
+    "openTicket": {
+      "title": "Ouvrir un ticket",
+      "label": "Raison de votre ticket",
+      "placeholder": "Veuillez décrire brièvement votre problème."
+    },
+    "rateComment": {
+      "title": "Évaluer le ticket",
+      "label": "Commentaire (facultatif)",
+      "placeholder": "Souhaitez-vous ajouter quelque chose à votre évaluation ?"
+    }
+  },
+  "menus": {
+    "ticketType": "Sélectionnez un type de ticket",
+    "moveTarget": "Sélectionnez un nouveau type de ticket..."
+  },
+  "messages": {
+    "ticketCreated": "✅ Votre ticket a été créé : {channel}",
+    "ticketAlreadyClosed": "❌ Ce ticket est déjà fermé !",
+    "ticketAlreadyClaimed": "❌ Ce ticket a déjà été pris en charge par {user} !",
+    "ticketClaimed": "🙋 Ticket pris en charge par {user}.",
+    "ticketUnclaimed": "🙌 Ticket abandonné par {user}.",
+    "topicUpdateWarning": "\n> ⚠️ *Le sujet du salon sera mis à jour sous peu — Discord limite les changements de sujet à 2 par 10 minutes, cela peut donc prendre un moment.*",
+    "ticketRenamed": "✏️ Ticket renommé en **{name}**.",
+    "ticketMoved": "🔀 Ticket déplacé par {user} vers **{type}**.",
+    "ticketLimitReached": "❌ Vous ne pouvez avoir que **{limit}** tickets ouverts à la fois.",
+    "blacklisted": "❌ Vous êtes sur la liste noire et ne pouvez pas ouvrir de tickets.",
+    "noPermission": "❌ Vous n'avez pas la permission pour cette action.",
+    "notATicket": "❌ Ce salon n'est pas un ticket.",
+    "onlyStaff": "❌ Seul le staff peut effectuer cette action.",
+    "userAdded": "✅ {user} a été ajouté au ticket.",
+    "userRemoved": "✅ {user} a été retiré du ticket.",
+    "priorityChanged": "🔔 Priorité définie sur **{priority}**.",
+    "noteAdded": "📝 Note du staff ajoutée.",
+    "transcriptCreated": "📄 Transcription créée.",
+    "generatingTranscript": "⏳ Génération de la transcription...",
+    "autoCloseWarning": "⚠️ Ce ticket sera automatiquement fermé dans **{hours}** heures pour cause d'inactivité.",
+    "blacklistAdded": "✅ {user} a été ajouté à la liste noire.",
+    "blacklistRemoved": "✅ {user} a été retiré de la liste noire.",
+    "blacklistAlreadyAdded": "❌ {user} est déjà sur la liste noire.",
+    "blacklistNotFound": "❌ {user} n'est pas sur la liste noire.",
+    "configError": "⚠️ Erreur de configuration. Veuillez contacter l'opérateur du bot !",
+    "snippet_not_in_ticket": "❌ Cette commande ne peut être utilisée que dans un ticket ouvert.",
+    "snippet_list_empty": "ℹ️ Aucune réponse prédéfinie n'est encore configurée.\nCopiez `config/snippets.example.jsonc` vers `config/snippets.jsonc` et adaptez-le.",
+    "snippet_not_found": "❌ Réponse prédéfinie **{name}** introuvable. Utilisez `/snippet list` pour un aperçu.",
+    "snippet_sent": "✅ La réponse prédéfinie **{name}** a été envoyée.",
+    "ticketLocked": "🔒 Ce ticket a été verrouillé. Vous ne pouvez plus envoyer de messages tant qu'un membre du staff ne l'a pas déverrouillé.",
+    "ticketUnlocked": "🔓 Ce ticket a été déverrouillé. Vous pouvez à nouveau envoyer des messages.",
+    "broadcastSent": "✅ Annonce envoyée à **{count}** ticket(s).",
+    "internalError": "❌ Une erreur interne est survenue.",
+    "channelNotFound": "❌ Salon introuvable.",
+    "unknownTicketType": "❌ Type de ticket inconnu.",
+    "noAccessToType": "❌ Vous n'avez pas accès à ce type de ticket.",
+    "ticketCreateFailed": "❌ Le ticket n'a pas pu être créé. Veuillez réessayer.",
+    "renameEmpty": "❌ Le nom ne contient aucun caractère valide (seuls les lettres, chiffres et tirets sont autorisés).",
+    "notClaimed": "❌ Ce ticket n'est pas pris en charge.",
+    "alreadyThisType": "❌ Ce ticket est déjà de ce type.",
+    "noOtherTypes": "❌ Il n'y a pas d'autres types de tickets vers lesquels déplacer.",
+    "blacklistEmpty": "✅ La liste noire est vide.",
+    "notesEmpty": "📝 Aucune note pour ce ticket.",
+    "notInvalidRating": "❌ Évaluation invalide.",
+    "ratingRefNotFound": "❌ Référence du ticket introuvable.",
+    "alreadyRated": "✅ Vous avez déjà évalué ce ticket.",
+    "onlyCreatorNotify": "❌ Seul le créateur du ticket peut activer les notifications.",
+    "deletingChannel": "🗑️ Le salon est en cours de suppression...",
+    "deleteCancelled": "✅ Suppression annulée.",
+    "deleteConfirmPrompt": "⚠️ **Êtes-vous sûr ?** Le salon du ticket sera définitivement supprimé.",
+    "closingTicket": "⏳ **Le ticket est en cours de fermeture.** Veuillez patienter pendant la génération de la transcription...",
+    "reopeningTicket": "♻️ **Le ticket est en cours de réouverture...**",
+    "ticketNotClosed": "❌ Ce ticket n'est pas fermé.",
+    "reopenDisabled": "❌ La réouverture des tickets est désactivée sur ce serveur.",
+    "selectCategory": "🎫 Veuillez sélectionner une catégorie :",
+    "alreadyLocked": "❌ Ce ticket est déjà verrouillé.",
+    "notLocked": "❌ Ce ticket n'est pas verrouillé.",
+    "selectMoveTarget": "🔀 Vers quel type ce ticket doit-il être déplacé ?",
+    "movingTo": "⏳ Déplacement vers **{type}**...",
+    "movedTo": "✅ Ticket déplacé vers **{type}**.",
+    "transcriptFailed": "❌ Échec de la génération de la transcription.",
+    "priorityAlreadySet": "ℹ️ La priorité est déjà définie sur **{priority}**.",
+    "selectMoveTargetCurrent": "🔀 **Déplacer le ticket** (actuel : **{type}**)\nVers quel type ce ticket doit-il être déplacé ?",
+    "autoCloseReason": "Fermé automatiquement pour cause d'inactivité",
+    "deleteReason": "Ticket supprimé par {user}",
+    "staffReminderTitle": "⏰ **Aucune réponse du staff depuis {hours} heures !**",
+    "staffReminderBody": "Le ticket <#{channel}> (type : **{type}**, priorité : **{priority}**) attend une réponse.",
+    "staffReplyTitle": "🔔 Le staff a répondu à votre ticket !",
+    "staffReplyBody": "Un membre du staff a répondu dans votre ticket **{type}**.\n\n[🔗 Aller au ticket]({link})",
+    "broadcastNoTickets": "ℹ️ Aucun ticket ouvert trouvé.",
+    "broadcastResult": "✅ Annonce envoyée à **{sent}** ticket(s).",
+    "broadcastResultFailed": "✅ Annonce envoyée à **{sent}** ticket(s). *({failed} salon(s) en échec)*",
+    "panelChannelNotFound": "❌ Salon `{channel}` introuvable. Veuillez vérifier `openTicketChannelId` dans la configuration.",
+    "panelSent": "✅ Panneau de tickets envoyé dans <#{channel}>.",
+    "panelSendFailed": "❌ Échec de l'envoi du panneau. Les permissions du bot sont-elles correctes ?",
+    "noReasonGiven": "Aucune raison fournie",
+    "userAddFailed": "❌ Échec de l'ajout de l'utilisateur.",
+    "userRemoveFailed": "❌ Échec du retrait de l'utilisateur.",
+    "cannotRemoveCreator": "❌ Le créateur du ticket ne peut pas être retiré."
+  },
+  "priorities": {
+    "low": "🟢 Basse",
+    "medium": "🟡 Moyenne",
+    "high": "🟠 Haute",
+    "urgent": "🔴 Urgente"
+  },
+  "ratings": {
+    "1": "⭐ Très mauvais",
+    "2": "⭐⭐ Mauvais",
+    "3": "⭐⭐⭐ Correct",
+    "4": "⭐⭐⭐⭐ Bon",
+    "5": "⭐⭐⭐⭐⭐ Excellent",
+    "commentField": "💬 Commentaire"
+  },
+  "transcript": {
+    "dateLocale": "fr-FR",
+    "eyebrow": "Transcription du ticket",
+    "ticket": "Ticket",
+    "conversation": "Conversation",
+    "type": "Type",
+    "createdBy": "Créé par",
+    "createdOn": "Créé le",
+    "closedOn": "Fermé le",
+    "closedBy": "Fermé par",
+    "claimedBy": "Pris en charge par",
+    "priority": "Priorité",
+    "messages": "Messages",
+    "closeReason": "Raison de la fermeture",
+    "empty": "Aucun message dans ce ticket",
+    "generatedOn": "Généré le",
+    "copy": "Copier",
+    "copied": "Copié !"
+  }
+}

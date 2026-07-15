@@ -1,0 +1,263 @@
+{
+  "buttons": {
+    "openTicket": "Otwórz zgłoszenie",
+    "close": "Zamknij zgłoszenie",
+    "closeEmoji": "🔒",
+    "claim": "Przejmij",
+    "claimEmoji": "🙋",
+    "unclaim": "Zwolnij",
+    "unclaimEmoji": "🙌",
+    "move": "Przenieś",
+    "moveEmoji": "🔀",
+    "delete": "Usuń zgłoszenie",
+    "deleteEmoji": "🗑️",
+    "reopen": "Otwórz ponownie",
+    "reopenEmoji": "♻️",
+    "transcript": "Transkrypcja",
+    "transcriptEmoji": "📄",
+    "deleteConfirm": "Tak, usuń zgłoszenie",
+    "deleteCancel": "Anuluj",
+    "notifyOn": "Powiadomienia włączone",
+    "notifyOff": "Powiadom mnie, gdy zespół odpowie"
+  },
+  "embeds": {
+    "panel": {
+      "title": "Zgłoszenie do wsparcia",
+      "description": "Kliknij przycisk poniżej, aby otworzyć zgłoszenie.\nCzłonek zespołu pomoże Ci najszybciej, jak to możliwe.",
+      "footer": "© MSK Scripts - Wszelkie prawa zastrzeżone"
+    },
+    "ticketOpened": {
+      "title": "Zgłoszenie otwarte",
+      "description": "Cześć {user}! Dziękujemy za otwarcie zgłoszenia.\nCzłonek zespołu wkrótce się z Tobą skontaktuje.\n\n**Typ:** {type}\n**Priorytet:** {priority}"
+    },
+    "ticketClosed": {
+      "title": "Zgłoszenie zamknięte",
+      "description": "Zgłoszenie zostało zamknięte przez {closer}.\n**Powód:** {reason}"
+    },
+    "ticketClosedDM": {
+      "title": "Twoje zgłoszenie zostało zamknięte",
+      "description": "Twoje zgłoszenie **#{count}** ({type}) zostało zamknięte przez {closer}.\n**Powód:** {reason}",
+      "transcript": "Transkrypcja",
+      "transcriptLink": "Otwórz"
+    },
+    "ticketReopened": {
+      "title": "Zgłoszenie ponownie otwarte",
+      "description": "Zgłoszenie zostało ponownie otwarte przez {reopener}."
+    },
+    "ticketLog": {
+      "title": "Zgłoszenie #{count} zamknięte",
+      "transcriptLink": "Otwórz",
+      "fields": {
+        "type": "Typ",
+        "creator": "Utworzone przez",
+        "closer": "Zamknięte przez",
+        "claimed": "Przejęte przez",
+        "reason": "Powód",
+        "duration": "Czas trwania",
+        "messages": "Wiadomości",
+        "transcript": "Transkrypcja"
+      }
+    },
+    "ratingRequest": {
+      "title": "Jak przebiegła obsługa?",
+      "description": "Prosimy o ocenę obsługi zgłoszenia **#{count}**.\nTwoja opinia pomaga nam się rozwijać."
+    },
+    "stats": {
+      "title": "📊 Statystyki zgłoszeń",
+      "fields": {
+        "totalTickets": "Łącznie zgłoszeń",
+        "openTickets": "Otwarte",
+        "closedTickets": "Zamknięte",
+        "avgRating": "Średnia ocena",
+        "avgDuration": "Średni czas",
+        "topStaff": "Najlepszy zespół"
+      }
+    },
+    "userStats": {
+      "title": "📊 Statystyki — {user}",
+      "userSection": "**👤 Jako użytkownik**",
+      "opened": "🎫 Otwarte zgłoszenia",
+      "openNow": "🟢 Obecnie otwarte",
+      "closedAsCreator": "🔴 Zamknięte",
+      "favoriteType": "🏷️ Najczęstszy typ",
+      "avgRatingGiven": "⭐ Średnia wystawiona ocena",
+      "staffSection": "**🛡️ Jako zespół**",
+      "closedAsStaff": "🔒 Zamknięte zgłoszenia",
+      "claimed": "🙋 Przejęte zgłoszenia",
+      "avgRatingReceived": "⭐ Średnia otrzymana ocena"
+    },
+    "notifyOptIn": {
+      "description": "🔕 Kliknij przycisk poniżej, jeśli chcesz otrzymać **powiadomienie w wiadomości prywatnej**, gdy członek zespołu odpowie na Twoje zgłoszenie."
+    },
+    "moved": {
+      "description": "🔀 Zgłoszenie przeniesione przez {user} z **{from}** do **{to}**."
+    },
+    "locked": {
+      "description": "🔒 **Zgłoszenie zablokowane** przez {user}",
+      "withReason": "🔒 **Zgłoszenie zablokowane** przez {user}\n**Powód:** {reason}"
+    },
+    "unlocked": {
+      "description": "🔓 **Zgłoszenie odblokowane** przez {user}"
+    },
+    "staffNotes": {
+      "title": "📝 Notatki zespołu — Zgłoszenie #{count}",
+      "footer": "Wyświetlono {shown}/{total} notatek"
+    },
+    "blacklistList": {
+      "title": "🚫 Czarna lista zgłoszeń",
+      "footer": "{count} wpisów"
+    },
+    "snippetList": {
+      "title": "📋 Dostępne gotowe odpowiedzi",
+      "footer": "{count} dostępnych odpowiedzi"
+    },
+    "ratingReceived": {
+      "title": "✅ Ocena otrzymana",
+      "description": "Dziękujemy za Twoją opinię! Oceniłeś na **{label}**."
+    },
+    "ratingPost": {
+      "title": "⭐ Nowa ocena — Zgłoszenie #{count}",
+      "userField": "Użytkownik",
+      "ratingField": "Ocena"
+    },
+    "broadcast": {
+      "author": "📢 Ogłoszenie — {user}",
+      "plain": "📢 **Ogłoszenie:** {message}"
+    }
+  },
+  "modals": {
+    "closeReason": {
+      "title": "Zamknij zgłoszenie",
+      "label": "Powód zamknięcia",
+      "placeholder": "Podaj powód zamknięcia tego zgłoszenia."
+    },
+    "openTicket": {
+      "title": "Otwórz zgłoszenie",
+      "label": "Powód Twojego zgłoszenia",
+      "placeholder": "Opisz krótko swój problem."
+    },
+    "rateComment": {
+      "title": "Oceń zgłoszenie",
+      "label": "Komentarz (opcjonalny)",
+      "placeholder": "Czy chcesz coś dodać do swojej oceny?"
+    }
+  },
+  "menus": {
+    "ticketType": "Wybierz typ zgłoszenia",
+    "moveTarget": "Wybierz nowy typ zgłoszenia..."
+  },
+  "messages": {
+    "ticketCreated": "✅ Twoje zgłoszenie zostało utworzone: {channel}",
+    "ticketAlreadyClosed": "❌ To zgłoszenie jest już zamknięte!",
+    "ticketAlreadyClaimed": "❌ To zgłoszenie zostało już przejęte przez {user}!",
+    "ticketClaimed": "🙋 Zgłoszenie przejęte przez {user}.",
+    "ticketUnclaimed": "🙌 Zgłoszenie zwolnione przez {user}.",
+    "topicUpdateWarning": "\n> ⚠️ *Temat kanału zostanie wkrótce zaktualizowany — Discord ogranicza zmiany tematu do 2 na 10 minut, więc może to chwilę potrwać.*",
+    "ticketRenamed": "✏️ Zgłoszenie zmieniono na **{name}**.",
+    "ticketMoved": "🔀 Zgłoszenie przeniesione przez {user} do **{type}**.",
+    "ticketLimitReached": "❌ Możesz mieć jednocześnie tylko **{limit}** otwartych zgłoszeń.",
+    "blacklisted": "❌ Jesteś na czarnej liście i nie możesz otwierać zgłoszeń.",
+    "noPermission": "❌ Nie masz uprawnień do tej akcji.",
+    "notATicket": "❌ Ten kanał nie jest zgłoszeniem.",
+    "onlyStaff": "❌ Tylko zespół może wykonać tę akcję.",
+    "userAdded": "✅ {user} został dodany do zgłoszenia.",
+    "userRemoved": "✅ {user} został usunięty ze zgłoszenia.",
+    "priorityChanged": "🔔 Priorytet ustawiony na **{priority}**.",
+    "noteAdded": "📝 Notatka zespołu dodana.",
+    "transcriptCreated": "📄 Transkrypcja utworzona.",
+    "generatingTranscript": "⏳ Generowanie transkrypcji...",
+    "autoCloseWarning": "⚠️ To zgłoszenie zostanie automatycznie zamknięte za **{hours}** godzin z powodu braku aktywności.",
+    "blacklistAdded": "✅ {user} został dodany do czarnej listy.",
+    "blacklistRemoved": "✅ {user} został usunięty z czarnej listy.",
+    "blacklistAlreadyAdded": "❌ {user} jest już na czarnej liście.",
+    "blacklistNotFound": "❌ {user} nie znajduje się na czarnej liście.",
+    "configError": "⚠️ Błąd konfiguracji. Skontaktuj się z operatorem bota!",
+    "snippet_not_in_ticket": "❌ Tej komendy można używać tylko wewnątrz otwartego zgłoszenia.",
+    "snippet_list_empty": "ℹ️ Nie skonfigurowano jeszcze żadnych gotowych odpowiedzi.\nSkopiuj `config/snippets.example.jsonc` do `config/snippets.jsonc` i dostosuj.",
+    "snippet_not_found": "❌ Gotowa odpowiedź **{name}** nie znaleziona. Użyj `/snippet list`, aby zobaczyć przegląd.",
+    "snippet_sent": "✅ Gotowa odpowiedź **{name}** została wysłana.",
+    "ticketLocked": "🔒 To zgłoszenie zostało zablokowane. Nie możesz wysyłać wiadomości, dopóki członek zespołu go nie odblokuje.",
+    "ticketUnlocked": "🔓 To zgłoszenie zostało odblokowane. Możesz ponownie wysyłać wiadomości.",
+    "broadcastSent": "✅ Ogłoszenie wysłane do **{count}** zgłoszeń.",
+    "internalError": "❌ Wystąpił błąd wewnętrzny.",
+    "channelNotFound": "❌ Kanał nie znaleziony.",
+    "unknownTicketType": "❌ Nieznany typ zgłoszenia.",
+    "noAccessToType": "❌ Nie masz dostępu do tego typu zgłoszenia.",
+    "ticketCreateFailed": "❌ Nie udało się utworzyć zgłoszenia. Spróbuj ponownie.",
+    "renameEmpty": "❌ Nazwa nie zawiera prawidłowych znaków (dozwolone są tylko litery, cyfry i myślniki).",
+    "notClaimed": "❌ To zgłoszenie nie jest przejęte.",
+    "alreadyThisType": "❌ To zgłoszenie jest już tego typu.",
+    "noOtherTypes": "❌ Nie ma innych typów zgłoszeń, do których można przenieść.",
+    "blacklistEmpty": "✅ Czarna lista jest pusta.",
+    "notesEmpty": "📝 Brak notatek dla tego zgłoszenia.",
+    "notInvalidRating": "❌ Nieprawidłowa ocena.",
+    "ratingRefNotFound": "❌ Odniesienie do zgłoszenia nie znalezione.",
+    "alreadyRated": "✅ Już oceniłeś to zgłoszenie.",
+    "onlyCreatorNotify": "❌ Tylko twórca zgłoszenia może przełączać powiadomienia.",
+    "deletingChannel": "🗑️ Kanał jest usuwany...",
+    "deleteCancelled": "✅ Usuwanie anulowane.",
+    "deleteConfirmPrompt": "⚠️ **Czy jesteś pewien?** Kanał zgłoszenia zostanie trwale usunięty.",
+    "closingTicket": "⏳ **Zgłoszenie jest zamykane.** Poczekaj chwilę, aż transkrypcja zostanie wygenerowana...",
+    "reopeningTicket": "♻️ **Zgłoszenie jest ponownie otwierane...**",
+    "ticketNotClosed": "❌ To zgłoszenie nie jest zamknięte.",
+    "reopenDisabled": "❌ Ponowne otwieranie zgłoszeń jest wyłączone na tym serwerze.",
+    "selectCategory": "🎫 Wybierz kategorię:",
+    "alreadyLocked": "❌ To zgłoszenie jest już zablokowane.",
+    "notLocked": "❌ To zgłoszenie nie jest zablokowane.",
+    "selectMoveTarget": "🔀 Do jakiego typu należy przenieść to zgłoszenie?",
+    "movingTo": "⏳ Przenoszenie do **{type}**...",
+    "movedTo": "✅ Zgłoszenie przeniesione do **{type}**.",
+    "transcriptFailed": "❌ Nie udało się wygenerować transkrypcji.",
+    "priorityAlreadySet": "ℹ️ Priorytet jest już ustawiony na **{priority}**.",
+    "selectMoveTargetCurrent": "🔀 **Przenieś zgłoszenie** (obecnie: **{type}**)\nDo jakiego typu należy przenieść to zgłoszenie?",
+    "autoCloseReason": "Zamknięte automatycznie z powodu braku aktywności",
+    "deleteReason": "Zgłoszenie usunięte przez {user}",
+    "staffReminderTitle": "⏰ **Brak odpowiedzi zespołu od {hours} godzin!**",
+    "staffReminderBody": "Zgłoszenie <#{channel}> (typ: **{type}**, priorytet: **{priority}**) oczekuje na odpowiedź.",
+    "staffReplyTitle": "🔔 Zespół odpowiedział na Twoje zgłoszenie!",
+    "staffReplyBody": "Członek zespołu odpowiedział w Twoim zgłoszeniu **{type}**.\n\n[🔗 Przejdź do zgłoszenia]({link})",
+    "broadcastNoTickets": "ℹ️ Nie znaleziono otwartych zgłoszeń.",
+    "broadcastResult": "✅ Ogłoszenie wysłane do **{sent}** zgłoszeń.",
+    "broadcastResultFailed": "✅ Ogłoszenie wysłane do **{sent}** zgłoszeń. *({failed} kanałów nie powiodło się)*",
+    "panelChannelNotFound": "❌ Kanał `{channel}` nie znaleziony. Sprawdź `openTicketChannelId` w konfiguracji.",
+    "panelSent": "✅ Panel zgłoszeń wysłany do <#{channel}>.",
+    "panelSendFailed": "❌ Nie udało się wysłać panelu. Czy uprawnienia bota są prawidłowe?",
+    "noReasonGiven": "Nie podano powodu",
+    "userAddFailed": "❌ Nie udało się dodać użytkownika.",
+    "userRemoveFailed": "❌ Nie udało się usunąć użytkownika.",
+    "cannotRemoveCreator": "❌ Twórcy zgłoszenia nie można usunąć."
+  },
+  "priorities": {
+    "low": "🟢 Niski",
+    "medium": "🟡 Średni",
+    "high": "🟠 Wysoki",
+    "urgent": "🔴 Pilny"
+  },
+  "ratings": {
+    "1": "⭐ Bardzo słabo",
+    "2": "⭐⭐ Słabo",
+    "3": "⭐⭐⭐ W porządku",
+    "4": "⭐⭐⭐⭐ Dobrze",
+    "5": "⭐⭐⭐⭐⭐ Doskonale",
+    "commentField": "💬 Komentarz"
+  },
+  "transcript": {
+    "dateLocale": "pl-PL",
+    "eyebrow": "Transkrypcja zgłoszenia",
+    "ticket": "Zgłoszenie",
+    "conversation": "Rozmowa",
+    "type": "Typ",
+    "createdBy": "Utworzone przez",
+    "createdOn": "Utworzono",
+    "closedOn": "Zamknięto",
+    "closedBy": "Zamknięte przez",
+    "claimedBy": "Przejęte przez",
+    "priority": "Priorytet",
+    "messages": "Wiadomości",
+    "closeReason": "Powód zamknięcia",
+    "empty": "Brak wiadomości w tym zgłoszeniu",
+    "generatedOn": "Wygenerowano",
+    "copy": "Kopiuj",
+    "copied": "Skopiowano!"
+  }
+}

@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.9.0] - 2026-07-15
+
+### Added
+- **Four new languages: French (`fr`), Spanish (`es`), Portuguese (`pt`) and
+  Polish (`pl`).** Each ships as a complete `locales/<code>.json` with all 229
+  keys translated (bot messages, embeds, buttons, modals, menus, priorities,
+  ratings and the HTML transcript section), so both `lang` and `transcriptLang`
+  can now be set to any of them. Set `lang` in `config.jsonc` to switch the bot,
+  and `transcriptLang` for the transcript. The dashboard's language dropdowns
+  pick the new files up automatically (they list the locale files that actually
+  exist), and their static fallback option lists were extended to match. Any
+  missing key still falls back to English, as before.
+
 ## [2.8.0] - 2026-07-15
 
 ### Added

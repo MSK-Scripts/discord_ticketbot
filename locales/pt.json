@@ -1,0 +1,263 @@
+{
+  "buttons": {
+    "openTicket": "Abrir ticket",
+    "close": "Fechar ticket",
+    "closeEmoji": "🔒",
+    "claim": "Assumir",
+    "claimEmoji": "🙋",
+    "unclaim": "Libertar",
+    "unclaimEmoji": "🙌",
+    "move": "Mover",
+    "moveEmoji": "🔀",
+    "delete": "Eliminar ticket",
+    "deleteEmoji": "🗑️",
+    "reopen": "Reabrir",
+    "reopenEmoji": "♻️",
+    "transcript": "Transcrição",
+    "transcriptEmoji": "📄",
+    "deleteConfirm": "Sim, eliminar ticket",
+    "deleteCancel": "Cancelar",
+    "notifyOn": "Notificações ativadas",
+    "notifyOff": "Avisar-me quando o staff responder"
+  },
+  "embeds": {
+    "panel": {
+      "title": "Ticket de suporte",
+      "description": "Clica no botão abaixo para abrir um ticket.\nUm membro da equipa vai ajudar-te assim que possível.",
+      "footer": "© MSK Scripts - Todos os direitos reservados"
+    },
+    "ticketOpened": {
+      "title": "Ticket aberto",
+      "description": "Olá {user}! Obrigado por abrires um ticket.\nUm membro da equipa vai contactar-te em breve.\n\n**Tipo:** {type}\n**Prioridade:** {priority}"
+    },
+    "ticketClosed": {
+      "title": "Ticket fechado",
+      "description": "O ticket foi fechado por {closer}.\n**Motivo:** {reason}"
+    },
+    "ticketClosedDM": {
+      "title": "O teu ticket foi fechado",
+      "description": "O teu ticket **#{count}** ({type}) foi fechado por {closer}.\n**Motivo:** {reason}",
+      "transcript": "Transcrição",
+      "transcriptLink": "Abrir"
+    },
+    "ticketReopened": {
+      "title": "Ticket reaberto",
+      "description": "O ticket foi reaberto por {reopener}."
+    },
+    "ticketLog": {
+      "title": "Ticket #{count} fechado",
+      "transcriptLink": "Abrir",
+      "fields": {
+        "type": "Tipo",
+        "creator": "Criado por",
+        "closer": "Fechado por",
+        "claimed": "Assumido por",
+        "reason": "Motivo",
+        "duration": "Duração",
+        "messages": "Mensagens",
+        "transcript": "Transcrição"
+      }
+    },
+    "ratingRequest": {
+      "title": "Como foi o teu atendimento?",
+      "description": "Por favor avalia a tua experiência de suporte para o ticket **#{count}**.\nO teu feedback ajuda-nos a melhorar."
+    },
+    "stats": {
+      "title": "📊 Estatísticas de tickets",
+      "fields": {
+        "totalTickets": "Total de tickets",
+        "openTickets": "Abertos",
+        "closedTickets": "Fechados",
+        "avgRating": "Avaliação média",
+        "avgDuration": "Duração média",
+        "topStaff": "Melhor staff"
+      }
+    },
+    "userStats": {
+      "title": "📊 Estatísticas — {user}",
+      "userSection": "**👤 Como utilizador**",
+      "opened": "🎫 Tickets abertos",
+      "openNow": "🟢 Abertos atualmente",
+      "closedAsCreator": "🔴 Fechados",
+      "favoriteType": "🏷️ Tipo mais frequente",
+      "avgRatingGiven": "⭐ Avaliação média dada",
+      "staffSection": "**🛡️ Como staff**",
+      "closedAsStaff": "🔒 Tickets fechados",
+      "claimed": "🙋 Tickets assumidos",
+      "avgRatingReceived": "⭐ Avaliação média recebida"
+    },
+    "notifyOptIn": {
+      "description": "🔕 Clica no botão abaixo se quiseres receber uma **notificação por DM** quando um membro do staff responder ao teu ticket."
+    },
+    "moved": {
+      "description": "🔀 Ticket movido por {user} de **{from}** para **{to}**."
+    },
+    "locked": {
+      "description": "🔒 **Ticket bloqueado** por {user}",
+      "withReason": "🔒 **Ticket bloqueado** por {user}\n**Motivo:** {reason}"
+    },
+    "unlocked": {
+      "description": "🔓 **Ticket desbloqueado** por {user}"
+    },
+    "staffNotes": {
+      "title": "📝 Notas do staff — Ticket #{count}",
+      "footer": "A mostrar {shown}/{total} notas"
+    },
+    "blacklistList": {
+      "title": "🚫 Lista negra de tickets",
+      "footer": "{count} entradas"
+    },
+    "snippetList": {
+      "title": "📋 Respostas predefinidas disponíveis",
+      "footer": "{count} resposta(s) disponível(is)"
+    },
+    "ratingReceived": {
+      "title": "✅ Avaliação recebida",
+      "description": "Obrigado pelo teu feedback! Avaliaste **{label}**."
+    },
+    "ratingPost": {
+      "title": "⭐ Nova avaliação — Ticket #{count}",
+      "userField": "Utilizador",
+      "ratingField": "Avaliação"
+    },
+    "broadcast": {
+      "author": "📢 Anúncio — {user}",
+      "plain": "📢 **Anúncio:** {message}"
+    }
+  },
+  "modals": {
+    "closeReason": {
+      "title": "Fechar ticket",
+      "label": "Motivo do fecho",
+      "placeholder": "Por favor, indica um motivo para fechar este ticket."
+    },
+    "openTicket": {
+      "title": "Abrir ticket",
+      "label": "Motivo do teu ticket",
+      "placeholder": "Por favor, descreve brevemente o teu problema."
+    },
+    "rateComment": {
+      "title": "Avaliar ticket",
+      "label": "Comentário (opcional)",
+      "placeholder": "Queres acrescentar algo à tua avaliação?"
+    }
+  },
+  "menus": {
+    "ticketType": "Seleciona um tipo de ticket",
+    "moveTarget": "Seleciona um novo tipo de ticket..."
+  },
+  "messages": {
+    "ticketCreated": "✅ O teu ticket foi criado: {channel}",
+    "ticketAlreadyClosed": "❌ Este ticket já está fechado!",
+    "ticketAlreadyClaimed": "❌ Este ticket já foi assumido por {user}!",
+    "ticketClaimed": "🙋 Ticket assumido por {user}.",
+    "ticketUnclaimed": "🙌 Ticket libertado por {user}.",
+    "topicUpdateWarning": "\n> ⚠️ *O tópico do canal será atualizado em breve — o Discord limita as alterações de tópico a 2 por cada 10 minutos, por isso pode demorar um momento.*",
+    "ticketRenamed": "✏️ Ticket renomeado para **{name}**.",
+    "ticketMoved": "🔀 Ticket movido por {user} para **{type}**.",
+    "ticketLimitReached": "❌ Só podes ter **{limit}** tickets abertos ao mesmo tempo.",
+    "blacklisted": "❌ Estás na lista negra e não podes abrir tickets.",
+    "noPermission": "❌ Não tens permissão para esta ação.",
+    "notATicket": "❌ Este canal não é um ticket.",
+    "onlyStaff": "❌ Apenas o staff pode realizar esta ação.",
+    "userAdded": "✅ {user} foi adicionado ao ticket.",
+    "userRemoved": "✅ {user} foi removido do ticket.",
+    "priorityChanged": "🔔 Prioridade definida para **{priority}**.",
+    "noteAdded": "📝 Nota do staff adicionada.",
+    "transcriptCreated": "📄 Transcrição criada.",
+    "generatingTranscript": "⏳ A gerar transcrição...",
+    "autoCloseWarning": "⚠️ Este ticket será fechado automaticamente dentro de **{hours}** horas por inatividade.",
+    "blacklistAdded": "✅ {user} foi adicionado à lista negra.",
+    "blacklistRemoved": "✅ {user} foi removido da lista negra.",
+    "blacklistAlreadyAdded": "❌ {user} já está na lista negra.",
+    "blacklistNotFound": "❌ {user} não está na lista negra.",
+    "configError": "⚠️ Erro de configuração. Por favor, contacta o operador do bot!",
+    "snippet_not_in_ticket": "❌ Este comando só pode ser usado dentro de um ticket aberto.",
+    "snippet_list_empty": "ℹ️ Ainda não há respostas predefinidas configuradas.\nCopia `config/snippets.example.jsonc` para `config/snippets.jsonc` e ajusta-o.",
+    "snippet_not_found": "❌ Resposta predefinida **{name}** não encontrada. Usa `/snippet list` para uma visão geral.",
+    "snippet_sent": "✅ A resposta predefinida **{name}** foi enviada.",
+    "ticketLocked": "🔒 Este ticket foi bloqueado. Não podes enviar mensagens até que um membro do staff o desbloqueie.",
+    "ticketUnlocked": "🔓 Este ticket foi desbloqueado. Já podes enviar mensagens novamente.",
+    "broadcastSent": "✅ Anúncio enviado para **{count}** ticket(s).",
+    "internalError": "❌ Ocorreu um erro interno.",
+    "channelNotFound": "❌ Canal não encontrado.",
+    "unknownTicketType": "❌ Tipo de ticket desconhecido.",
+    "noAccessToType": "❌ Não tens acesso a este tipo de ticket.",
+    "ticketCreateFailed": "❌ Não foi possível criar o ticket. Por favor, tenta novamente.",
+    "renameEmpty": "❌ O nome não contém caracteres válidos (apenas letras, números e hífens são permitidos).",
+    "notClaimed": "❌ Este ticket não está assumido.",
+    "alreadyThisType": "❌ Este ticket já é deste tipo.",
+    "noOtherTypes": "❌ Não há outros tipos de tickets para os quais mover.",
+    "blacklistEmpty": "✅ A lista negra está vazia.",
+    "notesEmpty": "📝 Não há notas para este ticket.",
+    "notInvalidRating": "❌ Avaliação inválida.",
+    "ratingRefNotFound": "❌ Referência do ticket não encontrada.",
+    "alreadyRated": "✅ Já avaliaste este ticket.",
+    "onlyCreatorNotify": "❌ Apenas o criador do ticket pode alternar as notificações.",
+    "deletingChannel": "🗑️ O canal está a ser eliminado...",
+    "deleteCancelled": "✅ Eliminação cancelada.",
+    "deleteConfirmPrompt": "⚠️ **Tens a certeza?** O canal do ticket será eliminado permanentemente.",
+    "closingTicket": "⏳ **O ticket está a ser fechado.** Por favor, aguarda um momento enquanto a transcrição é gerada...",
+    "reopeningTicket": "♻️ **O ticket está a ser reaberto...**",
+    "ticketNotClosed": "❌ Este ticket não está fechado.",
+    "reopenDisabled": "❌ A reabertura de tickets está desativada neste servidor.",
+    "selectCategory": "🎫 Por favor, seleciona uma categoria:",
+    "alreadyLocked": "❌ Este ticket já está bloqueado.",
+    "notLocked": "❌ Este ticket não está bloqueado.",
+    "selectMoveTarget": "🔀 Para que tipo deve este ticket ser movido?",
+    "movingTo": "⏳ A mover para **{type}**...",
+    "movedTo": "✅ Ticket movido para **{type}**.",
+    "transcriptFailed": "❌ Não foi possível gerar a transcrição.",
+    "priorityAlreadySet": "ℹ️ A prioridade já está definida para **{priority}**.",
+    "selectMoveTargetCurrent": "🔀 **Mover ticket** (atual: **{type}**)\nPara que tipo deve este ticket ser movido?",
+    "autoCloseReason": "Fechado automaticamente por inatividade",
+    "deleteReason": "Ticket eliminado por {user}",
+    "staffReminderTitle": "⏰ **Sem resposta do staff há {hours} horas!**",
+    "staffReminderBody": "O ticket <#{channel}> (tipo: **{type}**, prioridade: **{priority}**) está a aguardar uma resposta.",
+    "staffReplyTitle": "🔔 O staff respondeu ao teu ticket!",
+    "staffReplyBody": "Um membro do staff respondeu no teu ticket **{type}**.\n\n[🔗 Ir para o ticket]({link})",
+    "broadcastNoTickets": "ℹ️ Não foram encontrados tickets abertos.",
+    "broadcastResult": "✅ Anúncio enviado para **{sent}** ticket(s).",
+    "broadcastResultFailed": "✅ Anúncio enviado para **{sent}** ticket(s). *({failed} canal(is) falharam)*",
+    "panelChannelNotFound": "❌ Canal `{channel}` não encontrado. Por favor, verifica `openTicketChannelId` na configuração.",
+    "panelSent": "✅ Painel de tickets enviado para <#{channel}>.",
+    "panelSendFailed": "❌ Não foi possível enviar o painel. As permissões do bot estão corretas?",
+    "noReasonGiven": "Nenhum motivo fornecido",
+    "userAddFailed": "❌ Não foi possível adicionar o utilizador.",
+    "userRemoveFailed": "❌ Não foi possível remover o utilizador.",
+    "cannotRemoveCreator": "❌ O criador do ticket não pode ser removido."
+  },
+  "priorities": {
+    "low": "🟢 Baixa",
+    "medium": "🟡 Média",
+    "high": "🟠 Alta",
+    "urgent": "🔴 Urgente"
+  },
+  "ratings": {
+    "1": "⭐ Muito mau",
+    "2": "⭐⭐ Mau",
+    "3": "⭐⭐⭐ Razoável",
+    "4": "⭐⭐⭐⭐ Bom",
+    "5": "⭐⭐⭐⭐⭐ Excelente",
+    "commentField": "💬 Comentário"
+  },
+  "transcript": {
+    "dateLocale": "pt-PT",
+    "eyebrow": "Transcrição do ticket",
+    "ticket": "Ticket",
+    "conversation": "Conversa",
+    "type": "Tipo",
+    "createdBy": "Criado por",
+    "createdOn": "Criado a",
+    "closedOn": "Fechado a",
+    "closedBy": "Fechado por",
+    "claimedBy": "Assumido por",
+    "priority": "Prioridade",
+    "messages": "Mensagens",
+    "closeReason": "Motivo do fecho",
+    "empty": "Não há mensagens neste ticket",
+    "generatedOn": "Gerado a",
+    "copy": "Copiar",
+    "copied": "Copiado!"
+  }
+}

@@ -4,9 +4,9 @@
 
   // ─── Bot Appearance ──────────────────────────────────────────────────────────
   "mainColor": "#5eb131",
-  "lang": "en",                    // "de" or "en"
+  "lang": "en",                    // "en", "de", "fr", "es", "pt", "pl" or "hu"
   "transcriptDesign": "modern",    // HTML transcript style: "modern" (new MSK design) or "classic" (old Discord-style)
-  "transcriptLang": "en",          // HTML transcript language: "en", "de" or "hu" (falls back to English if omitted/unsupported)
+  "transcriptLang": "en",          // HTML transcript language: "en", "de", "fr", "es", "pt", "pl" or "hu" (falls back to English if omitted/unsupported)
 
   // ─── Ticket Panel ────────────────────────────────────────────────────────────
   "openTicketChannelId": "CHANNEL_ID_HERE",
