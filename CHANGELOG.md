@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.7.2] - 2026-07-15
+
+### Security
+- **Hardened the dashboard against a batch of CodeQL findings.** No exploitable
+  bug was confirmed, but several checks were tightened as defense in depth:
+  - Cookie parsing now uses a null-prototype object, so a cookie named
+    `__proto__` or `constructor` can no longer reach `Object.prototype`
+    (prototype-pollution guard).
+  - The dashboard's Discord REST client resolves and pins the target host to
+    `discord.com` before every request, so a call can never be steered off host.
+  - Config and locale file access is now resolved from a fixed allow-list (a
+    switch for the three config files, the actual directory listing for locales)
+    instead of building a path from the request. This also removes a read/write
+    race on the locale editor, since existence is proven by membership rather than
+    a separate check that could race the write.
+  - Removed two unused declarations flagged by the scanner.
+
 ## [2.7.1] - 2026-07-15
 
 ### Fixed

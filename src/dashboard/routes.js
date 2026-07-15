@@ -23,12 +23,26 @@ const { PERMISSIONS, PERMISSION_LABELS, isPermission, isSubjectType, parsePermis
 
 const ROOT = path.resolve(__dirname, '../..');
 
-// Explicit map: the URL key is user input, the filename never is.
+// Explicit map: the URL key is user input, the filename never is. Used for the
+// key-existence check and the audit label only — never to build a filesystem
+// path (see configPath below).
 const CONFIG_FILES = {
   config:   'config/config.jsonc',
   snippets: 'config/snippets.jsonc',
   env:      '.env',
 };
+
+// Map an allow-listed key to a CONSTANT absolute path via a switch. Returning a
+// literal per branch means the path that reaches fs.* is not data-flow-derived
+// from the request at all — there is simply no user input in the resolved value.
+function configPath(key) {
+  switch (key) {
+    case 'config':   return path.join(ROOT, 'config', 'config.jsonc');
+    case 'snippets': return path.join(ROOT, 'config', 'snippets.jsonc');
+    case 'env':      return path.join(ROOT, '.env');
+    default:         return null;
+  }
+}
 
 // The .env file holds SESSION_SECRET, TOKEN, CLIENT_SECRET and DATABASE_URL.
 // Reading it means being able to forge any session and take over the bot, so it
@@ -256,21 +270,21 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
   // config.edit implies read: without it a user granted only "edit" would get a
   // 403 on GET and stare at an empty editor they are supposedly allowed to change.
   api.get('/config/:file', requirePermission(['config.view', 'config.edit']), asyncRoute(async (req, res) => {
-    const rel = CONFIG_FILES[req.params.file];
-    if (!rel) return res.status(400).json({ error: 'Unknown file.' });
+    const target = configPath(req.params.file);
+    if (!target) return res.status(400).json({ error: 'Unknown file.' });
     if (OWNER_ONLY_FILES.has(req.params.file) && !req.auth.isOwner) {
       return res.status(403).json({ error: 'Only the server owner can access the .env file.' });
     }
 
-    const content = await fs.readFile(path.join(ROOT, rel), 'utf-8').catch(() => null);
+    const content = await fs.readFile(target, 'utf-8').catch(() => null);
     if (content === null) return res.status(404).json({ error: 'File not found.' });
     res.json({ content });
   }));
 
   api.put('/config/:file', requirePermission('config.edit'), asyncRoute(async (req, res) => {
     const key = req.params.file;
-    const rel = CONFIG_FILES[key];
-    if (!rel) return res.status(400).json({ error: 'Unknown file.' });
+    const target = configPath(key);
+    if (!target) return res.status(400).json({ error: 'Unknown file.' });
     if (OWNER_ONLY_FILES.has(key) && !req.auth.isOwner) {
       return res.status(403).json({ error: 'Only the server owner can edit the .env file.' });
     }
@@ -305,11 +319,10 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
       if (bad) return res.status(400).json({ error: 'Invalid .env format (expected KEY=VALUE).' });
     }
 
-    const target = path.join(ROOT, rel);
     await fs.copyFile(target, `${target}.bak`).catch(() => {}); // best-effort backup
     await fs.writeFile(target, content, 'utf-8');
 
-    audit(req, 'config.edit', rel);
+    audit(req, 'config.edit', CONFIG_FILES[key] ?? key);
     res.json({ ok: true });
   }));
 
@@ -322,13 +335,17 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
   const LOCALES_DIR = path.join(ROOT, 'locales');
   const LOCALE_NAME_RE = /^[a-z0-9_-]+\.json$/i;
 
-  const resolveLocale = (name) => {
-    if (!LOCALE_NAME_RE.test(name)) return null;
-    const target = path.join(LOCALES_DIR, name);
-    // Defense in depth: the regex already forbids slashes and dots, but verify the
-    // resolved path is a direct child of LOCALES_DIR anyway.
-    if (path.dirname(target) !== LOCALES_DIR) return null;
-    return target;
+  // Resolve a requested locale name by matching it against the ACTUAL directory
+  // listing and building the path from the matched directory entry, never from
+  // the request string. This both prevents traversal (the value that reaches fs.*
+  // comes from readdir, not from input) and removes the read/write TOCTOU:
+  // existence is proven by membership, so no separate access() call can race the
+  // write. Returns null for a malformed name or a file that does not exist.
+  const resolveExistingLocale = async (name) => {
+    if (typeof name !== 'string' || !LOCALE_NAME_RE.test(name)) return null;
+    const files = await fs.readdir(LOCALES_DIR).catch(() => []);
+    const match = files.find(f => f === name && LOCALE_NAME_RE.test(f));
+    return match ? path.join(LOCALES_DIR, match) : null;
   };
 
   api.get('/locales', requirePermission(['config.view', 'config.edit']), asyncRoute(async (req, res) => {
@@ -337,20 +354,21 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
   }));
 
   api.get('/locales/:name', requirePermission(['config.view', 'config.edit']), asyncRoute(async (req, res) => {
-    const target = resolveLocale(req.params.name);
-    if (!target) return res.status(400).json({ error: 'Invalid locale file name.' });
+    if (!LOCALE_NAME_RE.test(req.params.name)) return res.status(400).json({ error: 'Invalid locale file name.' });
+    const target = await resolveExistingLocale(req.params.name);
+    if (!target) return res.status(404).json({ error: 'File not found.' });
     const content = await fs.readFile(target, 'utf-8').catch(() => null);
     if (content === null) return res.status(404).json({ error: 'File not found.' });
     res.json({ content });
   }));
 
   api.put('/locales/:name', requirePermission('config.edit'), asyncRoute(async (req, res) => {
-    const target = resolveLocale(req.params.name);
-    if (!target) return res.status(400).json({ error: 'Invalid locale file name.' });
+    if (!LOCALE_NAME_RE.test(req.params.name)) return res.status(400).json({ error: 'Invalid locale file name.' });
 
-    // Must already exist — this route edits translations, it does not create files.
-    const exists = await fs.access(target).then(() => true).catch(() => false);
-    if (!exists) return res.status(404).json({ error: 'File not found.' });
+    // Must already exist — this route edits translations, it does not create
+    // files. resolveExistingLocale proving membership IS the existence check.
+    const target = await resolveExistingLocale(req.params.name);
+    if (!target) return res.status(404).json({ error: 'File not found.' });
 
     const content = req.body?.content;
     if (typeof content !== 'string') return res.status(400).json({ error: 'Invalid body.' });

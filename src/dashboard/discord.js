@@ -37,7 +37,15 @@ class DiscordApiError extends Error {
 async function request(pathname, { method = 'GET', body, token = process.env.TOKEN, retries = 2 } = {}) {
   if (!token) throw new Error('TOKEN is not set — cannot talk to the Discord API.');
 
-  const res = await fetch(`${API}${pathname}`, {
+  // Resolve and pin the target host. Path segments are Discord snowflake IDs from
+  // the DB or route params; concatenating them cannot change the host, but we
+  // verify the origin anyway so a request can never be steered off discord.com.
+  const url = new URL(`${API}${pathname}`);
+  if (url.protocol !== 'https:' || url.host !== 'discord.com') {
+    throw new Error(`Refusing request to unexpected host: ${url.host}`);
+  }
+
+  const res = await fetch(url, {
     method,
     headers: {
       Authorization: `Bot ${token}`,

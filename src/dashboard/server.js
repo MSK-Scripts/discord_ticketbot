@@ -32,9 +32,12 @@ const LIMIT_WRITE  = { limit: 30,  windowMs: 60_000 };   // per user
 
 /** Cookie parsing without pulling in cookie-parser. */
 function parseCookies(req) {
+  // Null-prototype object: a cookie literally named "__proto__" (or "constructor")
+  // then becomes a harmless own property instead of walking the prototype chain,
+  // so an attacker cannot pollute Object.prototype through a crafted Cookie header.
+  const out = Object.create(null);
   const header = req.headers.cookie;
-  if (!header) return {};
-  const out = {};
+  if (!header) return out;
   for (const part of header.split(';')) {
     const idx = part.indexOf('=');
     if (idx < 0) continue;

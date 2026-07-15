@@ -34,7 +34,6 @@ async function main() {
     const answer = (await rl.question(`${q}${def ? ` ${DIM}[${def}]${RESET}` : ''}: `)).trim();
     return answer || def || '';
   };
-  const confirm = async (q) => /^(y|yes|j|ja)$/i.test((await rl.question(`${q} ${DIM}(y/N)${RESET}: `)).trim());
 
   console.log('');
   console.log(`${BOLD}Ticket Bot — Dashboard setup${RESET}`);
