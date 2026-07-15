@@ -103,10 +103,20 @@ function registerBotBridge(client) {
   if (typeof process.send !== 'function') return false;
 
   const handlers = {
-    /** Post a message into a ticket channel, optionally under the user's identity. */
-    async 'ticket.reply'({ ticketId, actorId, content, asUser }) {
+    /**
+     * Post a message into a ticket channel.
+     *
+     * `asUser`         — post under the actor's own name/avatar (webhook) instead
+     *                    of the bot's identity. Every dashboard reply uses this so
+     *                    the person who typed it is the one shown in Discord.
+     * `requireCreator` — the actor may only write into their OWN ticket. This is
+     *                    the end-user portal guard and is INDEPENDENT of `asUser`:
+     *                    staff also post under their own name but may reply in any
+     *                    ticket, so the two flags must not be conflated.
+     */
+    async 'ticket.reply'({ ticketId, actorId, content, asUser, requireCreator }) {
       const ticket = await db.getTicketById(ticketId);
-      const problem = await assertCanWrite(ticket, actorId, { requireCreator: asUser === true });
+      const problem = await assertCanWrite(ticket, actorId, { requireCreator: requireCreator === true });
       if (problem) return { ok: false, error: problem };
 
       const text = sanitizeUserText(content);

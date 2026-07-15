@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.7.1] - 2026-07-15
+
+### Fixed
+- **Dashboard replies now show the person who wrote them, not the bot.** A staff
+  reply sent from the dashboard was posted under the bot's name and avatar, while
+  an end-user reply was correctly posted under the user's own identity. The reply
+  handler had conflated two separate concerns into one flag: whose identity to
+  post under, and whether the sender may only write in their own ticket. They are
+  now independent. Every dashboard reply is posted under the sender's own name and
+  avatar via the existing webhook path, and the "own ticket only" rule applies just
+  to end users without permissions. All security checks are unchanged (ticket open,
+  not locked, not blacklisted, verified identity, zero-ping, markdown escaping), and
+  the reply still carries Discord's `APP` badge, which cannot be removed.
+
 ## [2.7.0] - 2026-07-15
 
 ### Added

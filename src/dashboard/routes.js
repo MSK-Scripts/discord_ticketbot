@@ -151,10 +151,13 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
   }));
 
   /**
-   * Reply into a ticket. Two very different callers share this route:
-   *   • staff with tickets.reply → posts as the bot
-   *   • the ticket's creator with no permissions → posts under their own name
-   *     via a webhook (asUser), which is the end-user portal case.
+   * Reply into a ticket. Two callers share this route:
+   *   • staff with tickets.reply → may reply in ANY ticket
+   *   • the ticket's creator with no permissions → may reply only in their OWN
+   *     ticket (end-user portal case)
+   * Both post under their OWN name/avatar via a webhook, so the reply in Discord
+   * shows the person who actually wrote it, not the bot. The difference is only
+   * WHICH tickets each may write into (requireCreator), not the identity shown.
    * The bot re-validates everything (open, not locked, not blacklisted, really
    * the creator) before anything reaches Discord.
    */
@@ -174,7 +177,8 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
       ticketId: ticket.id,
       actorId: req.auth.userId,
       content: req.body?.content,
-      asUser: !canStaffReply, // staff post as the bot, the creator posts as themselves
+      asUser: true,                    // everyone posts under their own name/avatar
+      requireCreator: !canStaffReply,  // non-staff may only reply in their own ticket
     });
     if (!result.ok) return res.status(400).json(result);
 
