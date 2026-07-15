@@ -45,6 +45,11 @@ function loadDashboardConfig(env = process.env) {
     clientSecret:  env.CLIENT_SECRET,
     guildId:       env.GUILD_ID,
     exposed:       !isLoopback(host),
+    // Shared secret for the trusted-proxy auth mode (hosted setup). When set, a
+    // request carrying this secret + a verified Discord user id is trusted as
+    // that user WITHOUT an OAuth session — msk-shop has already authenticated the
+    // owner in front of us. Secret, so it lives in .env only, never config.jsonc.
+    trustProxySecret: (env.DASHBOARD_TRUST_PROXY_SECRET || '').trim() || null,
   };
 }
 
@@ -87,8 +92,20 @@ function validateDashboardConfig(cfg) {
     );
   }
 
-  if (!cfg.clientId)     errors.push('CLIENT_ID is not set (required for the dashboard login).');
-  if (!cfg.clientSecret) errors.push('CLIENT_SECRET is not set — add it from the Discord developer portal (OAuth2 → Client Secret).');
+  // A configured trust-proxy secret must be strong: it is a full bearer credential
+  // for the owner's identity, so a weak one is worse than none.
+  if (cfg.trustProxySecret && cfg.trustProxySecret.length < 32) {
+    errors.push('DASHBOARD_TRUST_PROXY_SECRET is shorter than 32 characters. Use a long random value.');
+  }
+
+  // OAuth is how a browser signs in directly. In a pure trusted-proxy setup
+  // (hosted behind msk-shop) nobody logs in here, so CLIENT_ID/SECRET are not
+  // required — but if there is no proxy secret either, the panel would have no
+  // way to authenticate anyone, so they stay mandatory.
+  if (!cfg.trustProxySecret) {
+    if (!cfg.clientId)     errors.push('CLIENT_ID is not set (required for the dashboard login).');
+    if (!cfg.clientSecret) errors.push('CLIENT_SECRET is not set — add it from the Discord developer portal (OAuth2 → Client Secret).');
+  }
   if (!cfg.guildId)      errors.push('GUILD_ID is not set.');
 
   return errors;

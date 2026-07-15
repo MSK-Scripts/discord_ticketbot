@@ -16,6 +16,12 @@ const CSRF_COOKIE    = 'tb_csrf';
 const CSRF_HEADER    = 'x-csrf-token';
 const STATE_COOKIE   = 'tb_oauth_state';
 
+// Trusted-proxy auth (hosted setup): msk-shop authenticates the owner and forwards
+// the request with a shared secret plus the verified Discord user id.
+const PROXY_SECRET_HEADER = 'x-dashboard-proxy-secret';
+const PROXY_USER_HEADER   = 'x-dashboard-user';
+const SNOWFLAKE_RE        = /^\d{17,20}$/;
+
 const SESSION_TTL_MS = 60 * 60 * 1000;      // 1 h
 const STATE_TTL_MS   = 10 * 60 * 1000;      // 10 min
 
@@ -125,6 +131,30 @@ function verifyCsrf(cookieToken, headerToken) {
   return safeEqual(cookieToken, headerToken);
 }
 
+// ── Trusted proxy ──────────────────────────────────────────────────────────────
+//
+// For the hosted setup, msk-shop sits in front, authenticates the guild owner and
+// forwards the request to the loopback-bound bot dashboard with a shared secret
+// and the verified user id. We trust IDENTITY only — authorization is still
+// resolved live from the DB per request, exactly as for a cookie session.
+//
+// Returns { userId } when the request is a valid trusted-proxy call, else null.
+// null means "fall through to the normal cookie-session path", so an absent or
+// mismatched secret simply behaves like an unauthenticated browser request.
+function verifyTrustedProxy(headers, secret) {
+  // Not configured, or configured too weakly to be a real credential.
+  if (typeof secret !== 'string' || secret.length < 32) return null;
+  if (!headers) return null;
+
+  const provided = headers[PROXY_SECRET_HEADER];
+  const userId   = headers[PROXY_USER_HEADER];
+  if (!provided || !userId) return null;
+  if (!SNOWFLAKE_RE.test(String(userId))) return null;
+  if (!safeEqual(provided, secret)) return null;
+
+  return { userId: String(userId) };
+}
+
 // ── Client IP ────────────────────────────────────────────────────────────────
 
 /**
@@ -202,12 +232,13 @@ if (typeof sweeper.unref === 'function') sweeper.unref();
 
 module.exports = {
   SESSION_COOKIE, CSRF_COOKIE, CSRF_HEADER, STATE_COOKIE,
+  PROXY_SECRET_HEADER, PROXY_USER_HEADER,
   SESSION_TTL_MS, STATE_TTL_MS,
   getSecret, safeEqual,
   createToken, verifyToken,
   createSession, verifySession,
   createOAuthState, verifyOAuthState,
-  createCsrfToken, verifyCsrf,
+  createCsrfToken, verifyCsrf, verifyTrustedProxy,
   getClientIp,
   rateLimit, retryAfter, resetRateLimits,
 };

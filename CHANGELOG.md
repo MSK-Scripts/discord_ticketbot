@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.8.0] - 2026-07-15
+
+### Added
+- **Trusted-proxy authentication for the dashboard** (`DASHBOARD_TRUST_PROXY_SECRET`,
+  optional, off by default). This is the foundation for running a hosted bot's
+  dashboard behind an authenticated gateway (the MSK hosting layer) instead of the
+  bot's own Discord OAuth login. When the secret is set, the dashboard also accepts
+  requests that carry the secret plus a verified Discord user id, and treats them as
+  that user without a browser session. The proxy vouches for identity only;
+  permissions are still resolved live from the database per request, so a proxied
+  request never gets more access than the same user would in a browser. Origin and
+  CSRF checks are skipped only for these requests (the gateway performs its own),
+  while the per-user write rate limit still applies. In a pure proxy setup
+  `CLIENT_ID`/`CLIENT_SECRET` become optional, since nobody logs in through the bot
+  directly. A normal self-hosted dashboard is unaffected: with the secret unset the
+  path is completely inert.
+
 ## [2.7.2] - 2026-07-15
 
 ### Security

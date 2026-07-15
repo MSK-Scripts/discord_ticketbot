@@ -211,22 +211,37 @@ async function startServer({ config, supervisor }) {
    * instead of when their token happens to expire.
    */
   async function requireAuth(req, res, next) {
-    const session = sec.verifySession(req.cookies[sec.SESSION_COOKIE]);
-    if (!session?.userId) return res.status(401).json({ error: 'Not signed in.' });
+    // Trusted-proxy path (hosted setup): msk-shop has already authenticated the
+    // owner and forwards their verified id with a shared secret. We trust the
+    // IDENTITY only; permissions are still resolved live from the DB below, so a
+    // proxied request gets no more authority than the same user would in a browser.
+    const proxied = sec.verifyTrustedProxy(req.headers, config.trustProxySecret);
+
+    let userId, name = null, avatar = null;
+    if (proxied) {
+      req.viaTrustedProxy = true;
+      userId = proxied.userId;
+    } else {
+      const session = sec.verifySession(req.cookies[sec.SESSION_COOKIE]);
+      if (!session?.userId) return res.status(401).json({ error: 'Not signed in.' });
+      userId = session.userId;
+      name   = session.name;
+      avatar = session.avatar;
+    }
 
     try {
-      const ctx = await getMemberContext(config.guildId, session.userId);
+      const ctx = await getMemberContext(config.guildId, userId);
       if (!ctx.inGuild && !ctx.isOwner) {
         return res.status(403).json({ error: 'You are not a member of this server.' });
       }
 
       const rows = await db.getDashboardAccess(config.guildId);
-      const { userRow, roleRows } = selectAccessRows(rows, session.userId, ctx.roleIds);
+      const { userRow, roleRows } = selectAccessRows(rows, userId, ctx.roleIds);
 
       req.auth = {
-        userId: session.userId,
-        name: session.name,
-        avatar: session.avatar,
+        userId,
+        name,
+        avatar,
         isOwner: ctx.isOwner,
         roleIds: ctx.roleIds,
         permissions: resolvePermissions({ isOwner: ctx.isOwner, userRow, roleRows }),
@@ -242,12 +257,18 @@ async function startServer({ config, supervisor }) {
   function requireCsrf(req, res, next) {
     if (req.method === 'GET' || req.method === 'HEAD') return next();
 
-    const origin = req.headers.origin;
-    if (origin && origin !== config.publicUrl) {
-      return res.status(403).json({ error: 'Bad origin.' });
-    }
-    if (!sec.verifyCsrf(req.cookies[sec.CSRF_COOKIE], req.headers[sec.CSRF_HEADER])) {
-      return res.status(403).json({ error: 'Invalid CSRF token.' });
+    // A trusted-proxy request carries no CSRF cookie by design and originates from
+    // msk-shop, which already ran its own origin + CSRF checks before forwarding.
+    // Re-checking here would reject every hosted mutation. The per-user write
+    // rate limit below still applies.
+    if (!req.viaTrustedProxy) {
+      const origin = req.headers.origin;
+      if (origin && origin !== config.publicUrl) {
+        return res.status(403).json({ error: 'Bad origin.' });
+      }
+      if (!sec.verifyCsrf(req.cookies[sec.CSRF_COOKIE], req.headers[sec.CSRF_HEADER])) {
+        return res.status(403).json({ error: 'Invalid CSRF token.' });
+      }
     }
 
     // Per-user write budget, on top of the per-IP one. A browser client must not

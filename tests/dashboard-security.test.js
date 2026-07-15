@@ -69,6 +69,40 @@ test('CSRF accepts a matching cookie/header pair and nothing else', () => {
   assert.equal(sec.verifyCsrf('', ''), false);
 });
 
+// ── Trusted proxy ────────────────────────────────────────────────────────────
+
+const PROXY_SECRET = 'p'.repeat(48);
+const proxyHeaders = (over = {}) => ({
+  [sec.PROXY_SECRET_HEADER]: PROXY_SECRET,
+  [sec.PROXY_USER_HEADER]: '123456789012345678',
+  ...over,
+});
+
+test('a valid trusted-proxy request resolves to the forwarded user', () => {
+  const out = sec.verifyTrustedProxy(proxyHeaders(), PROXY_SECRET);
+  assert.deepEqual(out, { userId: '123456789012345678' });
+});
+
+test('a wrong or missing proxy secret is rejected', () => {
+  assert.equal(sec.verifyTrustedProxy(proxyHeaders({ [sec.PROXY_SECRET_HEADER]: 'x'.repeat(48) }), PROXY_SECRET), null);
+  assert.equal(sec.verifyTrustedProxy(proxyHeaders({ [sec.PROXY_SECRET_HEADER]: undefined }), PROXY_SECRET), null);
+});
+
+test('a missing or malformed forwarded user id is rejected', () => {
+  assert.equal(sec.verifyTrustedProxy(proxyHeaders({ [sec.PROXY_USER_HEADER]: undefined }), PROXY_SECRET), null);
+  // not a snowflake: would be unsafe to trust as an identity
+  assert.equal(sec.verifyTrustedProxy(proxyHeaders({ [sec.PROXY_USER_HEADER]: 'notanid' }), PROXY_SECRET), null);
+  assert.equal(sec.verifyTrustedProxy(proxyHeaders({ [sec.PROXY_USER_HEADER]: '123' }), PROXY_SECRET), null);
+});
+
+test('trusted-proxy is inert unless a strong secret is configured', () => {
+  // No secret, or a weak one, must never let the headers alone authenticate.
+  assert.equal(sec.verifyTrustedProxy(proxyHeaders(), null), null);
+  assert.equal(sec.verifyTrustedProxy(proxyHeaders(), ''), null);
+  assert.equal(sec.verifyTrustedProxy(proxyHeaders({ [sec.PROXY_SECRET_HEADER]: 'short' }), 'short'), null);
+  assert.equal(sec.verifyTrustedProxy(undefined, PROXY_SECRET), null);
+});
+
 // ── Client IP ────────────────────────────────────────────────────────────────
 
 const req = (xff) => ({ headers: xff ? { 'x-forwarded-for': xff } : {}, socket: { remoteAddress: '10.0.0.1' } });
@@ -140,4 +174,25 @@ test('an explicit ALLOW_INSECURE override is honoured', () => {
 test('a missing CLIENT_SECRET is a fatal error', () => {
   const cfg = loadDashboardConfig({ CLIENT_ID: '1', GUILD_ID: '3', DASHBOARD_ENABLED: 'true' });
   assert.ok(validateDashboardConfig(cfg).some(e => e.includes('CLIENT_SECRET')));
+});
+
+// ── Trusted-proxy configuration ──────────────────────────────────────────────
+
+test('a trust-proxy secret makes the OAuth client credentials optional', () => {
+  // A pure hosted setup authenticates through msk-shop, so it needs no OAuth app.
+  const cfg = loadDashboardConfig({
+    GUILD_ID: '3', DASHBOARD_ENABLED: 'true',
+    DASHBOARD_TRUST_PROXY_SECRET: 'p'.repeat(48),
+  });
+  assert.deepEqual(validateDashboardConfig(cfg), []);
+});
+
+test('a weak trust-proxy secret is rejected', () => {
+  const cfg = loadDashboardConfig({ ...baseEnv, DASHBOARD_TRUST_PROXY_SECRET: 'tooshort' });
+  assert.ok(validateDashboardConfig(cfg).some(e => e.includes('TRUST_PROXY_SECRET')));
+});
+
+test('the guild id stays mandatory even with a trust-proxy secret', () => {
+  const cfg = loadDashboardConfig({ DASHBOARD_ENABLED: 'true', DASHBOARD_TRUST_PROXY_SECRET: 'p'.repeat(48) });
+  assert.ok(validateDashboardConfig(cfg).some(e => e.includes('GUILD_ID')));
 });
