@@ -1,0 +1,104 @@
+# =============================================================================
+# Mirror to Codeberg
+# -----------------------------------------------------------------------------
+# GitHub bleibt die Quelle der Wahrheit. Bei jedem Push und bei jedem gelöschten
+# Branch oder Tag wird der komplette Ref-Stand nach Codeberg gespiegelt.
+#
+# Der Spiegel ist exakt: mit --prune verschwinden auf Codeberg auch die Branches
+# und Tags, die es auf GitHub nicht mehr gibt. Direkt auf Codeberg gepushte
+# Commits werden dabei überschrieben. Wer dort etwas beitragen will, macht das
+# über GitHub.
+#
+# EINMALIGE EINRICHTUNG
+#   1. Auf Codeberg ein leeres Repository anlegen (ohne README, ohne Lizenz).
+#   2. Codeberg → Settings → Applications → Access Token erzeugen.
+#      Berechtigung: repository → read and write. Nichts weiter.
+#   3. In GitHub unter Settings → Secrets and variables → Actions als Secrets
+#      eintragen:
+#        CODEBERG_TOKEN  → der eben erzeugte Token
+#        CODEBERG_REPO   → z. B. msk-scripts/msk-shop
+#        CODEBERG_USER   → der Codeberg-Benutzername
+#   4. Workflow einmal manuell über "Run workflow" starten, danach läuft er
+#      bei jedem Push von allein.
+#
+# Repo-Name und Benutzername sind eigentlich keine Geheimnisse und wären als
+# Variables besser aufgehoben. Sie liegen hier trotzdem als Secrets, weil der
+# secrets-Kontext im Job-Level-`if` nicht lesbar ist und die Konfiguration so an
+# einer einzigen Stelle bleibt. Der einzige Nebeneffekt: GitHub maskiert beide
+# Werte in der Log-Ausgabe.
+# =============================================================================
+
+name: Mirror to Codeberg
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["**"]
+  delete:
+  workflow_dispatch:
+
+# Nur lesen. Der Workflow schreibt ausschließlich auf das fremde Remote.
+permissions:
+  contents: read
+
+# Zwei parallele Mirror-Läufe würden sich gegenseitig überholen und könnten
+# einen älteren Stand als letztes schreiben. Deshalb strikt seriell, und ein
+# laufender Job wird NICHT abgebrochen.
+concurrency:
+  group: mirror-codeberg
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    name: Push to Codeberg
+    runs-on: ubuntu-latest
+    # In Forks nicht spiegeln. Ob die Secrets gesetzt sind, prüft der Step unten,
+    # der secrets-Kontext ist auf dieser Ebene nicht lesbar.
+    if: github.repository_owner == 'MSK-Scripts'
+
+    steps:
+      - name: Checkout (vollständige History, alle Refs)
+        uses: actions/checkout@v4
+        with:
+          # Ein Mirror braucht die ganze History, nicht nur den letzten Commit.
+          fetch-depth: 0
+
+      - name: Push branches and tags to Codeberg
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+          CODEBERG_USER: ${{ secrets.CODEBERG_USER }}
+          CODEBERG_REPO: ${{ secrets.CODEBERG_REPO }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${CODEBERG_TOKEN:-}" ] || [ -z "${CODEBERG_USER:-}" ] || [ -z "${CODEBERG_REPO:-}" ]; then
+            echo "::error::Die Secrets CODEBERG_TOKEN, CODEBERG_USER und CODEBERG_REPO müssen gesetzt sein."
+            exit 1
+          fi
+
+          # Alle Remote-Refs von GitHub holen, inklusive gelöschter (--prune),
+          # damit der Spiegel auch Löschungen nachvollzieht.
+          git fetch --prune --prune-tags --tags origin
+
+          # refs/remotes/origin/HEAD ist ein symbolischer Ref auf den Default-
+          # Branch. Ohne dieses Löschen matcht er die Refspec unten mit und landet
+          # auf Codeberg als echter Branch namens "HEAD", der dort jeden Ref-Namen
+          # mehrdeutig macht.
+          #
+          # Bewusst `git remote set-head --delete` und NICHT `git update-ref -d`:
+          # update-ref dereferenziert symbolische Refs und würde damit den
+          # Default-Branch selbst löschen statt den Zeiger darauf.
+          git remote set-head origin --delete || true
+
+          # Die Token-URL steht nur in dieser Variable, nie in der Kommandozeile,
+          # damit sie nicht im Prozess-Log auftaucht. GitHub maskiert das Secret
+          # zusätzlich in der Ausgabe.
+          REMOTE="https://${CODEBERG_USER}:${CODEBERG_TOKEN}@codeberg.org/${CODEBERG_REPO}.git"
+
+          # refs/remotes/origin/* statt refs/heads/*: der Checkout legt lokal nur
+          # einen Branch an, die anderen existieren nur als Remote-Tracking-Refs.
+          git push --force --prune "$REMOTE" \
+            "refs/remotes/origin/*:refs/heads/*" \
+            "refs/tags/*:refs/tags/*"
+
+          echo "Spiegel aktualisiert: codeberg.org/${CODEBERG_REPO}"
