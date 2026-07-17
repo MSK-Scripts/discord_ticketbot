@@ -36,6 +36,36 @@ async function applySchema(driver) {
     }
   }
   await migrateBlacklistUnique(driver);
+  await migrateTranscriptColumnType(driver);
+}
+
+/**
+ * Widen tickets.transcript from TEXT to LONGTEXT on existing MySQL/MariaDB
+ * databases. The column stores the full HTML transcript, which routinely
+ * exceeds MySQL's 64 KB TEXT limit (base64 avatars/attachments), so a close
+ * would fail with "data too long for column 'transcript'".
+ *
+ * MySQL-only: SQLite and Postgres TEXT is already unbounded. Fresh MySQL
+ * installs get LONGTEXT straight from getCreateStatements, so this only upgrades
+ * pre-existing databases. Idempotent — it no-ops once the column is a long type.
+ */
+async function migrateTranscriptColumnType(driver) {
+  if (driver.family !== 'mysql') return;
+  try {
+    const row = await driver.get(
+      `SELECT DATA_TYPE FROM information_schema.columns
+       WHERE table_schema = DATABASE() AND table_name = 'tickets' AND column_name = 'transcript'`,
+    );
+    const type = (row?.DATA_TYPE ?? row?.data_type ?? '').toString().toLowerCase();
+    // Already a long-enough text type → nothing to do.
+    if (type === 'longtext' || type === 'mediumtext') return;
+    await driver.exec('ALTER TABLE tickets MODIFY transcript LONGTEXT');
+  } catch (err) {
+    // A failed widening must not stop the bot from booting; surface it so it is
+    // not silent. Closing a ticket with a large transcript will keep failing
+    // until this succeeds, but the bot otherwise runs.
+    console.warn(`[Database] Could not widen tickets.transcript to LONGTEXT: ${err.message}`);
+  }
 }
 
 /**

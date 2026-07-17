@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.9.1] - 2026-07-17
+
+### Fixed
+- **Closing a ticket on MySQL/MariaDB failed when the transcript exceeded 64 KB.**
+  The full HTML transcript is stored in `tickets.transcript`, but on MySQL that
+  column was `TEXT` (64 KB max), so a real transcript (base64 avatars and
+  attachments push it well past that) overflowed with "data too long for column
+  'transcript'" and the close aborted. The column is now `LONGTEXT` on MySQL:
+  fresh installs get it from the schema, and existing MySQL databases are widened
+  in place by an idempotent migration on startup (`ALTER TABLE tickets MODIFY
+  transcript LONGTEXT`). SQLite and PostgreSQL were never affected (their `TEXT`
+  is unbounded). Tickets that failed to close for this reason can simply be closed
+  again after updating.
+
 ## [2.9.0] - 2026-07-15
 
 ### Added

@@ -12,17 +12,21 @@
 const TYPES = {
   sqlite: {
     pk: 'INTEGER PRIMARY KEY AUTOINCREMENT',
-    fk: 'INTEGER', id: 'TEXT', label: 'TEXT', text: 'TEXT',
+    fk: 'INTEGER', id: 'TEXT', label: 'TEXT', text: 'TEXT', bigtext: 'TEXT',
     int: 'INTEGER', bool: 'INTEGER', ts: 'INTEGER',
   },
   mysql: {
+    // `text` is MySQL TEXT (64 KB) — fine for short user input. `bigtext` is
+    // LONGTEXT (4 GB), needed for the full HTML transcript, which routinely
+    // exceeds 64 KB (base64 avatars/attachments). SQLite/Postgres TEXT is already
+    // unbounded, so only MySQL needs the distinction.
     pk: 'BIGINT AUTO_INCREMENT PRIMARY KEY',
-    fk: 'BIGINT', id: 'VARCHAR(32)', label: 'VARCHAR(64)', text: 'TEXT',
+    fk: 'BIGINT', id: 'VARCHAR(32)', label: 'VARCHAR(64)', text: 'TEXT', bigtext: 'LONGTEXT',
     int: 'INT', bool: 'TINYINT', ts: 'BIGINT',
   },
   postgres: {
     pk: 'BIGSERIAL PRIMARY KEY',
-    fk: 'BIGINT', id: 'TEXT', label: 'TEXT', text: 'TEXT',
+    fk: 'BIGINT', id: 'TEXT', label: 'TEXT', text: 'TEXT', bigtext: 'TEXT',
     int: 'INTEGER', bool: 'INTEGER', ts: 'BIGINT',
   },
 };
@@ -54,7 +58,7 @@ function getCreateStatements(dialect) {
       close_reason      ${t.text},
       last_activity     ${t.ts}    NOT NULL,
       created_at        ${t.ts}    NOT NULL,
-      transcript        ${t.text},
+      transcript        ${t.bigtext},
       message_count     ${t.int}   NOT NULL DEFAULT 0,
       staff_reminded_at ${t.ts},
       locked            ${t.bool}  NOT NULL DEFAULT 0,
