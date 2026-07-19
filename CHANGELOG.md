@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.9.2] - 2026-07-19
+
+### Changed
+- **Transcript upload now retries transient failures before falling back.** A
+  brief backend blip (e.g. a deploy or load spike where the reverse proxy is up
+  but the app is momentarily unreachable) returned an HTTP 502/503/504 and sent
+  the close straight to the local `.html` fallback, so no hosted transcript link
+  was created. `uploadTranscript` now retries a network error or a 502/503/504 up
+  to two more times with a short backoff (1s, then 3s) before giving up.
+  Permanent failures (4xx such as a bad API key or size limit, and a genuine app
+  500) still return on the first attempt, so nothing that a retry cannot fix is
+  delayed. Behaviour without `MSK_API_KEY` is unchanged.
+
 ## [2.9.1] - 2026-07-17
 
 ### Fixed

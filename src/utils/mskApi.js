@@ -7,6 +7,18 @@
 const MSK_API_URL = process.env.MSK_API_URL ?? 'https://www.msk-scripts.de';
 const MSK_API_KEY = process.env.MSK_API_KEY ?? '';
 
+// Transient upload failures worth retrying: a network-level error, or a status
+// that means the reverse proxy is up but the backend was momentarily
+// unreachable/overloaded (Bad Gateway / Service Unavailable / Gateway Timeout).
+// Everything else — 4xx (bad key, size, validation) and a genuine app 500
+// (e.g. a filesystem EACCES) — is returned immediately, since a retry can't fix it.
+const RETRYABLE_STATUS = new Set([502, 503, 504]);
+const UPLOAD_MAX_ATTEMPTS = 3;
+// Backoff between attempts (ms). One entry per gap → MAX_ATTEMPTS - 1 entries.
+const UPLOAD_RETRY_DELAYS_MS = [1000, 3000];
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 /**
  * Upload a transcript HTML to the MSK server.
  * The server determines the guild tier from the API key – not from this request.
@@ -34,6 +46,33 @@ async function uploadTranscript({ ticketId, transcriptHtml, attachments = [] }) 
       : att.data,
   }));
 
+  const body = JSON.stringify({
+    ticketId,
+    transcriptHtml,
+    attachments: serializedAttachments,
+  });
+
+  // Retry transient failures (network error / 502·503·504) with a short backoff
+  // before giving up, so a brief backend blip during a deploy or load spike
+  // doesn't force the caller straight to the file fallback. Permanent failures
+  // return on the first attempt.
+  let last = { success: false, url: null, error: 'Upload not attempted.' };
+  for (let attempt = 0; attempt < UPLOAD_MAX_ATTEMPTS; attempt++) {
+    if (attempt > 0) await sleep(UPLOAD_RETRY_DELAYS_MS[attempt - 1]);
+
+    const outcome = await attemptUpload(body);
+    last = outcome.result;
+    if (!outcome.retryable) return outcome.result;
+  }
+  return last;
+}
+
+/**
+ * A single upload attempt.
+ * @param {string} body  serialized JSON request body
+ * @returns {Promise<{ retryable: boolean, result: { success: boolean, url: string|null, error: string|null } }>}
+ */
+async function attemptUpload(body) {
   let response;
   try {
     response = await fetch(`${MSK_API_URL}/api/transcript/upload`, {
@@ -42,28 +81,30 @@ async function uploadTranscript({ ticketId, transcriptHtml, attachments = [] }) 
         'Content-Type':  'application/json',
         'Authorization': `Bearer ${MSK_API_KEY}`,
       },
-      body: JSON.stringify({
-        ticketId,
-        transcriptHtml,
-        attachments: serializedAttachments,
-      }),
+      body,
     });
   } catch (err) {
-    return { success: false, url: null, error: `Network error: ${err.message}` };
+    // Network-level failure (DNS, connection reset, timeout) — transient.
+    return { retryable: true, result: { success: false, url: null, error: `Network error: ${err.message}` } };
+  }
+
+  // Proxy up, backend momentarily unavailable — retry.
+  if (RETRYABLE_STATUS.has(response.status)) {
+    return { retryable: true, result: { success: false, url: null, error: `Server error (HTTP ${response.status}).` } };
   }
 
   let data;
   try {
     data = await response.json();
   } catch {
-    return { success: false, url: null, error: `Invalid response from server (HTTP ${response.status}).` };
+    return { retryable: false, result: { success: false, url: null, error: `Invalid response from server (HTTP ${response.status}).` } };
   }
 
   if (!response.ok) {
-    return { success: false, url: null, error: data?.error ?? `Server error (HTTP ${response.status}).` };
+    return { retryable: false, result: { success: false, url: null, error: data?.error ?? `Server error (HTTP ${response.status}).` } };
   }
 
-  return { success: true, url: data.url, tier: data.tier, expiresAt: data.expiresAt, error: null };
+  return { retryable: false, result: { success: true, url: data.url, tier: data.tier, expiresAt: data.expiresAt, error: null } };
 }
 
 /**
