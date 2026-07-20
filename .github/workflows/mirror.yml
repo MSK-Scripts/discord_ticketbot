@@ -58,7 +58,7 @@ jobs:
 
     steps:
       - name: Checkout (vollständige History, alle Refs)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Ein Mirror braucht die ganze History, nicht nur den letzten Commit.
           fetch-depth: 0
