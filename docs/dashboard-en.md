@@ -117,8 +117,9 @@ takes your word for what permissions you have.
 * **A user entry overrides that person's role entries completely.** This is the
   point of having both: it lets you take a single permission *away* from one
   person that their role grants them.
-* Someone with no entry at all still sees **their own tickets** and can reply to
-  them, nothing more.
+* Someone with no entry at all sees **only their own tickets** and can reply to
+  them, nothing more — and even that only when the **end-user portal** is switched
+  on (see below). By default the dashboard is **staff-only**.
 
 | Permission | Allows |
 |---|---|
@@ -137,6 +138,28 @@ people is unrestricted.
 
 Every change made through the dashboard is written to an audit log.
 
+### The public end-user portal
+
+By default the dashboard is **staff-only**: only the owner and members you have
+granted at least one permission can sign in. Turning the dashboard on for your
+team does **not** silently give every server member a login.
+
+Set `DASHBOARD_PUBLIC_PORTAL=true` (the setup wizard also offers this) to open the
+end-user portal. Any member can then sign in with Discord and gets a **"My
+tickets"** view that shows **only their own tickets**, where they can:
+
+* follow the live conversation of an open ticket and **reply** to it (the reply
+  appears in Discord under their own name),
+* download the transcript of a closed ticket (plus, on premium, an "Open
+  transcript" link).
+
+That is the whole of the portal — a member with no permissions can never see
+other people's tickets, statistics, the config, or the bot controls. Everything
+staff-facing still requires an explicit permission. Whether the portal is on or
+off, the reply route re-checks server-side that the ticket is open, not locked,
+the member is not blacklisted, and it really is their own ticket before anything
+reaches Discord.
+
 ---
 
 ## Environment variables
@@ -147,6 +170,7 @@ Every change made through the dashboard is written to an audit log.
 | `DASHBOARD_HOST` | `127.0.0.1` | Bind address. Leave it alone unless you know why. |
 | `DASHBOARD_PORT` | `3010` | Port |
 | `DASHBOARD_PUBLIC_URL` | `http://127.0.0.1:<port>` | The URL your browser uses. Must match the Discord redirect URI. |
+| `DASHBOARD_PUBLIC_PORTAL` | `false` | Staff-only when off. When on, any member may sign in to manage only their own tickets. |
 | `DASHBOARD_ALLOW_INSECURE` | `false` | Only if you terminate TLS somewhere the bot cannot see |
 | `SESSION_SECRET` | *generated* | Cookie signing key. Never share or reuse it. |
 | `CLIENT_SECRET` | (none) | Discord OAuth2 client secret |
@@ -201,6 +225,11 @@ to your `https://` address.
 **Login redirects back with an error**
 The redirect URI in the Discord portal must match `DASHBOARD_PUBLIC_URL` +
 `/auth/callback` **exactly**, including `https` and any trailing path.
+
+**A member is told the dashboard is "limited to staff"**
+The dashboard is staff-only by default. Either grant that person a permission
+under **Permissions**, or set `DASHBOARD_PUBLIC_PORTAL=true` to open the end-user
+portal so any member can manage their own tickets.
 
 **The conversation in a ticket is empty**
 The bot needs the **Message Content** intent (Developer Portal → Bot →

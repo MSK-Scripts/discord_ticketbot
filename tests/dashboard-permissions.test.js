@@ -11,7 +11,7 @@ const assert = require('node:assert/strict');
 
 const {
   PERMISSIONS, isPermission, parsePermissions,
-  selectAccessRows, resolvePermissions, hasPermission, checkSelfEdit,
+  selectAccessRows, resolvePermissions, hasPermission, canUseDashboard, checkSelfEdit,
 } = require('../src/dashboard/permissions');
 
 const roleRows = [
@@ -80,6 +80,34 @@ test('selectAccessRows picks the user row and only the matching roles', () => {
 test('hasPermission with an array means any-of', () => {
   assert.ok(hasPermission(['stats.view'], ['config.edit', 'stats.view']));
   assert.ok(!hasPermission(['stats.view'], ['config.edit', 'bot.control']));
+});
+
+// ── End-user portal gate (canUseDashboard) ───────────────────────────────────
+
+test('the owner may always use the dashboard, portal on or off', () => {
+  assert.equal(canUseDashboard({ isOwner: true, permissions: [], publicPortal: false }), true);
+  assert.equal(canUseDashboard({ isOwner: true, permissions: [], publicPortal: true }), true);
+});
+
+test('a member with any permission is staff and may always enter', () => {
+  assert.equal(canUseDashboard({ permissions: ['tickets.view'], publicPortal: false }), true);
+  assert.equal(canUseDashboard({ permissions: ['stats.view'], publicPortal: true }), true);
+});
+
+test('a member with no permissions may enter ONLY when the portal is opted in', () => {
+  // This is the whole of Phase 2b: without the opt-in the dashboard is staff-only,
+  // so enabling it for staff never silently exposes a login to every member.
+  assert.equal(canUseDashboard({ permissions: [], publicPortal: false }), false);
+  assert.equal(canUseDashboard({ permissions: [], publicPortal: true }), true);
+});
+
+test('canUseDashboard defaults are safe (staff-only)', () => {
+  // Missing/garbage input must never accidentally open the portal.
+  assert.equal(canUseDashboard(), false);
+  assert.equal(canUseDashboard({}), false);
+  assert.equal(canUseDashboard({ permissions: null, publicPortal: false }), false);
+  // publicPortal must be strictly true, not merely truthy, to open the gate.
+  assert.equal(canUseDashboard({ permissions: [], publicPortal: 'true' }), false);
 });
 
 // ── Self-edit guards ─────────────────────────────────────────────────────────

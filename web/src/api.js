@@ -18,6 +18,9 @@ export class ApiError extends Error {
     super(payload?.error || `Request failed (${status})`);
     this.status = status;
     this.detail = payload?.detail;
+    // Set when the dashboard is staff-only and this member has no access. Lets the
+    // UI show a "limited to staff" screen instead of an endless sign-in loop.
+    this.portalClosed = payload?.portalClosed === true;
   }
 }
 
@@ -82,6 +85,28 @@ export const api = {
   blacklist: () => request('/blacklist'),
   addBlacklist: (userId, reason) => request('/blacklist', { method: 'POST', body: { userId, reason } }),
   removeBlacklist: (userId) => request(`/blacklist/${userId}`, { method: 'DELETE' }),
+
+  // Dashboard appearance (owner-only).
+  dashboardSettings: () => request('/dashboard-settings'),
+  saveAccent: (accent) => request('/dashboard-settings', { method: 'PUT', body: { accent } }),
+  resetFavicon: () => request('/dashboard-settings/favicon', { method: 'DELETE' }),
+
+  // Favicon upload sends the raw image bytes, not JSON, so it needs its own call.
+  uploadFavicon: async (file) => {
+    const res = await fetch('/api/dashboard-settings/favicon', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'x-csrf-token': readCookie(CSRF_COOKIE),
+        'Content-Type': file.type || 'application/octet-stream',
+      },
+      body: file,
+    });
+    if (res.status === 401) { window.location.href = '/auth/login'; return new Promise(() => {}); }
+    const payload = await res.json().catch(() => null);
+    if (!res.ok) throw new ApiError(res.status, payload);
+    return payload;
+  },
 };
 
 /** Logout needs a raw call: it lives outside /api. */

@@ -120,8 +120,9 @@ glaubt dir nie einfach, welche Berechtigungen du hast.
 * **Ein Nutzer-Eintrag überschreibt die Rollen-Einträge dieser Person
   vollständig.** Genau darum gibt es beides: So kannst du einer einzelnen Person
   ein Recht *entziehen*, das ihre Rolle ihr gewährt.
-* Wer gar keinen Eintrag hat, sieht weiterhin **die eigenen Tickets** und kann
-  darin antworten, mehr nicht.
+* Wer gar keinen Eintrag hat, sieht **nur die eigenen Tickets** und kann darin
+  antworten, mehr nicht — und selbst das nur, wenn das **End-User-Portal**
+  eingeschaltet ist (siehe unten). Standardmäßig ist das Dashboard **staff-only**.
 
 | Berechtigung | Erlaubt |
 |---|---|
@@ -140,6 +141,30 @@ deaktivieren noch dir ein Recht geben, das du nicht bereits hast. Rechte an
 
 Jede über das Dashboard vorgenommene Änderung wird in ein Audit-Log geschrieben.
 
+### Das öffentliche End-User-Portal
+
+Standardmäßig ist das Dashboard **staff-only**: Nur der Owner und Mitglieder, denen
+du mindestens ein Recht gegeben hast, können sich anmelden. Das Dashboard für dein
+Team zu aktivieren gibt also **nicht** stillschweigend jedem Server-Mitglied ein
+Login.
+
+Setze `DASHBOARD_PUBLIC_PORTAL=true` (der Setup-Assistent bietet das ebenfalls an),
+um das End-User-Portal zu öffnen. Jedes Mitglied kann sich dann mit Discord
+anmelden und bekommt eine **"Meine Tickets"**-Ansicht, die **nur die eigenen
+Tickets** zeigt, wo es:
+
+* dem Live-Verlauf eines offenen Tickets folgen und darin **antworten** kann (die
+  Antwort erscheint in Discord unter dem eigenen Namen),
+* das Transcript eines geschlossenen Tickets herunterladen kann (mit Premium plus
+  einen "Transcript öffnen"-Link).
+
+Das ist der gesamte Umfang des Portals — ein Mitglied ohne Rechte kann nie fremde
+Tickets, Statistiken, die Config oder die Bot-Steuerung sehen. Alles
+Staff-Seitige erfordert weiterhin ein explizites Recht. Ob das Portal an oder aus
+ist: Die Reply-Route prüft serverseitig erneut, dass das Ticket offen und nicht
+gesperrt ist, das Mitglied nicht geblacklistet ist und es wirklich sein eigenes
+Ticket ist, bevor irgendetwas Discord erreicht.
+
 ---
 
 ## Umgebungsvariablen
@@ -150,6 +175,7 @@ Jede über das Dashboard vorgenommene Änderung wird in ein Audit-Log geschriebe
 | `DASHBOARD_HOST` | `127.0.0.1` | Bind-Adresse. Lass sie in Ruhe, außer du weißt, warum. |
 | `DASHBOARD_PORT` | `3010` | Port |
 | `DASHBOARD_PUBLIC_URL` | `http://127.0.0.1:<port>` | Die URL, die dein Browser nutzt. Muss zur Discord-Redirect-URI passen. |
+| `DASHBOARD_PUBLIC_PORTAL` | `false` | Aus = staff-only. An = jedes Mitglied darf sich anmelden und nur die eigenen Tickets verwalten. |
 | `DASHBOARD_ALLOW_INSECURE` | `false` | Nur, wenn du TLS an einer Stelle terminierst, die der Bot nicht sieht |
 | `SESSION_SECRET` | *erzeugt* | Schlüssel für die Cookie-Signatur. Niemals teilen oder wiederverwenden. |
 | `CLIENT_SECRET` | (keins) | Discord-OAuth2-Client-Secret |
@@ -206,6 +232,11 @@ setze `DASHBOARD_PUBLIC_URL` auf deine `https://`-Adresse.
 **Der Login leitet mit einem Fehler zurück**
 Die Redirect-URI im Discord-Portal muss **exakt** zu `DASHBOARD_PUBLIC_URL` +
 `/auth/callback` passen, inklusive `https` und eventuellem Pfad-Anhang.
+
+**Einem Mitglied wird gesagt, das Dashboard sei "limited to staff"**
+Das Dashboard ist standardmäßig staff-only. Gib der Person entweder unter
+**Berechtigungen** ein Recht, oder setze `DASHBOARD_PUBLIC_PORTAL=true`, um das
+End-User-Portal zu öffnen, damit jedes Mitglied die eigenen Tickets verwalten kann.
 
 **Der Verlauf in einem Ticket ist leer**
 Der Bot braucht die **Message Content**-Intent (Developer Portal → Bot →

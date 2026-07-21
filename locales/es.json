@@ -123,6 +123,12 @@
     "broadcast": {
       "author": "📢 Anuncio — {user}",
       "plain": "📢 **Anuncio:** {message}"
+    },
+    "autoClosePaused": {
+      "description": "⏸️ **Cierre automático en pausa** por {user}. Este ticket no se cerrará automáticamente ni recibirá avisos por inactividad hasta que se reanude."
+    },
+    "autoCloseResumed": {
+      "description": "▶️ **Cierre automático reanudado** por {user}. Vuelven a aplicarse las reglas normales de inactividad."
     }
   },
   "modals": {
@@ -225,7 +231,9 @@
     "noReasonGiven": "No se proporcionó motivo",
     "userAddFailed": "❌ No se pudo añadir al usuario.",
     "userRemoveFailed": "❌ No se pudo eliminar al usuario.",
-    "cannotRemoveCreator": "❌ El creador del ticket no puede ser eliminado."
+    "cannotRemoveCreator": "❌ El creador del ticket no puede ser eliminado.",
+    "autoCloseAlreadyPaused": "❌ El cierre automático ya está en pausa para este ticket.",
+    "autoCloseNotPaused": "❌ El cierre automático no está en pausa para este ticket."
   },
   "priorities": {
     "low": "🟢 Baja",

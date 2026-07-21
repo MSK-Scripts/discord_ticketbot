@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
   TicketIcon, InboxIcon, BarChart3Icon, SettingsIcon, TerminalIcon, ShieldCheckIcon,
-  LogOutIcon, MenuIcon,
+  PaletteIcon, LogOutIcon, MenuIcon,
 } from 'lucide-react';
 import { api, logout } from './api.js';
+import { useRouter, parseRoute, viewPath } from './router.js';
 import { cn } from '@/lib/utils.js';
 import { Button } from '@/components/ui/button.jsx';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet.jsx';
@@ -14,25 +15,30 @@ import Stats from './views/Stats.jsx';
 import Config from './views/Config.jsx';
 import BotControl from './views/BotControl.jsx';
 import Access from './views/Access.jsx';
+import Settings from './views/Settings.jsx';
 
 /**
  * Navigation is derived from the permissions the SERVER reported. This is only
  * cosmetic — every route is enforced server-side as well. Hiding a nav item the
  * user cannot use is a UX decision, never the security boundary.
+ * `ownerOnly` items (like the .env editor and dashboard settings) show only to the
+ * guild owner.
  */
 const NAV = [
-  { id: 'mine',    label: 'My tickets',    icon: TicketIcon,     permission: null },
-  { id: 'tickets', label: 'Tickets',       icon: InboxIcon,      permission: 'tickets.view' },
-  { id: 'stats',   label: 'Statistics',    icon: BarChart3Icon,  permission: 'stats.view' },
-  { id: 'config',  label: 'Configuration', icon: SettingsIcon,   permission: ['config.view', 'config.edit'] },
-  { id: 'bot',     label: 'Bot control',   icon: TerminalIcon,   permission: 'bot.control' },
-  { id: 'access',  label: 'Permissions',   icon: ShieldCheckIcon, permission: 'access.manage' },
+  { id: 'mine',     label: 'My tickets',        icon: TicketIcon,     permission: null },
+  { id: 'tickets',  label: 'Tickets',           icon: InboxIcon,      permission: 'tickets.view' },
+  { id: 'stats',    label: 'Statistics',        icon: BarChart3Icon,  permission: 'stats.view' },
+  { id: 'config',   label: 'Configuration',     icon: SettingsIcon,   permission: ['config.view', 'config.edit'] },
+  { id: 'bot',      label: 'Bot control',       icon: TerminalIcon,   permission: 'bot.control' },
+  { id: 'access',   label: 'Permissions',       icon: ShieldCheckIcon, permission: 'access.manage' },
+  { id: 'settings', label: 'Dashboard settings', icon: PaletteIcon,   ownerOnly: true },
 ];
 
-const allowed = (me, permission) => {
-  if (!permission) return true;
+const allowed = (me, item) => {
+  if (item.ownerOnly) return me.isOwner;
+  if (!item.permission) return true;
   if (me.isOwner) return true;
-  const list = Array.isArray(permission) ? permission : [permission];
+  const list = Array.isArray(item.permission) ? item.permission : [item.permission];
   return list.some(p => me.permissions.includes(p));
 };
 
@@ -46,7 +52,7 @@ function Brand() {
 }
 
 function NavContent({ me, view, onSelect }) {
-  const items = NAV.filter(n => allowed(me, n.permission));
+  const items = NAV.filter(n => allowed(me, n));
   return (
     <div className="flex h-full flex-col gap-1 p-3">
       <div className="px-1 pb-3 pt-1"><Brand /></div>
@@ -96,24 +102,51 @@ function NavContent({ me, view, onSelect }) {
 export default function App() {
   const [me, setMe] = useState(null);
   const [error, setError] = useState(null);
-  const [view, setView] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { path, navigate } = useRouter();
 
   useEffect(() => {
     api.me()
-      .then((data) => {
-        setMe(data);
-        const first = NAV.find(n => allowed(data, n.permission));
-        setView(first?.id ?? 'mine');
-      })
-      .catch(err => setError(err.message));
+      .then(setMe)
+      .catch(err => setError({ message: err.message, portalClosed: err.portalClosed === true }));
   }, []);
 
+  // The view comes from the URL, gated by what this member may see. An unknown or
+  // off-limits path falls back to the first view they are allowed to open.
+  const route = parseRoute(path);
+  const allowedViews = me ? NAV.filter(n => allowed(me, n)).map(n => n.id) : [];
+  const view = me
+    ? (route.view && allowedViews.includes(route.view) ? route.view : (allowedViews[0] ?? 'mine'))
+    : null;
+  const param = view === route.view ? route.param : null;
+
+  // Keep the address bar canonical: "/" or an off-limits path is rewritten to the
+  // effective view (replace, so it adds no history entry). This is what puts the
+  // real page in the URL and makes F5 reload the same page instead of the first.
+  useEffect(() => {
+    if (!me) return;
+    const want = viewPath(view, param);
+    if (window.location.pathname !== want) navigate(want, { replace: true });
+  }, [me, view, param, navigate]);
+
   if (error) {
+    // Staff-only dashboard + this member has no access: offer a way OUT (sign out),
+    // not a sign-in button that would just bounce them straight back here.
+    if (error.portalClosed) {
+      return (
+        <div className="flex min-h-screen flex-col items-center justify-center gap-5 p-6 text-center">
+          <h1 className="font-display text-2xl font-bold">Ticket Bot Dashboard</h1>
+          <div className="text-muted-foreground bg-muted/40 border-border max-w-sm rounded-lg border px-4 py-3 text-sm">
+            {error.message} Ask a server administrator to grant you access.
+          </div>
+          <Button variant="outline" onClick={logout}><LogOutIcon /> Sign out</Button>
+        </div>
+      );
+    }
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-5 p-6 text-center">
         <h1 className="font-display text-2xl font-bold">Ticket Bot Dashboard</h1>
-        <div className="text-destructive bg-destructive/10 border-destructive/30 max-w-sm rounded-lg border px-4 py-3 text-sm">{error}</div>
+        <div className="text-destructive bg-destructive/10 border-destructive/30 max-w-sm rounded-lg border px-4 py-3 text-sm">{error.message}</div>
         <Button asChild><a href="/auth/login">Sign in with Discord</a></Button>
       </div>
     );
@@ -123,7 +156,7 @@ export default function App() {
     return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</div>;
   }
 
-  const select = (id) => { setView(id); setMobileOpen(false); };
+  const select = (id) => { navigate(viewPath(id)); setMobileOpen(false); };
 
   return (
     <div className="flex min-h-screen">
@@ -150,12 +183,15 @@ export default function App() {
         </header>
 
         <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
-          {view === 'mine'    && <MyTickets me={me} />}
-          {view === 'tickets' && <Tickets me={me} />}
+          {view === 'mine'    && <MyTickets me={me} ticketId={param}
+            onOpen={id => navigate(viewPath('mine', id))} onClose={() => navigate(viewPath('mine'))} />}
+          {view === 'tickets' && <Tickets me={me} ticketId={param}
+            onOpen={id => navigate(viewPath('tickets', id))} onClose={() => navigate(viewPath('tickets'))} />}
           {view === 'stats'   && <Stats />}
           {view === 'config'  && <Config me={me} />}
           {view === 'bot'     && <BotControl />}
           {view === 'access'  && <Access me={me} />}
+          {view === 'settings' && <Settings />}
         </main>
       </div>
     </div>

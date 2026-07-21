@@ -123,6 +123,12 @@
     "broadcast": {
       "author": "📢 Broadcast — {user}",
       "plain": "📢 **Broadcast:** {message}"
+    },
+    "autoClosePaused": {
+      "description": "⏸️ **Auto-Close pausiert** von {user}. Dieses Ticket wird nicht automatisch geschlossen und erhält keine Inaktivitäts-Erinnerungen, bis es fortgesetzt wird."
+    },
+    "autoCloseResumed": {
+      "description": "▶️ **Auto-Close fortgesetzt** von {user}. Die normalen Inaktivitätsregeln gelten wieder."
     }
   },
   "modals": {
@@ -225,7 +231,9 @@
     "noReasonGiven": "Kein Grund angegeben",
     "userAddFailed": "❌ Fehler beim Hinzufügen des Nutzers.",
     "userRemoveFailed": "❌ Fehler beim Entfernen des Nutzers.",
-    "cannotRemoveCreator": "❌ Der Ersteller des Tickets kann nicht entfernt werden."
+    "cannotRemoveCreator": "❌ Der Ersteller des Tickets kann nicht entfernt werden.",
+    "autoCloseAlreadyPaused": "❌ Auto-Close ist für dieses Ticket bereits pausiert.",
+    "autoCloseNotPaused": "❌ Auto-Close ist für dieses Ticket nicht pausiert."
   },
   "priorities": {
     "low": "🟢 Niedrig",

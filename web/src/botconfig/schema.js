@@ -200,17 +200,51 @@ export const DEFAULT_TICKET_TYPE = {
 export const DEFAULT_SNIPPET = { name: '', description: '', content: '', embed: null };
 
 // ── .env ─────────────────────────────────────────────────────────────────────
+// Grouped into sections mirroring CONFIG_SCHEMA. Each field is either a plain
+// text field, a `secret: true` masked field (shown as "•••• set — leave blank to
+// keep"), or a `kind: 'toggle'` boolean written as the string "true"/"false".
 export const ENV_SCHEMA = [
-  { key: 'TOKEN', secret: true, label: 'Bot token',
-    help: 'Discord bot token from the developer portal.' },
-  { key: 'CLIENT_ID', label: 'Application / Client ID',
-    help: 'Your Discord application ID.' },
-  { key: 'GUILD_ID', label: 'Server (guild) ID',
-    help: 'The Discord server the commands are registered to.' },
-  { key: 'MSK_API_KEY', secret: true, label: 'MSK API key',
-    help: 'Enables transcript links. Without it transcripts are sent as file attachments.' },
-  { key: 'MSK_API_URL', label: 'MSK API URL',
-    help: 'Base URL of the MSK API. Do not change unless self-hosting the website.' },
-  { key: 'DATABASE_URL', secret: true, optional: true, label: 'Database URL',
-    help: 'Optional. Empty = bundled SQLite. Otherwise mysql:// or postgres:// (append ?ssl=true for TLS).' },
+  {
+    id: 'core',
+    title: 'Bot',
+    fields: [
+      { key: 'TOKEN', secret: true, label: 'Bot token',
+        help: 'Discord bot token from the developer portal.' },
+      { key: 'CLIENT_ID', label: 'Application / Client ID',
+        help: 'Your Discord application ID.' },
+      { key: 'GUILD_ID', label: 'Server (guild) ID',
+        help: 'The Discord server the commands are registered to.' },
+      { key: 'MSK_API_KEY', secret: true, label: 'MSK API key',
+        help: 'Enables transcript links. Without it transcripts are sent as file attachments.' },
+      { key: 'MSK_API_URL', label: 'MSK API URL',
+        help: 'Base URL of the MSK API. Do not change unless self-hosting the website.' },
+      { key: 'DATABASE_URL', secret: true, optional: true, label: 'Database URL',
+        help: 'Optional. Empty = bundled SQLite. Otherwise mysql:// or postgres:// (append ?ssl=true for TLS).' },
+    ],
+  },
+  {
+    id: 'dashboard',
+    title: 'Web Dashboard',
+    help: 'Only used when you run the bot with the dashboard (npm run dashboard). Changes take effect after a restart. Prefer the guided "npm run dashboard:setup" for the first setup.',
+    fields: [
+      { key: 'DASHBOARD_ENABLED', kind: 'toggle', label: 'Enable the dashboard',
+        help: 'Master switch. Off = plain bot only, no web server.' },
+      { key: 'DASHBOARD_PUBLIC_PORTAL', kind: 'toggle', label: 'Public end-user portal',
+        help: 'Off = staff-only. On = any member may sign in to manage only their own tickets.' },
+      { key: 'DASHBOARD_HOST', label: 'Bind address',
+        help: 'Keep 127.0.0.1 and put a reverse proxy in front. Only change this if you know exactly why.' },
+      { key: 'DASHBOARD_PORT', label: 'Port',
+        help: 'The port the dashboard listens on (default 3010).' },
+      { key: 'DASHBOARD_PUBLIC_URL', label: 'Public URL',
+        help: 'The URL your browser uses. Behind a proxy this is your public https address, not the bind address. Must match the Discord redirect URI.' },
+      { key: 'CLIENT_SECRET', secret: true, label: 'OAuth client secret',
+        help: 'Discord OAuth2 client secret (Developer Portal → OAuth2). Required for the dashboard login.' },
+      { key: 'SESSION_SECRET', secret: true, label: 'Session secret',
+        help: 'Cookie signing key. Generated automatically on first start — changing it signs everyone out. Never share or reuse it.' },
+      { key: 'DASHBOARD_ALLOW_INSECURE', kind: 'toggle', optional: true, label: 'Allow insecure exposure',
+        help: 'Advanced. Only if you terminate TLS somewhere the bot cannot see. Otherwise a public bind without https refuses to start.' },
+      { key: 'DASHBOARD_TRUST_PROXY_SECRET', secret: true, optional: true, label: 'Trusted-proxy secret',
+        help: 'Advanced, hosted setups only. Leave empty for a normal self-hosted dashboard.' },
+    ],
+  },
 ];

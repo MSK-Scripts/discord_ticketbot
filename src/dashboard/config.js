@@ -37,6 +37,11 @@ function loadDashboardConfig(env = process.env) {
     enabled:       truthy(env.DASHBOARD_ENABLED),
     host,
     port: Number.isFinite(port) ? port : 3010,
+    // End-user portal opt-in. OFF by default: the dashboard is staff-only unless
+    // this is set, so enabling it for your team never silently gives every guild
+    // member a login. When ON, a member with no permissions may sign in and see
+    // only their own tickets. See permissions.canUseDashboard.
+    publicPortal:  truthy(env.DASHBOARD_PUBLIC_PORTAL),
     // Where the browser reaches the dashboard. Behind a reverse proxy this is
     // the public https URL, NOT the bind address.
     publicUrl:     (env.DASHBOARD_PUBLIC_URL || `http://${host}:${port}`).replace(/\/+$/, ''),

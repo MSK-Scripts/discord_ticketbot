@@ -146,6 +146,11 @@ export default function Access({ me }) {
                 );
               })}
             </div>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              <strong>View/Edit configuration</strong> covers config.jsonc, snippets and the locale files.
+              The <strong>.env</strong> file (bot token and secrets) stays restricted to the server owner and
+              is never shown to staff, even with these permissions.
+            </p>
           </div>
 
           <label className="flex items-center gap-2.5 text-sm">

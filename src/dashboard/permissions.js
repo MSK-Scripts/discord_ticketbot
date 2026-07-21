@@ -115,6 +115,31 @@ function hasPermission(permissions, required) {
 }
 
 /**
+ * May this member reach the dashboard at all?
+ *
+ * The dashboard has two audiences: STAFF (owner or anyone with at least one
+ * permission) and END USERS (a member with no permissions who only ever sees
+ * their own tickets). The end-user portal is an explicit opt-in: turning the
+ * dashboard on for your staff must not silently open a login to your whole
+ * member base. So:
+ *
+ *   • owner                        → always allowed (never gated, never lockable)
+ *   • at least one permission       → staff, always allowed
+ *   • no permissions                → only when the public portal is opted in
+ *
+ * This is the sole gate that decides "in or out"; WHAT an allowed member can do
+ * is still governed entirely by resolvePermissions.
+ *
+ * @param {{ isOwner?: boolean, permissions?: string[], publicPortal?: boolean }} input
+ * @returns {boolean}
+ */
+function canUseDashboard({ isOwner = false, permissions = [], publicPortal = false } = {}) {
+  if (isOwner) return true;
+  if (Array.isArray(permissions) && permissions.length > 0) return true;
+  return publicPortal === true;
+}
+
+/**
  * Guard against an actor destroying or escalating their own access.
  *
  * Mirrors the three rules from the msk-shop admin dashboard. Granting permissions
@@ -147,5 +172,5 @@ function checkSelfEdit({ actorId, actorIsOwner, actorPermissions, targetType, ta
 module.exports = {
   PERMISSIONS, PERMISSION_LABELS, SUBJECT_TYPES,
   isPermission, isSubjectType, parsePermissions,
-  selectAccessRows, resolvePermissions, hasPermission, checkSelfEdit,
+  selectAccessRows, resolvePermissions, hasPermission, canUseDashboard, checkSelfEdit,
 };

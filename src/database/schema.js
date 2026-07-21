@@ -63,7 +63,8 @@ function getCreateStatements(dialect) {
       staff_reminded_at ${t.ts},
       locked            ${t.bool}  NOT NULL DEFAULT 0,
       notify_on_reply   ${t.bool}  NOT NULL DEFAULT 0,
-      last_notify_sent  ${t.ts}
+      last_notify_sent  ${t.ts},
+      auto_close_paused ${t.bool}  NOT NULL DEFAULT 0
     )`,
 
     // UNIQUE is (guild_id, user_id), NOT user_id alone: several bot instances can
@@ -166,6 +167,7 @@ function getMigrations(dialect) {
     { table: 'tickets', column: 'locked',            definition: `${t.bool} NOT NULL DEFAULT 0` },
     { table: 'tickets', column: 'notify_on_reply',   definition: `${t.bool} NOT NULL DEFAULT 0` },
     { table: 'tickets', column: 'last_notify_sent',  definition: t.ts },
+    { table: 'tickets', column: 'auto_close_paused', definition: `${t.bool} NOT NULL DEFAULT 0` },
   ];
 }
 

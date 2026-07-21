@@ -10,9 +10,8 @@ import TicketDetail from './TicketDetail.jsx';
  * tickets they created, and can reply to the open ones. Ownership is enforced
  * server-side against tickets.creator_id — never against anything the client says.
  */
-export default function MyTickets({ me }) {
+export default function MyTickets({ me, ticketId, onOpen, onClose }) {
   const [items, setItems] = useState(null);
-  const [selected, setSelected] = useState(null);
   const [error, setError] = useState(null);
 
   const load = useCallback(() => {
@@ -21,8 +20,8 @@ export default function MyTickets({ me }) {
 
   useEffect(load, [load]);
 
-  if (selected) {
-    return <TicketDetail id={selected} me={me} onBack={() => setSelected(null)} onChanged={load} />;
+  if (ticketId) {
+    return <TicketDetail id={ticketId} me={me} onBack={onClose} onChanged={load} />;
   }
 
   return (
@@ -49,8 +48,8 @@ export default function MyTickets({ me }) {
               <TableBody>
                 {items.map(t => (
                   <TableRow key={t.id} tabIndex={0} className="cursor-pointer"
-                    onClick={() => setSelected(t.id)}
-                    onKeyDown={e => { if (e.key === 'Enter') setSelected(t.id); }}>
+                    onClick={() => onOpen(t.id)}
+                    onKeyDown={e => { if (e.key === 'Enter') onOpen(t.id); }}>
                     <TableCell className="font-mono">{t.id}</TableCell>
                     <TableCell>{t.type}</TableCell>
                     <TableCell><Status status={t.status} /></TableCell>

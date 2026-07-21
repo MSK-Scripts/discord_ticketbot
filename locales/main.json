@@ -123,6 +123,12 @@
     "broadcast": {
       "author": "📢 Broadcast — {user}",
       "plain": "📢 **Broadcast:** {message}"
+    },
+    "autoClosePaused": {
+      "description": "⏸️ **Auto-close paused** by {user}. This ticket won't be auto-closed or pinged for inactivity until it's resumed."
+    },
+    "autoCloseResumed": {
+      "description": "▶️ **Auto-close resumed** by {user}. The normal inactivity rules apply again."
     }
   },
   "modals": {
@@ -225,7 +231,9 @@
     "noReasonGiven": "No reason provided",
     "userAddFailed": "❌ Failed to add the user.",
     "userRemoveFailed": "❌ Failed to remove the user.",
-    "cannotRemoveCreator": "❌ The ticket creator cannot be removed."
+    "cannotRemoveCreator": "❌ The ticket creator cannot be removed.",
+    "autoCloseAlreadyPaused": "❌ Auto-close is already paused for this ticket.",
+    "autoCloseNotPaused": "❌ Auto-close is not paused for this ticket."
   },
   "priorities": {
     "low": "🟢 Low",

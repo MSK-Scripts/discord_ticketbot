@@ -16,9 +16,17 @@ import '@fontsource/syne/800.css';
 
 import App from './App.jsx';
 import './index.css';
+import { loadAndApplyDashboardSettings } from './settings.js';
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+function render() {
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
+
+// Apply the accent/favicon BEFORE the first render so there is no flash of the
+// default theme. Best-effort and fast (a tiny same-origin JSON): if it fails or
+// is slow, we still render with the built-in defaults.
+loadAndApplyDashboardSettings().finally(render);

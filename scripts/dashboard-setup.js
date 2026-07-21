@@ -98,9 +98,21 @@ async function main() {
     }
   }
 
-  // ── 3. Write .env ──────────────────────────────────────────────────────────
+  // ── 3. End-user portal ─────────────────────────────────────────────────────
   console.log('');
-  console.log(`${BOLD}3) Writing configuration${RESET}`);
+  console.log(`${BOLD}3) Public end-user portal${RESET}`);
+  console.log(`${DIM}   By default the dashboard is staff-only. You can also let any server member${RESET}`);
+  console.log(`${DIM}   sign in to see and reply to ONLY their own tickets (staff still need explicit${RESET}`);
+  console.log(`${DIM}   permissions). The server owner is always an admin either way.${RESET}`);
+  const portalAnswer = (await ask('   Enable the public end-user portal? (y/N)', 'n')).toLowerCase();
+  const publicPortal = portalAnswer.startsWith('y');
+  console.log(publicPortal
+    ? `${GREEN}   Portal ON — any member may sign in and manage their own tickets.${RESET}`
+    : `${DIM}   Portal OFF — staff-only.${RESET}`);
+
+  // ── 4. Write .env ──────────────────────────────────────────────────────────
+  console.log('');
+  console.log(`${BOLD}4) Writing configuration${RESET}`);
 
   let env = '';
   try {
@@ -131,12 +143,13 @@ async function main() {
   env = setEnvValue(env, 'DASHBOARD_HOST', host);
   env = setEnvValue(env, 'DASHBOARD_PORT', port);
   env = setEnvValue(env, 'DASHBOARD_PUBLIC_URL', publicUrl);
+  env = setEnvValue(env, 'DASHBOARD_PUBLIC_PORTAL', publicPortal ? 'true' : 'false');
   env = setEnvValue(env, 'CLIENT_SECRET', clientSecret);
 
   fs.writeFileSync(ENV_PATH, env, 'utf-8');
   console.log(`${GREEN}   ✓ .env updated${RESET} ${DIM}(SESSION_SECRET: ${secretNote})${RESET}`);
 
-  // ── 4. Reverse proxy snippet ───────────────────────────────────────────────
+  // ── 5. Reverse proxy snippet ───────────────────────────────────────────────
   if (isPublic) {
     const domain = publicUrl.replace(/^https:\/\//, '');
     if (isWindows) {
@@ -146,7 +159,7 @@ async function main() {
     }
   }
 
-  // ── 5. Done ────────────────────────────────────────────────────────────────
+  // ── 6. Done ────────────────────────────────────────────────────────────────
   console.log('');
   console.log(`${BOLD}Done.${RESET} Start the bot with the dashboard:`);
   console.log(`     ${GREEN}npm run dashboard${RESET}`);
@@ -192,7 +205,7 @@ async function main() {
  */
 function printLinuxReverseProxy(domain, port) {
   console.log('');
-  console.log(`${BOLD}4) Reverse proxy (Linux / Apache)${RESET}`);
+  console.log(`${BOLD}5) Reverse proxy (Linux / Apache)${RESET}`);
   console.log(`${DIM}   Save as /etc/apache2/sites-available/ticketbot-dashboard.conf:${RESET}`);
   console.log('');
   console.log(`${DIM}<VirtualHost *:80>
@@ -235,7 +248,7 @@ function printLinuxReverseProxy(domain, port) {
  */
 function printWindowsReverseProxy(domain, port) {
   console.log('');
-  console.log(`${BOLD}4) Reverse proxy (Windows)${RESET}`);
+  console.log(`${BOLD}5) Reverse proxy (Windows)${RESET}`);
   console.log(`${DIM}   The dashboard listens on 127.0.0.1:${port}. Put a reverse proxy with HTTPS in front.${RESET}`);
   console.log('');
 

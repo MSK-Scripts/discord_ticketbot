@@ -123,6 +123,12 @@
     "broadcast": {
       "author": "📢 Ogłoszenie — {user}",
       "plain": "📢 **Ogłoszenie:** {message}"
+    },
+    "autoClosePaused": {
+      "description": "⏸️ **Automatyczne zamykanie wstrzymane** przez {user}. To zgłoszenie nie zostanie automatycznie zamknięte ani nie otrzyma przypomnień o nieaktywności, dopóki nie zostanie wznowione."
+    },
+    "autoCloseResumed": {
+      "description": "▶️ **Automatyczne zamykanie wznowione** przez {user}. Ponownie obowiązują normalne zasady nieaktywności."
     }
   },
   "modals": {
@@ -225,7 +231,9 @@
     "noReasonGiven": "Nie podano powodu",
     "userAddFailed": "❌ Nie udało się dodać użytkownika.",
     "userRemoveFailed": "❌ Nie udało się usunąć użytkownika.",
-    "cannotRemoveCreator": "❌ Twórcy zgłoszenia nie można usunąć."
+    "cannotRemoveCreator": "❌ Twórcy zgłoszenia nie można usunąć.",
+    "autoCloseAlreadyPaused": "❌ Automatyczne zamykanie jest już wstrzymane dla tego zgłoszenia.",
+    "autoCloseNotPaused": "❌ Automatyczne zamykanie nie jest wstrzymane dla tego zgłoszenia."
   },
   "priorities": {
     "low": "🟢 Niski",

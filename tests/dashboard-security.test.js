@@ -147,6 +147,16 @@ test('the dashboard is disabled and loopback-bound by default', () => {
   assert.equal(cfg.exposed, false);
 });
 
+test('the public end-user portal is OFF unless explicitly opted in', () => {
+  // Staff-only by default. Only the documented truthy strings arm it.
+  assert.equal(loadDashboardConfig({}).publicPortal, false);
+  assert.equal(loadDashboardConfig({ DASHBOARD_PUBLIC_PORTAL: 'false' }).publicPortal, false);
+  assert.equal(loadDashboardConfig({ DASHBOARD_PUBLIC_PORTAL: '0' }).publicPortal, false);
+  assert.equal(loadDashboardConfig({ DASHBOARD_PUBLIC_PORTAL: 'true' }).publicPortal, true);
+  assert.equal(loadDashboardConfig({ DASHBOARD_PUBLIC_PORTAL: '1' }).publicPortal, true);
+  assert.equal(loadDashboardConfig({ DASHBOARD_PUBLIC_PORTAL: 'yes' }).publicPortal, true);
+});
+
 test('a public bind without https is REFUSED', () => {
   // Serving session cookies and a "restart the bot" button over plaintext is
   // exactly what we must never let a self-hoster do by accident.

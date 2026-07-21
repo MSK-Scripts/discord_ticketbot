@@ -17,7 +17,8 @@ const helmet = require('helmet');
 
 const db = require('../database');
 const sec = require('./security');
-const { selectAccessRows, resolvePermissions, hasPermission } = require('./permissions');
+const settings = require('./settings');
+const { selectAccessRows, resolvePermissions, hasPermission, canUseDashboard } = require('./permissions');
 const { resolveMemberContext } = require('./discord');
 const { buildAuthorizeUrl, exchangeCode, fetchOAuthUser } = require('./auth');
 const { registerRoutes } = require('./routes');
@@ -138,6 +139,18 @@ async function startServer({ config, supervisor }) {
   const secureCookie = config.publicUrl.startsWith('https://');
   const cookieBase = { httpOnly: true, secure: secureCookie, sameSite: 'lax', path: '/' };
 
+  /**
+   * Resolve a member's effective dashboard permissions live from the DB.
+   * Shared by the OAuth callback and requireAuth so both gate on the exact same
+   * result — permissions are never cached into the session, so a revocation takes
+   * effect on the very next request.
+   */
+  async function loadPermissions(userId, roleIds, isOwner) {
+    const rows = await db.getDashboardAccess(config.guildId);
+    const { userRow, roleRows } = selectAccessRows(rows, userId, roleIds);
+    return resolvePermissions({ isOwner, userRow, roleRows });
+  }
+
   // ── OAuth ──────────────────────────────────────────────────────────────────
 
   app.get('/auth/login', (req, res) => {
@@ -175,6 +188,16 @@ async function startServer({ config, supervisor }) {
       const ctx = await getMemberContext(config.guildId, user.id);
       if (!ctx.inGuild && !ctx.isOwner) {
         return res.status(403).send('You are not a member of this server.');
+      }
+
+      // Staff-only unless the public end-user portal is opted in. A member with no
+      // dashboard permissions is turned away here, rather than handed a session
+      // that would only ever get 403s on the first API call.
+      const permissions = await loadPermissions(user.id, ctx.roleIds, ctx.isOwner);
+      if (!canUseDashboard({ isOwner: ctx.isOwner, permissions, publicPortal: config.publicPortal })) {
+        return res.status(403).send(
+          'This dashboard is limited to staff. Ask a server administrator to grant you access.',
+        );
       }
 
       const session = sec.createSession({ userId: user.id, name: user.displayName, avatar: user.avatar });
@@ -235,8 +258,20 @@ async function startServer({ config, supervisor }) {
         return res.status(403).json({ error: 'You are not a member of this server.' });
       }
 
-      const rows = await db.getDashboardAccess(config.guildId);
-      const { userRow, roleRows } = selectAccessRows(rows, userId, ctx.roleIds);
+      const permissions = await loadPermissions(userId, ctx.roleIds, ctx.isOwner);
+
+      // The end-user portal gate. A member with no permissions may only be here
+      // when the operator opted the portal in; otherwise the dashboard is
+      // staff-only. Enforced live on every request, so flipping the flag off (or
+      // revoking someone's last permission) locks them out on the next call — it
+      // is not baked into the session. The marker lets the SPA show a clean
+      // "staff only" screen instead of an endless sign-in loop.
+      if (!canUseDashboard({ isOwner: ctx.isOwner, permissions, publicPortal: config.publicPortal })) {
+        return res.status(403).json({
+          error: 'This dashboard is limited to staff members.',
+          portalClosed: true,
+        });
+      }
 
       req.auth = {
         userId,
@@ -244,7 +279,7 @@ async function startServer({ config, supervisor }) {
         avatar,
         isOwner: ctx.isOwner,
         roleIds: ctx.roleIds,
-        permissions: resolvePermissions({ isOwner: ctx.isOwner, userRow, roleRows }),
+        permissions,
         guildId: config.guildId,
       };
       next();
@@ -291,6 +326,14 @@ async function startServer({ config, supervisor }) {
     };
   }
 
+  /** Owner-only gate. Used for dashboard-wide settings (like the .env file). */
+  function requireOwner(req, res, next) {
+    if (!req.auth.isOwner) {
+      return res.status(403).json({ error: 'Only the server owner can do this.' });
+    }
+    next();
+  }
+
   // ── API ────────────────────────────────────────────────────────────────────
 
   const api = express.Router();
@@ -305,9 +348,27 @@ async function startServer({ config, supervisor }) {
     });
   });
 
-  registerRoutes(api, { config, supervisor, requirePermission, invalidateMemberCache });
+  registerRoutes(api, { config, supervisor, requirePermission, requireOwner, invalidateMemberCache });
 
   app.use('/api', api);
+
+  // ── Public appearance (pre-auth, non-sensitive) ─────────────────────────────
+  // Served without auth so the login page is themed too, and so the browser can
+  // fetch the favicon normally. Registered BEFORE the static handler so a custom
+  // favicon overrides the built-in one.
+
+  app.get('/dashboard-settings.json', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(settings.publicSettings());
+  });
+
+  app.get('/favicon.ico', (req, res, next) => {
+    const custom = settings.getFaviconFile();
+    if (!custom) return next(); // fall through to the built-in web/dist/favicon.ico
+    res.setHeader('Content-Type', custom.mime);
+    res.setHeader('Cache-Control', 'no-cache'); // revalidate so a new upload shows
+    res.sendFile(custom.file);
+  });
 
   // ── Static SPA ─────────────────────────────────────────────────────────────
 

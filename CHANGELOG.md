@@ -9,6 +9,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.11.0] - 2026-07-21
+
+### Added
+- **`/autoclose pause` and `/autoclose resume` to hold a ticket's inactivity
+  handling.** Staff can pause the inactivity warning, the auto-closing and the
+  staff-inactivity reminder for a single ticket, useful when a ticket is
+  deliberately parked (waiting on a third party) and must not be nagged or closed.
+  Resuming refreshes the ticket's activity, so it gets a full fresh inactivity
+  window instead of closing immediately for the time it was paused. Backed by a
+  new `auto_close_paused` column that both background loops skip.
+- **Optional public end-user portal for the dashboard
+  (`DASHBOARD_PUBLIC_PORTAL`).** When switched on, any server member can sign in
+  with Discord and gets a "My tickets" view that shows only their own tickets:
+  they can follow the live conversation and reply to an open ticket (posted in
+  Discord under their own name), and download the transcript of a closed one
+  (plus, on premium, an "Open transcript" link). A member without permissions can
+  never see other people's tickets, statistics, the config, or the bot controls,
+  and every reply is re-checked server-side (ticket open, not locked, member not
+  blacklisted, really their own ticket) before it reaches Discord. The guided
+  setup (`npm run dashboard:setup`) now offers this as a yes/no step.
+- **The dashboard's `.env` form now covers the dashboard settings.** It is grouped
+  into a "Bot" and a "Web Dashboard" section and exposes `DASHBOARD_ENABLED`,
+  `DASHBOARD_PUBLIC_PORTAL`, `DASHBOARD_HOST`/`PORT`/`PUBLIC_URL`,
+  `CLIENT_SECRET`, `SESSION_SECRET`, `DASHBOARD_ALLOW_INSECURE` and the
+  trusted-proxy secret. Booleans are toggles; secrets stay masked with
+  "leave blank to keep" (the `.env` form is owner-only).
+- **A "Dashboard settings" tab to brand the dashboard (owner-only).** You can set
+  the accent colour (buttons, highlights, the active menu item and focus rings;
+  it previews live and reverts to the built-in MSK green with one click) and
+  upload a custom favicon (PNG or ICO, up to 256 KB; the type is taken from the
+  file's magic bytes, not its name). Both apply to everyone who opens the
+  dashboard and are served publicly so the login page is themed too. Like the
+  `.env` editor, this tab is limited to the server owner. Settings live in
+  `data/dashboard-settings.json` (plus the favicon file). This is dashboard-only
+  state, not bot data, so no database change.
+- **The dashboard now has real URLs and survives a reload.** Each view has its
+  own path (`/tickets`, `/stats`, `/config`, `/permissions`, …) and an open
+  ticket is a deep link (`/tickets/123`, `/mine/9`). Pressing F5 keeps you on the
+  same page instead of dropping you on the first one, and links are shareable. The
+  view a path resolves to is still gated client-side by your permissions (and the
+  API re-checks everything server-side), so an off-limits URL simply falls back to
+  a view you may open. Implemented with a tiny history router
+  (`web/src/router.js`), no new dependency; the server already serves the SPA for
+  these paths.
+- **Clearer messaging that `.env` is owner-only.** Opening the `.env` file now
+  shows a notice that it is restricted to the server owner (it holds the bot
+  token and secrets), and the Permissions tab spells out that "View/Edit
+  configuration" covers `config.jsonc`, snippets and locales but never the
+  `.env`. This was already enforced on the server and in the file tabs; the
+  notices just make the boundary visible.
+
+### Changed
+- **The dashboard is now staff-only by default.** Previously any guild member who
+  logged in reached the "My tickets" portal; now only the owner and members with
+  at least one granted permission can sign in unless you opt the portal in with
+  `DASHBOARD_PUBLIC_PORTAL=true`. This makes enabling the dashboard for your team
+  a deliberate choice that does not also open a login to your whole member base.
+  A member turned away is shown a clear "limited to staff" message. The gate is
+  enforced live on every request, so flipping the flag off (or revoking someone's
+  last permission) locks them out immediately.
+
 ## [2.10.0] - 2026-07-21
 
 ### Added

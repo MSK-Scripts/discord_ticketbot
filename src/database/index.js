@@ -269,14 +269,30 @@ async function setStaffReminded(channelId) {
   return activeDriver.run('UPDATE tickets SET staff_reminded_at = ? WHERE channel_id = ?', [Date.now(), channelId]);
 }
 
+// Pause/resume the inactivity handling (auto-close warning + closure, and the
+// staff reminder) for a single ticket. Resuming also refreshes last_activity so
+// the ticket starts a FRESH inactivity window instead of being closed instantly
+// for the time it spent paused.
+async function setAutoClosePaused(channelId, paused) {
+  if (paused) {
+    return activeDriver.run('UPDATE tickets SET auto_close_paused = 1 WHERE channel_id = ?', [channelId]);
+  }
+  return activeDriver.run(
+    'UPDATE tickets SET auto_close_paused = 0, last_activity = ? WHERE channel_id = ?',
+    [Date.now(), channelId],
+  );
+}
+
 async function getInactiveTickets(thresholdMs, excludeClaimed = true, guildId = null) {
   const cutoff = Date.now() - thresholdMs;
   // guild_id filter: on a shared database this loop must only ever act on the
   // calling process's own guild, or it would auto-close another tenant's tickets.
   const scope = guildId ? ' AND guild_id = ?' : '';
+  // auto_close_paused = 0: a ticket a staff member deliberately parked with
+  // /autoclose pause is skipped entirely (no warning, no closure).
   const query = excludeClaimed
-    ? `SELECT * FROM tickets WHERE status = 'open' AND last_activity < ? AND claimed_by IS NULL${scope}`
-    : `SELECT * FROM tickets WHERE status = 'open' AND last_activity < ?${scope}`;
+    ? `SELECT * FROM tickets WHERE status = 'open' AND auto_close_paused = 0 AND last_activity < ? AND claimed_by IS NULL${scope}`
+    : `SELECT * FROM tickets WHERE status = 'open' AND auto_close_paused = 0 AND last_activity < ?${scope}`;
   return activeDriver.all(query, guildId ? [cutoff, guildId] : [cutoff]);
 }
 
@@ -286,6 +302,7 @@ async function getTicketsNeedingStaffReminder(reminderMs, guildId = null) {
   return activeDriver.all(
     `SELECT * FROM tickets
      WHERE status = 'open'
+       AND auto_close_paused = 0
        AND last_activity < ?
        AND (staff_reminded_at IS NULL OR staff_reminded_at < ?)${scope}`,
     guildId ? [cutoff, cutoff, guildId] : [cutoff, cutoff],
@@ -598,7 +615,7 @@ module.exports = {
   initDatabase, openDatabase, closeDatabase,
   createTicket, getTotalTicketCount, getTicketByChannel, getTicketById,
   getOpenTicketsByUser, getAllOpenTickets, closeTicket, reopenTicket, claimTicket, unclaimTicket,
-  setPriority, setType, updateLastActivity, setStaffReminded,
+  setPriority, setType, updateLastActivity, setStaffReminded, setAutoClosePaused,
   lockTicket, unlockTicket, setNotifyOnReply, setLastNotifySent,
   getInactiveTickets, getTicketsNeedingStaffReminder,
   getStats, getUserStats,

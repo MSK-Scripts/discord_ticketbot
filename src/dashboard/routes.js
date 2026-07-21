@@ -14,8 +14,10 @@
 
 const fs = require('fs/promises');
 const path = require('path');
+const express = require('express');
 
 const db = require('../database');
+const settings = require('./settings');
 const { validateConfig, stripJsonComments } = require('../config');
 const { getGuildLookups, getChannelMessages, resolveUsers } = require('./discord');
 const { getTranscriptUrl } = require('../utils/mskApi');
@@ -62,7 +64,7 @@ const audit = (req, action, target, detail) =>
     detail: detail ?? null,
   });
 
-function registerRoutes(api, { config, supervisor, requirePermission, invalidateMemberCache }) {
+function registerRoutes(api, { config, supervisor, requirePermission, requireOwner, invalidateMemberCache }) {
   const guildId = config.guildId;
 
   // ── Tickets ────────────────────────────────────────────────────────────────
@@ -382,6 +384,46 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
     await fs.copyFile(target, `${target}.bak`).catch(() => {});
     await fs.writeFile(target, content, 'utf-8');
     audit(req, 'locale.edit', req.params.name);
+    res.json({ ok: true });
+  }));
+
+  // ── Dashboard appearance settings ──────────────────────────────────────────
+  // Accent colour + favicon. Owner-only: it re-brands the panel for EVERYONE who
+  // uses it, so it sits at the same trust level as the .env file, not day-to-day
+  // config. The actual serving of the values is public (see server.js) since the
+  // colour and favicon are not sensitive.
+
+  api.get('/dashboard-settings', requireOwner, asyncRoute(async (req, res) => {
+    res.json(settings.loadSettings());
+  }));
+
+  api.put('/dashboard-settings', requireOwner, asyncRoute(async (req, res) => {
+    // `accent` may be a hex string, or null/"" to reset to the default theme.
+    const accent = req.body?.accent ?? null;
+    const result = settings.setAccent(accent);
+    if (!result.ok) return res.status(400).json({ error: result.error });
+    audit(req, 'dashboard.settings', 'accent', { accent: settings.loadSettings().accent });
+    res.json({ ok: true });
+  }));
+
+  // Favicon upload. The image arrives as a raw body (not JSON), so a dedicated raw
+  // parser handles it — the global 64 KB json limit does not apply. The precise
+  // size + type check lives in settings.setFavicon (magic bytes, 256 KB).
+  api.post('/dashboard-settings/favicon',
+    requireOwner,
+    express.raw({ type: () => true, limit: '1mb' }),
+    asyncRoute(async (req, res) => {
+      const buf = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+      const result = settings.setFavicon(buf);
+      if (!result.ok) return res.status(result.status).json({ error: result.error });
+      audit(req, 'dashboard.settings', 'favicon', { ext: result.ext });
+      res.json({ ok: true, version: result.version });
+    }),
+  );
+
+  api.delete('/dashboard-settings/favicon', requireOwner, asyncRoute(async (req, res) => {
+    settings.clearFavicon();
+    audit(req, 'dashboard.settings', 'favicon', { reset: true });
     res.json({ ok: true });
   }));
 

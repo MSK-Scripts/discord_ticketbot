@@ -27,7 +27,7 @@ const localeName = (id) => (id.startsWith('locale:') ? id.slice('locale:'.length
 // main.json is the English template, not a language you run the bot in.
 const isEditableLocale = (file) => /\.json$/i.test(file) && file !== 'main.json';
 
-const LANG_LABEL = { en: 'English', de: 'German', hu: 'Hungarian', fr: 'French', es: 'Spanish', it: 'Italian', pt: 'Portuguese', nl: 'Dutch', pl: 'Polish', ru: 'Russian', tr: 'Turkish' };
+const LANG_LABEL = { main: 'Main (MSK Internal)', en: 'English', de: 'German', hu: 'Hungarian', fr: 'French', es: 'Spanish', it: 'Italian', pt: 'Portuguese', nl: 'Dutch', pl: 'Polish', ru: 'Russian', tr: 'Turkish' };
 const langLabel = (code) => LANG_LABEL[code] ?? code;
 
 /** The locale codes a config actually references (bot language + transcript language). */
@@ -218,6 +218,18 @@ export default function Config({ me }) {
             <ul className="mt-1.5 list-disc pl-4 text-xs">
               {blockingErrors.slice(0, 6).map((e, i) => <li key={i}>{e.message}</li>)}
             </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {current.kind === 'env' && (
+        <Alert className="mb-4">
+          <InfoIcon />
+          <AlertDescription>
+            The <strong>.env</strong> file is restricted to the <strong>server owner</strong>. It holds the
+            bot token, session secret and OAuth secret, so staff with <strong>Edit configuration</strong> can
+            edit <strong>config.jsonc</strong>, snippets and the locale files, but can never see or edit this
+            file.
           </AlertDescription>
         </Alert>
       )}

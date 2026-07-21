@@ -123,6 +123,12 @@
     "broadcast": {
       "author": "📢 Felhívás — {user}",
       "plain": "📢 **Felhívás:** {message}"
+    },
+    "autoClosePaused": {
+      "description": "⏸️ **Automatikus lezárás szüneteltetve** – {user}. Ez a jegy nem záródik le automatikusan, és nem kap inaktivitási emlékeztetőt, amíg folytatják."
+    },
+    "autoCloseResumed": {
+      "description": "▶️ **Automatikus lezárás folytatva** – {user}. Ismét a szokásos inaktivitási szabályok érvényesek."
     }
   },
   "modals": {
@@ -225,7 +231,9 @@
     "noReasonGiven": "Nem lett indok megadva",
     "userAddFailed": "❌ Nem sikerült hozzáadni a felhasználót.",
     "userRemoveFailed": "❌ Nem sikerült eltávolítani a felhasználót.",
-    "cannotRemoveCreator": "❌ A ticket létrehozóját nem lehet eltávolítani."
+    "cannotRemoveCreator": "❌ A ticket létrehozóját nem lehet eltávolítani.",
+    "autoCloseAlreadyPaused": "❌ Az automatikus lezárás már szünetel ennél a jegynél.",
+    "autoCloseNotPaused": "❌ Az automatikus lezárás nem szünetel ennél a jegynél."
   },
   "priorities": {
     "low": "🟢 Alacsony",

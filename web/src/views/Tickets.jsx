@@ -14,13 +14,14 @@ import TicketDetail from './TicketDetail.jsx';
 
 const PAGE = 25;
 
-export default function Tickets({ me }) {
+// The open ticket is driven by the URL (/tickets/:id) via `ticketId`, so a reload
+// or a shared link lands on the same ticket. onOpen/onClose change that URL.
+export default function Tickets({ me, ticketId, onOpen, onClose }) {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState({ status: 'open', priority: '', type: '' });
   const [typeInput, setTypeInput] = useState('');
-  const [selected, setSelected] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,8 +45,8 @@ export default function Tickets({ me }) {
 
   useEffect(load, [load]);
 
-  if (selected) {
-    return <TicketDetail id={selected} me={me} onBack={() => setSelected(null)} onChanged={load} />;
+  if (ticketId) {
+    return <TicketDetail id={ticketId} me={me} onBack={onClose} onChanged={load} />;
   }
 
   const pages = Math.ceil(total / PAGE);
@@ -97,8 +98,8 @@ export default function Tickets({ me }) {
               <TableBody>
                 {items.map(t => (
                   <TableRow key={t.id} tabIndex={0} className="cursor-pointer"
-                    onClick={() => setSelected(t.id)}
-                    onKeyDown={e => { if (e.key === 'Enter') setSelected(t.id); }}>
+                    onClick={() => onOpen(t.id)}
+                    onKeyDown={e => { if (e.key === 'Enter') onOpen(t.id); }}>
                     <TableCell className="font-mono">{t.id}</TableCell>
                     <TableCell>{t.type}</TableCell>
                     <TableCell><Status status={t.status} /></TableCell>
