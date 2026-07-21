@@ -217,6 +217,16 @@ critical unflushed state.
 
 ## Troubleshooting
 
+**A new dashboard feature returns "Request failed (404)" after an update**
+The **Update** and **Restart** buttons inside the dashboard only restart the bot
+process, not the web server itself. When an update changes the dashboard's own
+server code (a new API route, such as the Dashboard settings tab), the running
+dashboard already serves the new page but does not yet know the new route, so it
+answers 404. Restart the service once so the web server reloads:
+`sudo systemctl restart ticketbot` (or restart the NSSM / PM2 service you run
+`dashboard.js` under). Plain bot changes (commands, events, the database) do take
+effect through the Update button.
+
 **The dashboard refuses to start, saying the configuration is not safe**
 You bound the dashboard to a public interface without HTTPS. Either go back to
 `DASHBOARD_HOST=127.0.0.1` and use a reverse proxy, or set `DASHBOARD_PUBLIC_URL`

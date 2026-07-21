@@ -224,6 +224,17 @@ Zustand gibt.
 
 ## Fehlerbehebung
 
+**Eine neue Dashboard-Funktion liefert nach einem Update "Request failed (404)"**
+Die Buttons **Update** und **Restart** im Dashboard starten nur den Bot-Prozess
+neu, nicht den Webserver selbst. Wenn ein Update den serverseitigen
+Dashboard-Code ändert (eine neue API-Route, etwa der Tab "Dashboard settings"),
+liefert das laufende Dashboard zwar schon die neue Seite aus, kennt die neue
+Route aber noch nicht und antwortet mit 404. Starte den Dienst einmal neu, damit
+der Webserver neu lädt: `sudo systemctl restart ticketbot` (oder starte den
+NSSM-/PM2-Dienst neu, unter dem du `dashboard.js` laufen lässt). Reine
+Bot-Änderungen (Commands, Events, Datenbank) greifen dagegen schon über den
+Update-Button.
+
 **Das Dashboard verweigert den Start mit dem Hinweis, die Konfiguration sei nicht sicher**
 Du hast das Dashboard ohne HTTPS an eine öffentliche Schnittstelle gebunden. Geh
 entweder zurück auf `DASHBOARD_HOST=127.0.0.1` und nutze einen Reverse-Proxy oder
