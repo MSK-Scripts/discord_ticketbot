@@ -1,5 +1,7 @@
 # Web Dashboard
 
+*[Deutsche Version: dashboard-de.md](dashboard-de.md)*
+
 Manage tickets, statistics and the bot configuration in your browser instead of
 editing files over SSH.
 
@@ -83,7 +85,11 @@ Then open `http://127.0.0.1:3010` on your own computer.
 
 Keep `DASHBOARD_HOST=127.0.0.1`. Your web server talks to the dashboard locally,
 so the port never has to be open to the internet. `npm run dashboard:setup`
-prints a ready-to-use Apache config and the matching `certbot` command.
+detects your operating system and prints a matching reverse-proxy config: an
+Apache vhost plus the `certbot` command on Linux, or an IIS `web.config` (URL
+Rewrite + ARR) and a Caddy alternative on Windows. The dashboard polls for logs
+(no long-lived streaming), so any standard reverse proxy works without special
+buffering settings.
 
 > **Do not** simply set `DASHBOARD_HOST=0.0.0.0` and open the port. Without TLS
 > your session cookie and everything you type travels in plaintext. The bot will
@@ -149,13 +155,39 @@ Every change made through the dashboard is written to an audit log.
 
 ## Running it as a service
 
-Use `dashboard.js` instead of `index.js` as the entry point. systemd then keeps
-the dashboard alive, and the dashboard keeps the bot alive:
+> **Reverse proxy and service manager are two separate layers.** A reverse proxy
+> (Apache, Caddy or IIS) only terminates HTTPS and forwards to the dashboard; it
+> does **not** run the Node process. A service manager (systemd, or NSSM / Task
+> Scheduler on Windows) keeps the Node process (`node dashboard.js`) alive; it
+> does **not** handle HTTPS. For public use you need both. One Caddy/IIS instance
+> can also front several apps at once (one site block per hostname), so it never
+> conflicts with a proxy you already run — just add another block, do not start a
+> second instance.
+
+Use `dashboard.js` instead of `index.js` as the entry point. The service manager
+keeps the dashboard alive, and the dashboard keeps the bot alive.
+
+**Linux (systemd):**
 
 ```ini
 [Service]
 ExecStart=/usr/bin/node /opt/discord_ticketbot/dashboard.js
 ```
+
+**Windows:** register `dashboard.js` as a service, e.g. with
+[NSSM](https://nssm.cc):
+
+```
+nssm install TicketBot "C:\Program Files\nodejs\node.exe" dashboard.js
+nssm set TicketBot AppDirectory C:\path\to\discord_ticketbot
+```
+
+or create a Task Scheduler task set to "Run whether user is logged on or not"
+and triggered at system startup. The dashboard runs on Windows as-is: it starts
+the bot with `fork()` and shells out to `npm.cmd`/`git` for updates. One
+difference: "Stop"/"Restart" from the dashboard terminates the bot directly
+(Windows has no catchable `SIGTERM`), which is safe here since there is no
+critical unflushed state.
 
 ---
 

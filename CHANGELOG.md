@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.10.0] - 2026-07-21
+
+### Added
+- **The guided dashboard setup now detects the operating system and prints
+  matching guidance.** On Linux it prints the Apache vhost plus the
+  `certbot`/`a2enmod`/`systemctl` commands as before; on Windows it prints an IIS
+  `web.config` (URL Rewrite + ARR) and a Caddy alternative, a win-acme TLS note,
+  and a Windows service hint (NSSM / Task Scheduler) instead of systemd. Remote
+  access guidance is platform-aware too. The dashboard polls for logs (no SSE)
+  and reads the client IP from the rightmost `X-Forwarded-For`, which both
+  proxies add, so no special streaming or header configuration is needed; HTTPS
+  detection comes from `DASHBOARD_PUBLIC_URL`. The dashboard runtime already runs
+  on Windows unchanged (`fork()` plus `shell: true` for `npm.cmd`/`git`).
+- **German dashboard documentation** (`docs/dashboard-de.md`), alongside the
+  existing English `docs/dashboard-en.md`; the two are cross-linked.
+
 ## [2.9.2] - 2026-07-19
 
 ### Changed

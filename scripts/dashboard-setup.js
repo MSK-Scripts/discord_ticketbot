@@ -21,6 +21,11 @@ const { setEnvValue, dedupeEnv } = require('../src/dashboard/envFile');
 
 const ENV_PATH = path.resolve(__dirname, '../.env');
 
+// The wizard is cross-platform; only the reverse-proxy, service and remote-access
+// guidance differs between a Linux host (Apache/systemd) and a Windows host
+// (IIS/Caddy/Windows service). Detected once here and used to branch that output.
+const isWindows = process.platform === 'win32';
+
 const RESET = '\x1b[0m';
 const GREEN = '\x1b[32m';
 const YELLOW = '\x1b[33m';
@@ -134,11 +139,63 @@ async function main() {
   // ── 4. Reverse proxy snippet ───────────────────────────────────────────────
   if (isPublic) {
     const domain = publicUrl.replace(/^https:\/\//, '');
-    console.log('');
-    console.log(`${BOLD}4) Reverse proxy${RESET}`);
-    console.log(`${DIM}   Save as /etc/apache2/sites-available/ticketbot-dashboard.conf:${RESET}`);
-    console.log('');
-    console.log(`${DIM}<VirtualHost *:80>
+    if (isWindows) {
+      printWindowsReverseProxy(domain, port);
+    } else {
+      printLinuxReverseProxy(domain, port);
+    }
+  }
+
+  // ── 5. Done ────────────────────────────────────────────────────────────────
+  console.log('');
+  console.log(`${BOLD}Done.${RESET} Start the bot with the dashboard:`);
+  console.log(`     ${GREEN}npm run dashboard${RESET}`);
+  console.log('');
+  if (!isPublic) {
+    console.log(`${DIM}   The dashboard is bound to 127.0.0.1 and is NOT reachable from outside.`);
+    if (isWindows) {
+      console.log(`   Reach it by opening ${GREEN}http://127.0.0.1:${port}${RESET}${DIM} directly on the server`);
+      console.log(`   (e.g. over Remote Desktop), or tunnel from your PC if OpenSSH Server is enabled:`);
+      console.log(`     ssh -L ${port}:127.0.0.1:${port} user@your-server${RESET}`);
+    } else {
+      console.log(`   Reach it from your computer with an SSH tunnel:`);
+      console.log(`     ssh -L ${port}:127.0.0.1:${port} user@your-server`);
+      console.log(`   then open http://127.0.0.1:${port}${RESET}`);
+    }
+  } else {
+    console.log(`${DIM}   Open ${publicUrl}${RESET}`);
+  }
+
+  // Keep it running across reboots.
+  console.log('');
+  if (isWindows) {
+    console.log(`${DIM}   To keep it running after a reboot, register it as a Windows service`);
+    console.log(`   (e.g. with NSSM: ${RESET}${GREEN}nssm install TicketBot "C:\\Program Files\\nodejs\\node.exe" dashboard.js${RESET}${DIM})`);
+    console.log(`   or as a Task Scheduler task set to run at startup.${RESET}`);
+  } else {
+    console.log(`${DIM}   To keep it running after a reboot, run it under systemd`);
+    console.log(`   (ExecStart=/usr/bin/node /opt/discord_ticketbot/dashboard.js). See docs/dashboard-en.md.${RESET}`);
+  }
+
+  console.log('');
+  console.log(`${YELLOW}   The server owner is automatically an admin. Everyone else needs to be${RESET}`);
+  console.log(`${YELLOW}   granted permissions in the dashboard under "Permissions".${RESET}`);
+  console.log('');
+
+  rl.close();
+}
+
+/**
+ * Print the Linux reverse-proxy guidance (Apache + certbot + systemd).
+ * @param {string} domain  public host name
+ * @param {string} port    loopback port the dashboard listens on
+ */
+function printLinuxReverseProxy(domain, port) {
+  console.log('');
+  console.log(`${BOLD}4) Reverse proxy (Linux / Apache)${RESET}`);
+  console.log(`${DIM}   Save as /etc/apache2/sites-available/ticketbot-dashboard.conf:${RESET}`);
+  console.log('');
+  console.log(`${DIM}<VirtualHost *:80>
     ServerName ${domain}
     RewriteEngine On
     RewriteRule ^/?(.*) https://${domain}/$1 [R=301,L]
@@ -158,36 +215,68 @@ async function main() {
     # X-Forwarded-For entry. Apache appends the real client here.
     RequestHeader set X-Forwarded-Proto "https"
 </VirtualHost>${RESET}`);
-    console.log('');
-    console.log(`   Then run:`);
-    console.log(`     ${GREEN}sudo a2enmod proxy proxy_http headers rewrite ssl${RESET}`);
-    console.log(`     ${GREEN}sudo a2ensite ticketbot-dashboard${RESET}`);
-    console.log(`     ${GREEN}sudo certbot --apache -d ${domain}${RESET}`);
-    console.log(`     ${GREEN}sudo systemctl reload apache2${RESET}`);
-  }
-
-  // ── 5. Done ────────────────────────────────────────────────────────────────
   console.log('');
-  console.log(`${BOLD}Done.${RESET} Start the bot with the dashboard:`);
-  console.log(`     ${GREEN}npm run dashboard${RESET}`);
-  console.log('');
-  if (!isPublic) {
-    console.log(`${DIM}   The dashboard is bound to 127.0.0.1 and is NOT reachable from outside.`);
-    console.log(`   Reach it from your computer with an SSH tunnel:`);
-    console.log(`     ssh -L ${port}:127.0.0.1:${port} user@your-server`);
-    console.log(`   then open http://127.0.0.1:${port}${RESET}`);
-  } else {
-    console.log(`${DIM}   Open ${publicUrl}${RESET}`);
-  }
-  console.log('');
-  console.log(`${YELLOW}   The server owner is automatically an admin. Everyone else needs to be${RESET}`);
-  console.log(`${YELLOW}   granted permissions in the dashboard under "Permissions".${RESET}`);
-  console.log('');
-
-  rl.close();
+  console.log(`   Then run:`);
+  console.log(`     ${GREEN}sudo a2enmod proxy proxy_http headers rewrite ssl${RESET}`);
+  console.log(`     ${GREEN}sudo a2ensite ticketbot-dashboard${RESET}`);
+  console.log(`     ${GREEN}sudo certbot --apache -d ${domain}${RESET}`);
+  console.log(`     ${GREEN}sudo systemctl reload apache2${RESET}`);
 }
 
-main().catch((err) => {
-  console.error(`${RED}Setup failed: ${err.message}${RESET}`);
-  process.exit(1);
-});
+/**
+ * Print the Windows reverse-proxy guidance. Two options: IIS (native to Windows
+ * Server, likely already installed) and Caddy (simplest, automatic HTTPS).
+ * The dashboard polls for logs (no SSE) and reads the client IP from the
+ * rightmost X-Forwarded-For, which both proxies append, so no special streaming
+ * or header config is needed. HTTPS detection comes from DASHBOARD_PUBLIC_URL,
+ * not from X-Forwarded-Proto.
+ * @param {string} domain  public host name
+ * @param {string} port    loopback port the dashboard listens on
+ */
+function printWindowsReverseProxy(domain, port) {
+  console.log('');
+  console.log(`${BOLD}4) Reverse proxy (Windows)${RESET}`);
+  console.log(`${DIM}   The dashboard listens on 127.0.0.1:${port}. Put a reverse proxy with HTTPS in front.${RESET}`);
+  console.log('');
+
+  console.log(`   ${BOLD}Option A — IIS${RESET} ${DIM}(native; often already installed on Windows Server)${RESET}`);
+  console.log(`${DIM}   Install "URL Rewrite" + "Application Request Routing" (ARR), enable the ARR`);
+  console.log(`   proxy (IIS Manager → server node → Application Request Routing Cache → Server`);
+  console.log(`   Proxy Settings → Enable proxy), then put this web.config in the site's root:${RESET}`);
+  console.log('');
+  console.log(`${DIM}<configuration>
+  <system.webServer>
+    <rewrite>
+      <rules>
+        <rule name="ticketbot-dashboard" stopProcessing="true">
+          <match url="(.*)" />
+          <action type="Rewrite" url="http://127.0.0.1:${port}/{R:1}" />
+        </rule>
+      </rules>
+    </rewrite>
+  </system.webServer>
+</configuration>${RESET}`);
+  console.log('');
+  console.log(`${DIM}   TLS: bind an HTTPS certificate to the site. Easiest is win-acme`);
+  console.log(`   (https://www.win-acme.com) — it issues a Let's Encrypt cert and auto-renews.`);
+  console.log(`   ARR appends the real client to X-Forwarded-For automatically.${RESET}`);
+  console.log('');
+
+  console.log(`   ${BOLD}Option B — Caddy${RESET} ${DIM}(simplest, if port 443 is free — automatic HTTPS)${RESET}`);
+  console.log(`${DIM}   Install Caddy for Windows, then use this Caddyfile:${RESET}`);
+  console.log('');
+  console.log(`${DIM}${domain} {
+    reverse_proxy 127.0.0.1:${port}
+}${RESET}`);
+  console.log('');
+  console.log(`${DIM}   Caddy obtains and renews the certificate automatically.${RESET}`);
+}
+
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(`${RED}Setup failed: ${err.message}${RESET}`);
+    process.exit(1);
+  });
+}
+
+module.exports = { printLinuxReverseProxy, printWindowsReverseProxy };
