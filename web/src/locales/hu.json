@@ -1,0 +1,264 @@
+{
+  "$meta": { "name": "Magyar" },
+
+  "common": {
+    "loading": "Betöltés…",
+    "save": "Mentés",
+    "saving": "Mentés…",
+    "cancel": "Mégse",
+    "discard": "Elvetés",
+    "edit": "Szerkesztés",
+    "remove": "Eltávolítás",
+    "confirm": "Megerősítés",
+    "refresh": "Frissítés",
+    "back": "Vissza",
+    "dismiss": "Bezárás",
+    "none": "Nincs.",
+    "off": "ki",
+    "resetToDefault": "Visszaállítás alapértelmezettre",
+    "language": "Nyelv"
+  },
+
+  "status": {
+    "open": "nyitott",
+    "closed": "lezárt"
+  },
+
+  "priority": {
+    "low": "alacsony",
+    "medium": "közepes",
+    "high": "magas",
+    "urgent": "sürgős"
+  },
+
+  "nav": {
+    "brand": "Ticket Bot",
+    "navigation": "Navigáció",
+    "mine": "Ticketjeim",
+    "tickets": "Ticketek",
+    "stats": "Statisztika",
+    "config": "Konfiguráció",
+    "bot": "Bot vezérlése",
+    "access": "Jogosultságok",
+    "settings": "Dashboard beállítások"
+  },
+
+  "app": {
+    "title": "Ticket Bot Dashboard",
+    "serverOwner": "Szerver tulajdonosa",
+    "permissionCount": "{count} jogosultság",
+    "signOut": "Kijelentkezés",
+    "signIn": "Bejelentkezés Discorddal",
+    "askAdmin": "Kérd meg a szerver egyik adminisztrátorát, hogy adjon neked hozzáférést."
+  },
+
+  "user": {
+    "left": "(kilépett)",
+    "leftTitle": "Már nincs ezen a szerveren"
+  },
+
+  "stats": {
+    "title": "Statisztika",
+    "total": "Összes ticket",
+    "open": "Nyitott",
+    "closed": "Lezárt",
+    "avgRating": "Átlagos értékelés",
+    "avgHandlingTime": "Átlagos kezelési idő",
+    "avgHandlingTimeHint": "A ticket megnyitásától a lezárásáig.",
+    "teamTitle": "A csapat teljesítménye",
+    "teamHint": "A csapattagok a lezárt ticketek száma szerint rangsorolva.",
+    "noClosed": "Még nincs lezárt ticket.",
+    "rank": "#",
+    "staff": "Csapattag",
+    "ticketsClosed": "Lezárt ticketek"
+  },
+
+  "myTickets": {
+    "title": "Ticketjeim",
+    "cardTitle": "A te kéréseid",
+    "cardHint": "Minden ticket, amit megnyitottál. A nyitottakra itt is tudsz válaszolni, a válaszod a saját neved alatt jelenik meg a Discord csatornában.",
+    "empty": "Még nem nyitottál ticketet."
+  },
+
+  "tickets": {
+    "title": "Ticketek",
+    "totalCount": "összesen {count}",
+    "allStatuses": "Minden státusz",
+    "statusOpen": "Nyitott",
+    "statusClosed": "Lezárt",
+    "allPriorities": "Minden prioritás",
+    "typeFilter": "Típus (codeName)",
+    "noMatch": "Egy ticket sem felel meg ezeknek a szűrőknek.",
+    "page": "{page}. oldal, összesen {pages}",
+    "colId": "#",
+    "colType": "Típus",
+    "colStatus": "Státusz",
+    "colPriority": "Prioritás",
+    "colCreator": "Létrehozó",
+    "colClaimedBy": "Felvette",
+    "colCreated": "Létrehozva",
+    "colMessages": "Üz."
+  },
+
+  "ticket": {
+    "heading": "Ticket #{id}",
+    "locked": "zárolt",
+    "claim": "Felvétel",
+    "unclaim": "Elengedés",
+    "lock": "Zárolás",
+    "unlock": "Feloldás",
+    "close": "Lezárás",
+    "reopen": "Újranyitás",
+    "priority": "Prioritás",
+    "actionDone": "A(z) „{action}” művelet elkészült.",
+
+    "closeDialogTitle": "Lezárod ezt a ticketet?",
+    "closeDialogHint": "A csatorna archiválódik, elkészül az átirat, a létrehozó pedig értesítést kap. Ez eltarthat néhány másodpercig.",
+    "closeReasonLabel": "Indok (nem kötelező)",
+    "closeReasonPlaceholder": "pl. megoldva",
+    "closing": "Lezárás…",
+    "closeConfirm": "Ticket lezárása",
+
+    "detailsTitle": "Részletek",
+    "detailsHint": "A ticket adatai",
+    "fieldType": "Típus",
+    "fieldCreator": "Létrehozó",
+    "fieldPriority": "Prioritás",
+    "fieldClaimedBy": "Felvette",
+    "fieldCreated": "Létrehozva",
+    "fieldMessages": "Üzenetek",
+    "fieldClosedBy": "Lezárta",
+    "fieldClosedAt": "Lezárva",
+    "fieldReason": "Indok",
+    "ratingTitle": "Értékelés",
+    "notesTitle": "Csapatjegyzetek",
+
+    "conversationTitle": "Beszélgetés",
+    "conversationStored": "A lezárt ticket elmentett átirata.",
+    "conversationLive": "Élőben a Discord csatornából.",
+    "transcriptSaved": "Ez a ticket le van zárva. A teljes beszélgetés átiratként lett elmentve.",
+    "openTranscript": "Átirat megnyitása",
+    "downloadTranscript": "Átirat letöltése",
+    "noTranscript": "Ez a ticket le van zárva, és nem készült hozzá átirat.",
+    "noTextContent": "(nincs szöveges tartalom)",
+    "noMessages": "Nincsenek üzenetek.",
+    "appBadge": "app",
+
+    "replyAsSelf": "Válasz, ez a saját neved alatt jelenik meg a Discordon.",
+    "replyAsBot": "Válasz a bot nevében…",
+    "send": "Küldés",
+    "lockedHint": "Ez a ticket zárolva van, nem lehet rá válaszolni.",
+    "closedHint": "Ez a ticket le van zárva. Nyisd meg újra, ha válaszolni szeretnél."
+  },
+
+  "bot": {
+    "title": "Bot vezérlése",
+    "running": "Fut",
+    "stopped": "Leállítva",
+    "starting": "Indítás…",
+    "stopping": "Leállítás…",
+    "crashed": "Összeomlott",
+    "pid": "PID {pid}",
+    "start": "Indítás",
+    "restart": "Újraindítás",
+    "stop": "Leállítás",
+    "update": "Frissítés",
+    "updating": "Frissítés…",
+    "updateHint": "git pull + npm install, ez eltarthat pár percig.",
+    "actionFinished": "A(z) „{action}” befejeződött.",
+    "actionTriggered": "A(z) „{action}” elindítva.",
+    "consoleTitle": "Konzol",
+    "consoleHint": "A bot folyamatának élő kimenete.",
+    "noOutput": "Még nincs kimenet."
+  },
+
+  "config": {
+    "title": "Konfiguráció",
+    "saved": "Elmentve. Indítsd újra a botot, hogy a módosítások életbe lépjenek.",
+    "unsavedFile": "Nem mentett módosításaid vannak. Váltasz fájlt és elveted őket?",
+    "unsavedView": "Nem mentett módosításaid vannak. Váltasz nézetet és elveted őket?",
+    "discardAndSwitch": "Elvetés és váltás",
+    "unsavedMarker": "● nem mentett módosítások",
+    "blockingErrors": "{count} problémát javítani kell a mentés előtt:",
+    "envNotice": "A .env fájlhoz csak a szerver tulajdonosa fér hozzá. Ebben van a bot tokenje, a munkamenet-titok és az OAuth secret, ezért a „Konfiguráció szerkesztése” jogosultsággal rendelkező csapattagok szerkeszthetik a config.jsonc fájlt, a snippets fájlt és a nyelvi fájlokat, ezt a fájlt viszont soha nem látják és nem is szerkeszthetik.",
+    "lookupsTitle": "Discord ID-k",
+    "lookupsHint": "Kattints egy névre az ID másolásához.",
+    "lookupsFailed": "Nem sikerült betölteni (rajta van a bot a szerveren?).",
+    "roles": "Rangok",
+    "channels": "Csatornák",
+    "categories": "Kategóriák",
+    "copied": "másolva!",
+    "copyHint": "Kattints az ID másolásához",
+    "modeForm": "Űrlap",
+    "modeFile": "Fájl"
+  },
+
+  "access": {
+    "title": "Jogosultságok",
+    "overrideNotice": "Egy felhasználói bejegyzés teljesen felülírja az adott személy rangjaihoz tartozó bejegyzéseket, így el tudsz venni valakitől olyan jogosultságot is, amit a rangja megadna. A szerver tulajdonosának mindig minden jogosultsága megvan, és őt nem lehet kizárni.",
+    "grantTitle": "Hozzáférés megadása",
+    "editTitle": "Bejegyzés szerkesztése",
+    "grantHint": "Adj hozzáférést ehhez a dashboardhoz egy rangnak vagy egyetlen felhasználónak.",
+    "type": "Típus",
+    "role": "Rang",
+    "user": "Felhasználó",
+    "userId": "Felhasználói ID",
+    "selectRole": "Válassz rangot…",
+    "discordIdPlaceholder": "Discord ID (17-20 számjegy)",
+    "permissionsLabel": "Jogosultságok",
+    "configScopeNote": "A „Konfiguráció megtekintése/szerkesztése” a config.jsonc fájlra, a snippets fájlra és a nyelvi fájlokra vonatkozik. A .env fájl (a bot tokenje és a titkos kulcsok) továbbra is csak a szerver tulajdonosáé, a csapat ezekkel a jogosultságokkal sem látja. A dashboard saját kiemelőszíne és favicon ikonja ettől külön kezelendő, azokat a „Dashboard beállítások megtekintése/szerkesztése” szabályozza.",
+    "activeToggle": "Aktív (kapcsold ki, ha törlés nélkül szeretnéd felfüggeszteni a bejegyzést)",
+    "savedNotice": "A jogosultságok elmentve.",
+    "whoTitle": "Kinek van hozzáférése",
+    "whoHint": "A szerver tulajdonosa mindig adminisztrátor, ezért itt nem szerepel.",
+    "whoEmpty": "Rajta kívül még senkinek nincs hozzáférése a dashboardhoz.",
+    "colSubject": "Jogosult",
+    "colActive": "Aktív",
+    "you": "(te)",
+    "auditTitle": "Auditnapló",
+    "auditHint": "Minden módosítás, ami a dashboardon keresztül történt.",
+    "auditEmpty": "Még nincsenek bejegyzések.",
+    "auditWhen": "Mikor",
+    "auditWho": "Ki",
+    "auditAction": "Művelet",
+    "auditTarget": "Cél"
+  },
+
+  "permissions": {
+    "tickets.view": "Ticketek megtekintése",
+    "tickets.act": "Műveletek a ticketeken",
+    "tickets.reply": "Válaszadás a ticketekben",
+    "stats.view": "Statisztika megtekintése",
+    "config.view": "Konfiguráció megtekintése",
+    "config.edit": "Konfiguráció szerkesztése",
+    "settings.view": "Dashboard beállítások megtekintése",
+    "settings.edit": "Dashboard beállítások szerkesztése",
+    "bot.control": "A bot vezérlése",
+    "blacklist.manage": "Feketelista kezelése",
+    "access.manage": "Jogosultságok kezelése"
+  },
+
+  "settings": {
+    "title": "Dashboard beállítások",
+    "introShared": "Ennek a dashboardnak az arculata. Mindenkire érvényes, aki használja.",
+    "introCanEdit": "A módosítások azonnal érvénybe lépnek minden felhasználónál.",
+    "introReadOnly": "Az aktuális arculatot megnézheted, de a módosításához a „Dashboard beállítások szerkesztése” jogosultság kell.",
+    "accentTitle": "Kiemelőszín",
+    "accentHint": "A gombok, a kiemelések, az aktív menüpont és a fókuszkeretek színe. Az előnézet élő.",
+    "accentLabel": "Szín",
+    "accentInvalid": "Adj meg egy hexadecimális színt, például {hex}.",
+    "accentDefault": "Jelenleg az alapértelmezett szín van használatban ({hex}).",
+    "accentSave": "Szín mentése",
+    "accentSaved": "A kiemelőszín elmentve.",
+    "accentReset": "A kiemelőszín visszaállt az alapértelmezettre.",
+    "faviconTitle": "Favicon",
+    "faviconHint": "A kis ikon a böngésző fülén. PNG vagy ICO, legfeljebb 256 KB.",
+    "faviconAlt": "Jelenlegi favicon",
+    "faviconCustom": "Egyedi favicon van használatban.",
+    "faviconDefault": "Az alapértelmezett favicon van használatban.",
+    "faviconUploadLabel": "Új favicon feltöltése",
+    "faviconUpload": "Feltöltés",
+    "faviconUpdated": "A favicon frissítve.",
+    "faviconReset": "A favicon visszaállt az alapértelmezettre."
+  }
+}

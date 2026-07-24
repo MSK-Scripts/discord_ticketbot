@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
 import { Banner, Empty } from '../ui.jsx';
+import { useT } from '../i18n.jsx';
 import { cn } from '@/lib/utils.js';
 import { Button } from '@/components/ui/button.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card.jsx';
@@ -51,6 +52,7 @@ export default function Config({ me }) {
   const [viewMode, setViewMode] = useState('form');
   const [pendingSwitch, setPendingSwitch] = useState(null);
   const [pendingMode, setPendingMode] = useState(null);
+  const t = useT();
 
   const canEdit = me.isOwner || me.permissions.includes('config.edit');
 
@@ -128,7 +130,7 @@ export default function Config({ me }) {
       const ln = localeName(file);
       await (ln ? api.saveLocale(ln, content) : api.saveConfig(file, content));
       setSaved(content);
-      setNotice('Saved. Restart the bot for the changes to take effect.');
+      setNotice(t('config.saved'));
     } catch (e) {
       setError(e.detail ? `${e.message}\n${e.detail}` : e.message);
     } finally {
@@ -145,13 +147,13 @@ export default function Config({ me }) {
   const LookupList = ({ title, entries }) => (
     <div className="mb-4">
       <h3 className="mb-1.5 text-sm font-semibold">{title}</h3>
-      {!entries?.length ? <p className="text-muted-foreground text-xs">None.</p> : (
+      {!entries?.length ? <p className="text-muted-foreground text-xs">{t('common.none')}</p> : (
         <div className="max-h-60 overflow-y-auto pr-1">
           {entries.map(e => (
-            <button key={e.id} onClick={() => copy(e.id)} title="Click to copy the ID"
+            <button key={e.id} onClick={() => copy(e.id)} title={t('config.copyHint')}
               className="hover:bg-accent flex w-full items-center justify-between gap-2 rounded px-1.5 py-1 text-left cursor-pointer">
               <span className="truncate text-sm">{e.name}</span>
-              <span className="text-muted-foreground shrink-0 font-mono text-[11px]">{copied === e.id ? 'copied!' : e.id}</span>
+              <span className="text-muted-foreground shrink-0 font-mono text-[11px]">{copied === e.id ? t('config.copied') : e.id}</span>
             </button>
           ))}
         </div>
@@ -162,11 +164,11 @@ export default function Config({ me }) {
   return (
     <>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-xl font-bold">Configuration</h1>
+        <h1 className="font-display text-xl font-bold">{t('config.title')}</h1>
         {canEdit && (
           <div className="flex items-center gap-2">
-            {dirty && <Button variant="outline" size="sm" onClick={() => setContent(saved)}>Discard</Button>}
-            <Button size="sm" disabled={busy || !dirty || hasBlockingErrors} onClick={save}>{busy ? 'Saving…' : 'Save'}</Button>
+            {dirty && <Button variant="outline" size="sm" onClick={() => setContent(saved)}>{t('common.discard')}</Button>}
+            <Button size="sm" disabled={busy || !dirty || hasBlockingErrors} onClick={save}>{busy ? t('common.saving') : t('common.save')}</Button>
           </div>
         )}
       </div>
@@ -178,10 +180,10 @@ export default function Config({ me }) {
         <Alert className="mb-3">
           <InfoIcon />
           <AlertDescription className="flex items-center justify-between gap-2">
-            <span>You have unsaved changes. Switch file and discard them?</span>
+            <span>{t('config.unsavedFile')}</span>
             <span className="flex gap-2">
-              <Button size="sm" variant="destructive" onClick={confirmSwitch}>Discard &amp; switch</Button>
-              <Button size="sm" variant="outline" onClick={() => setPendingSwitch(null)}>Cancel</Button>
+              <Button size="sm" variant="destructive" onClick={confirmSwitch}>{t('config.discardAndSwitch')}</Button>
+              <Button size="sm" variant="outline" onClick={() => setPendingSwitch(null)}>{t('common.cancel')}</Button>
             </span>
           </AlertDescription>
         </Alert>
@@ -190,10 +192,10 @@ export default function Config({ me }) {
         <Alert className="mb-3">
           <InfoIcon />
           <AlertDescription className="flex items-center justify-between gap-2">
-            <span>You have unsaved changes. Switch view and discard them?</span>
+            <span>{t('config.unsavedView')}</span>
             <span className="flex gap-2">
-              <Button size="sm" variant="destructive" onClick={confirmMode}>Discard &amp; switch</Button>
-              <Button size="sm" variant="outline" onClick={() => setPendingMode(null)}>Cancel</Button>
+              <Button size="sm" variant="destructive" onClick={confirmMode}>{t('config.discardAndSwitch')}</Button>
+              <Button size="sm" variant="outline" onClick={() => setPendingMode(null)}>{t('common.cancel')}</Button>
             </span>
           </AlertDescription>
         </Alert>
@@ -206,7 +208,7 @@ export default function Config({ me }) {
               {f.label}
             </Button>
           ))}
-          {dirty && <span className="text-muted-foreground text-xs">● unsaved changes</span>}
+          {dirty && <span className="text-muted-foreground text-xs">{t('config.unsavedMarker')}</span>}
         </div>
         {canEdit && current.form && <ModeSwitch value={viewMode} onChange={switchMode} />}
       </div>
@@ -214,7 +216,7 @@ export default function Config({ me }) {
       {hasBlockingErrors && (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>
-            {blockingErrors.length} problem{blockingErrors.length > 1 ? 's' : ''} must be fixed before saving:
+            {t('config.blockingErrors', { count: blockingErrors.length })}
             <ul className="mt-1.5 list-disc pl-4 text-xs">
               {blockingErrors.slice(0, 6).map((e, i) => <li key={i}>{e.message}</li>)}
             </ul>
@@ -225,19 +227,14 @@ export default function Config({ me }) {
       {current.kind === 'env' && (
         <Alert className="mb-4">
           <InfoIcon />
-          <AlertDescription>
-            The <strong>.env</strong> file is restricted to the <strong>server owner</strong>. It holds the
-            bot token, session secret and OAuth secret, so staff with <strong>Edit configuration</strong> can
-            edit <strong>config.jsonc</strong>, snippets and the locale files, but can never see or edit this
-            file.
-          </AlertDescription>
+          <AlertDescription>{t('config.envNotice')}</AlertDescription>
         </Alert>
       )}
 
       <div className={cn('grid gap-4', current.form && 'xl:grid-cols-[minmax(0,1fr)_280px]')}>
         <Card className="min-w-0">
           <CardContent className="min-w-0">
-            {loading ? <Empty>Loading…</Empty> : effectiveMode === 'file' ? (
+            {loading ? <Empty>{t('common.loading')}</Empty> : effectiveMode === 'file' ? (
               <CodeEditor
                 className="h-[calc(100vh-16rem)] min-h-[480px]"
                 value={content}
@@ -256,15 +253,15 @@ export default function Config({ me }) {
         {current.form && (
           <Card>
             <CardHeader>
-              <CardTitle>Discord IDs</CardTitle>
-              <CardDescription>Click a name to copy its ID.</CardDescription>
+              <CardTitle>{t('config.lookupsTitle')}</CardTitle>
+              <CardDescription>{t('config.lookupsHint')}</CardDescription>
             </CardHeader>
             <CardContent>
-              {!lookups ? <p className="text-muted-foreground text-xs">Could not load (is the bot in the server?).</p> : (
+              {!lookups ? <p className="text-muted-foreground text-xs">{t('config.lookupsFailed')}</p> : (
                 <>
-                  <LookupList title="Roles" entries={lookups.roles} />
-                  <LookupList title="Channels" entries={lookups.channels} />
-                  <LookupList title="Categories" entries={lookups.categories} />
+                  <LookupList title={t('config.roles')} entries={lookups.roles} />
+                  <LookupList title={t('config.channels')} entries={lookups.channels} />
+                  <LookupList title={t('config.categories')} entries={lookups.categories} />
                 </>
               )}
             </CardContent>

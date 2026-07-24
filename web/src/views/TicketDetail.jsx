@@ -3,6 +3,7 @@ import { ArrowLeftIcon, SendIcon, DownloadIcon, ExternalLinkIcon, LockIcon, Unlo
 import { api } from '../api.js';
 import { Banner, Status, Priority, Empty, fmtDate } from '../ui.jsx';
 import { UserName } from '../users.jsx';
+import { useT } from '../i18n.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card.jsx';
@@ -51,6 +52,7 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
   const [closing, setClosing] = useState(false);
   const [closeReason, setCloseReason] = useState('');
   const [roleNames, setRoleNames] = useState(null);
+  const t = useT();
 
   const can = (p) => me.isOwner || me.permissions.includes(p);
 
@@ -81,7 +83,7 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
     setBusy(true); setError(null); setNotice(null);
     try {
       await api.ticketAction(id, action, body);
-      setNotice(`Ticket ${action} done.`);
+      setNotice(t('ticket.actionDone', { action: t(`ticket.${action}`) }));
       setClosing(false);
       setCloseReason('');
       load();
@@ -129,38 +131,38 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
   };
 
   if (error && !data) {
-    return <><Button variant="outline" size="sm" onClick={onBack}><ArrowLeftIcon /> Back</Button><Banner type="error">{error}</Banner></>;
+    return <><Button variant="outline" size="sm" onClick={onBack}><ArrowLeftIcon /> {t('common.back')}</Button><Banner type="error">{error}</Banner></>;
   }
-  if (!data) return <Empty>Loading…</Empty>;
+  if (!data) return <Empty>{t('common.loading')}</Empty>;
 
-  const t = data.ticket;
-  const isOpen = t.status === 'open';
-  const canReply = isOpen && !t.locked && (can('tickets.reply') || data.isMine);
+  const ticket = data.ticket;
+  const isOpen = ticket.status === 'open';
+  const canReply = isOpen && !ticket.locked && (can('tickets.reply') || data.isMine);
   const canAct = can('tickets.act');
 
   return (
     <>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="outline" size="sm" onClick={onBack}><ArrowLeftIcon /> Back</Button>
-          <h1 className="font-display text-xl font-bold">Ticket #{t.id}</h1>
-          <Status status={t.status} />
-          {!!t.locked && <Badge variant="muted">locked</Badge>}
+          <Button variant="outline" size="sm" onClick={onBack}><ArrowLeftIcon /> {t('common.back')}</Button>
+          <h1 className="font-display text-xl font-bold">{t('ticket.heading', { id: ticket.id })}</h1>
+          <Status status={ticket.status} />
+          {!!ticket.locked && <Badge variant="muted">{t('ticket.locked')}</Badge>}
         </div>
         {canAct && (
           <div className="flex flex-wrap gap-2">
             {isOpen ? (
               <>
-                {t.claimed_by
-                  ? <Button variant="outline" size="sm" disabled={busy} onClick={() => act('unclaim')}>Unclaim</Button>
-                  : <Button variant="outline" size="sm" disabled={busy} onClick={() => act('claim')}>Claim</Button>}
-                <Button variant="outline" size="sm" disabled={busy} onClick={() => act('lock', { locked: !t.locked })}>
-                  {t.locked ? <><UnlockIcon /> Unlock</> : <><LockIcon /> Lock</>}
+                {ticket.claimed_by
+                  ? <Button variant="outline" size="sm" disabled={busy} onClick={() => act('unclaim')}>{t('ticket.unclaim')}</Button>
+                  : <Button variant="outline" size="sm" disabled={busy} onClick={() => act('claim')}>{t('ticket.claim')}</Button>}
+                <Button variant="outline" size="sm" disabled={busy} onClick={() => act('lock', { locked: !ticket.locked })}>
+                  {ticket.locked ? <><UnlockIcon /> {t('ticket.unlock')}</> : <><LockIcon /> {t('ticket.lock')}</>}
                 </Button>
-                <Button variant="destructive" size="sm" disabled={busy} onClick={() => setClosing(true)}>Close</Button>
+                <Button variant="destructive" size="sm" disabled={busy} onClick={() => setClosing(true)}>{t('ticket.close')}</Button>
               </>
             ) : (
-              <Button size="sm" disabled={busy} onClick={() => act('reopen')}>Reopen</Button>
+              <Button size="sm" disabled={busy} onClick={() => act('reopen')}>{t('ticket.reopen')}</Button>
             )}
           </div>
         )}
@@ -174,22 +176,19 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
       <Dialog open={closing} onOpenChange={o => { if (!o) { setClosing(false); setCloseReason(''); } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Close this ticket?</DialogTitle>
-            <DialogDescription>
-              The channel is archived, a transcript is generated and the creator is notified.
-              This can take a few seconds.
-            </DialogDescription>
+            <DialogTitle>{t('ticket.closeDialogTitle')}</DialogTitle>
+            <DialogDescription>{t('ticket.closeDialogHint')}</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="close-reason">Reason (optional)</Label>
-            <Input id="close-reason" autoFocus value={closeReason} placeholder="e.g. resolved"
+            <Label htmlFor="close-reason">{t('ticket.closeReasonLabel')}</Label>
+            <Input id="close-reason" autoFocus value={closeReason} placeholder={t('ticket.closeReasonPlaceholder')}
               onChange={e => setCloseReason(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') act('close', { reason: closeReason || null }); }} />
           </div>
           <DialogFooter>
-            <Button variant="outline" disabled={busy} onClick={() => { setClosing(false); setCloseReason(''); }}>Cancel</Button>
+            <Button variant="outline" disabled={busy} onClick={() => { setClosing(false); setCloseReason(''); }}>{t('common.cancel')}</Button>
             <Button variant="destructive" disabled={busy} onClick={() => act('close', { reason: closeReason || null })}>
-              {busy ? 'Closing…' : 'Close ticket'}
+              {busy ? t('ticket.closing') : t('ticket.closeConfirm')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -198,34 +197,34 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Details</CardTitle>
-            <CardDescription>Ticket metadata</CardDescription>
+            <CardTitle>{t('ticket.detailsTitle')}</CardTitle>
+            <CardDescription>{t('ticket.detailsHint')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div>
-              <Row label="Type">{t.type}</Row>
-              <Row label="Creator"><UserName id={t.creator_id} /></Row>
-              <Row label="Priority">
+              <Row label={t('ticket.fieldType')}>{ticket.type}</Row>
+              <Row label={t('ticket.fieldCreator')}><UserName id={ticket.creator_id} /></Row>
+              <Row label={t('ticket.fieldPriority')}>
                 {canAct && isOpen ? (
-                  <Select value={t.priority || 'medium'} onValueChange={v => act('priority', { priority: v })}>
+                  <Select value={ticket.priority || 'medium'} onValueChange={v => act('priority', { priority: v })}>
                     <SelectTrigger size="sm" className="w-40"><SelectValue /></SelectTrigger>
-                    <SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                    <SelectContent>{PRIORITIES.map(p => <SelectItem key={p} value={p}>{t(`priority.${p}`)}</SelectItem>)}</SelectContent>
                   </Select>
-                ) : <Priority value={t.priority} />}
+                ) : <Priority value={ticket.priority} />}
               </Row>
-              <Row label="Claimed by"><UserName id={t.claimed_by} /></Row>
-              <Row label="Created">{fmtDate(t.created_at)}</Row>
-              <Row label="Messages">{t.message_count}</Row>
+              <Row label={t('ticket.fieldClaimedBy')}><UserName id={ticket.claimed_by} /></Row>
+              <Row label={t('ticket.fieldCreated')}>{fmtDate(ticket.created_at)}</Row>
+              <Row label={t('ticket.fieldMessages')}>{ticket.message_count}</Row>
               {!isOpen && <>
-                <Row label="Closed by"><UserName id={t.closed_by} /></Row>
-                <Row label="Closed at">{fmtDate(t.closed_at)}</Row>
-                <Row label="Reason">{t.close_reason || '—'}</Row>
+                <Row label={t('ticket.fieldClosedBy')}><UserName id={ticket.closed_by} /></Row>
+                <Row label={t('ticket.fieldClosedAt')}>{fmtDate(ticket.closed_at)}</Row>
+                <Row label={t('ticket.fieldReason')}>{ticket.close_reason || '—'}</Row>
               </>}
             </div>
 
             {data.rating && (
               <div className="mt-5">
-                <h3 className="mb-1.5 text-sm font-semibold">Rating</h3>
+                <h3 className="mb-1.5 text-sm font-semibold">{t('ticket.ratingTitle')}</h3>
                 <p className="text-sm">
                   <span className="text-prio-medium">{'★'.repeat(data.rating.rating)}</span>
                   <span className="text-muted-foreground">{'☆'.repeat(5 - data.rating.rating)}</span>
@@ -236,7 +235,7 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
 
             {data.notes?.length > 0 && (
               <div className="mt-5">
-                <h3 className="mb-1.5 text-sm font-semibold">Staff notes</h3>
+                <h3 className="mb-1.5 text-sm font-semibold">{t('ticket.notesTitle')}</h3>
                 {data.notes.map(n => (
                   <p key={n.id} className="mb-1.5 text-[13px]"><UserName id={n.author_id} />: {n.content}</p>
                 ))}
@@ -247,29 +246,29 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Conversation</CardTitle>
+            <CardTitle>{t('ticket.conversationTitle')}</CardTitle>
             <CardDescription>
-              {convo?.closed ? 'Stored transcript of the closed ticket.' : 'Live from the Discord channel.'}
+              {convo?.closed ? t('ticket.conversationStored') : t('ticket.conversationLive')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {convo?.closed && convo.transcript && (
               <div className="flex flex-col items-start gap-3">
-                <p className="text-muted-foreground text-sm">This ticket is closed. Its full conversation was saved as a transcript.</p>
+                <p className="text-muted-foreground text-sm">{t('ticket.transcriptSaved')}</p>
                 <div className="flex flex-wrap gap-2">
                   {convo.transcriptUrl && (
                     <Button size="sm" asChild>
                       <a href={convo.transcriptUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLinkIcon /> Open transcript
+                        <ExternalLinkIcon /> {t('ticket.openTranscript')}
                       </a>
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" onClick={downloadTranscript}><DownloadIcon /> Download transcript</Button>
+                  <Button size="sm" variant="outline" onClick={downloadTranscript}><DownloadIcon /> {t('ticket.downloadTranscript')}</Button>
                 </div>
               </div>
             )}
             {convo?.closed && !convo.transcript && (
-              <p className="text-muted-foreground text-sm">This ticket is closed and no transcript was stored for it.</p>
+              <p className="text-muted-foreground text-sm">{t('ticket.noTranscript')}</p>
             )}
 
             {!convo?.closed && (
@@ -282,11 +281,11 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline gap-2">
                         <span className="text-[13px] font-semibold">{m.author.name}</span>
-                        {(m.author.bot || m.webhookId) && <Badge variant="secondary" className="px-1 py-0 text-[9px]">app</Badge>}
+                        {(m.author.bot || m.webhookId) && <Badge variant="secondary" className="px-1 py-0 text-[9px]">{t('ticket.appBadge')}</Badge>}
                         <span className="text-muted-foreground text-[11px]">{fmtDate(Date.parse(m.timestamp))}</span>
                       </div>
                       <div className="text-[13.5px] break-words whitespace-pre-wrap">
-                        {m.content ? renderContent(m, roleNames) : <span className="text-muted-foreground">(no text content)</span>}
+                        {m.content ? renderContent(m, roleNames) : <span className="text-muted-foreground">{t('ticket.noTextContent')}</span>}
                       </div>
                       {m.attachments?.map(a => (
                         <div key={a.url} className="text-xs">
@@ -295,7 +294,7 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
                       ))}
                     </div>
                   </div>
-                )) : <Empty>No messages.</Empty>}
+                )) : <Empty>{t('ticket.noMessages')}</Empty>}
               </div>
             )}
 
@@ -305,22 +304,22 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
                   rows={3}
                   maxLength={2000}
                   placeholder={data.isMine && !can('tickets.reply')
-                    ? 'Reply — this is posted in Discord under your name.'
-                    : 'Reply as the bot…'}
+                    ? t('ticket.replyAsSelf')
+                    : t('ticket.replyAsBot')}
                   value={reply}
                   onChange={e => setReply(e.target.value)}
                 />
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-muted-foreground text-xs">{reply.length}/2000</span>
-                  <Button size="sm" disabled={busy || !reply.trim()} onClick={send}><SendIcon /> Send</Button>
+                  <Button size="sm" disabled={busy || !reply.trim()} onClick={send}><SendIcon /> {t('ticket.send')}</Button>
                 </div>
               </div>
             )}
             {/* !! is load-bearing: `locked` is 0/1, and `cond && 0` renders a literal "0". */}
-            {isOpen && !!t.locked && (
-              <p className="text-muted-foreground mt-2.5 text-xs">This ticket is locked — no replies possible.</p>
+            {isOpen && !!ticket.locked && (
+              <p className="text-muted-foreground mt-2.5 text-xs">{t('ticket.lockedHint')}</p>
             )}
-            {!isOpen && <p className="text-muted-foreground mt-2.5 text-xs">This ticket is closed. Reopen it to reply.</p>}
+            {!isOpen && <p className="text-muted-foreground mt-2.5 text-xs">{t('ticket.closedHint')}</p>}
           </CardContent>
         </Card>
       </div>

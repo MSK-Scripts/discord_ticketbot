@@ -17,11 +17,14 @@ import '@fontsource/syne/800.css';
 import App from './App.jsx';
 import './index.css';
 import { loadAndApplyDashboardSettings } from './settings.js';
+import { I18nProvider } from './i18n.jsx';
 
 function render() {
   createRoot(document.getElementById('root')).render(
     <StrictMode>
-      <App />
+      <I18nProvider>
+        <App />
+      </I18nProvider>
     </StrictMode>,
   );
 }

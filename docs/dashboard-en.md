@@ -20,6 +20,32 @@ nothing about your bot changes.
 | **Configuration** | Edit `config.jsonc`, `snippets.jsonc`, `.env` and the locale files in either a structured **form** view or a raw **file** view (with line numbers and syntax highlighting). Form edits preserve the `//` comments, and a side panel resolves Discord role/channel/category **names** so you never have to hunt for raw IDs. |
 | **Bot control** | Start, stop, restart and update the bot, plus a live console. |
 | **Permissions** | Decide which roles and users may use the dashboard, and what they may do. |
+| **Dashboard settings** | Accent colour and favicon, gated by their own view / edit permissions. |
+| **Language** | Each user picks their own interface language from seven translations. |
+
+---
+
+## Language
+
+The dashboard is available in **English, German, French, Spanish, Portuguese,
+Polish and Hungarian**. The selector sits at the bottom of the sidebar, above
+"Sign out".
+
+Each person picks their own language: the choice is stored in their browser, so
+switching the panel to German changes nothing for anyone else, and it needs no
+permission. On a first visit the dashboard follows the browser's language and
+falls back to English. Dates and times follow the selected language too.
+
+> This is the **dashboard's** interface language. It is separate from `lang` in
+> `config.jsonc`, which controls what the **bot** writes into Discord.
+
+Adding a language needs no code change: drop a `web/src/locales/<code>.json`
+(copy `en.json`, translate the values, set `$meta.name` to the language's own
+name) and rebuild the frontend. It appears in the selector on its own. Any key you
+leave out falls back to English rather than breaking the page.
+
+The structured `config.jsonc` form (its field labels and help texts) is still
+English only; the rest of the dashboard is translated.
 
 ---
 

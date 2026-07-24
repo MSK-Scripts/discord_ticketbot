@@ -5,17 +5,19 @@ import { Alert, AlertDescription } from '@/components/ui/alert.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
 import { Card, CardContent } from '@/components/ui/card.jsx';
 import { cn } from '@/lib/utils.js';
+import { useT, getLocale } from './i18n.jsx';
 
 const BANNER_VARIANT = { error: 'destructive', success: 'success', info: 'warning' };
 
 export function Banner({ type = 'info', children, onClose }) {
+  const t = useT();
   if (!children) return null;
   return (
     <Alert variant={BANNER_VARIANT[type] ?? 'default'} className="mb-3">
       <AlertDescription className="flex items-center justify-between gap-2">
         <span className="whitespace-pre-wrap">{children}</span>
         {onClose && (
-          <button onClick={onClose} className="shrink-0 opacity-70 hover:opacity-100 cursor-pointer" aria-label="Dismiss">
+          <button onClick={onClose} className="shrink-0 opacity-70 hover:opacity-100 cursor-pointer" aria-label={t('common.dismiss')}>
             <XIcon className="size-3.5" />
           </button>
         )}
@@ -24,20 +26,29 @@ export function Banner({ type = 'info', children, onClose }) {
   );
 }
 
-export const Status = ({ status }) => (
-  <Badge variant={status === 'open' ? 'success' : 'muted'} className="uppercase tracking-wide">{status}</Badge>
-);
+export const Status = ({ status }) => {
+  const t = useT();
+  return (
+    <Badge variant={status === 'open' ? 'success' : 'muted'} className="uppercase tracking-wide">
+      {t(`status.${status}`)}
+    </Badge>
+  );
+};
 
 const PRIO_COLOR = {
   low: 'text-prio-low', medium: 'text-prio-medium', high: 'text-prio-high', urgent: 'text-prio-urgent',
 };
 
-export const Priority = ({ value }) => (
-  <span className={cn('inline-flex items-center gap-1.5 text-xs font-medium', PRIO_COLOR[value] ?? PRIO_COLOR.medium)}>
-    <span className="size-1.5 rounded-full bg-current" />
-    {value || 'medium'}
-  </span>
-);
+export const Priority = ({ value }) => {
+  const t = useT();
+  const key = PRIO_COLOR[value] ? value : 'medium';
+  return (
+    <span className={cn('inline-flex items-center gap-1.5 text-xs font-medium', PRIO_COLOR[key])}>
+      <span className="size-1.5 rounded-full bg-current" />
+      {t(`priority.${key}`)}
+    </span>
+  );
+};
 
 export function Stat({ value, label }) {
   return (
@@ -54,8 +65,10 @@ export const Empty = ({ children }) => (
   <div className="text-muted-foreground px-6 py-9 text-center text-sm">{children}</div>
 );
 
+// Formatted in the language the user picked for the dashboard, not the browser's,
+// so a German panel does not print English month names.
 export const fmtDate = (ms) =>
-  ms ? new Date(Number(ms)).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  ms ? new Date(Number(ms)).toLocaleString(getLocale(), { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
 export function fmtDuration(ms) {
   if (!ms || ms < 0) return '—';

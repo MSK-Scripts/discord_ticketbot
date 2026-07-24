@@ -3,6 +3,7 @@ import { UploadIcon, RotateCcwIcon } from 'lucide-react';
 import { api } from '../api.js';
 import { Banner, Empty } from '../ui.jsx';
 import { applyAccent, applyFavicon, hexToRgb } from '../settings.js';
+import { useT } from '../i18n.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card.jsx';
 import { Input } from '@/components/ui/input.jsx';
@@ -31,6 +32,7 @@ export default function Settings({ me }) {
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
   const fileRef = useRef(null);
+  const t = useT();
 
   useEffect(() => {
     api.dashboardSettings()
@@ -56,7 +58,7 @@ export default function Settings({ me }) {
       await api.saveAccent(accent);
       applyAccent(accent);
       setSavedAccent(accent.toLowerCase());
-      setNotice('Accent colour saved.');
+      setNotice(t('settings.accentSaved'));
     } catch (e) { setError(e.message); } finally { setBusy(false); }
   };
 
@@ -67,7 +69,7 @@ export default function Settings({ me }) {
       applyAccent(null);                 // revert to the stylesheet default
       setSavedAccent(null);
       setAccentInput(DEFAULT_ACCENT);
-      setNotice('Accent colour reset to the default.');
+      setNotice(t('settings.accentReset'));
     } catch (e) { setError(e.message); } finally { setBusy(false); }
   };
 
@@ -80,7 +82,7 @@ export default function Settings({ me }) {
       applyFavicon(version);
       setFile(null);
       if (fileRef.current) fileRef.current.value = '';
-      setNotice('Favicon updated.');
+      setNotice(t('settings.faviconUpdated'));
     } catch (e) { setError(e.message); } finally { setBusy(false); }
   };
 
@@ -92,23 +94,21 @@ export default function Settings({ me }) {
       applyFavicon(null);
       setFile(null);
       if (fileRef.current) fileRef.current.value = '';
-      setNotice('Favicon reset to the default.');
+      setNotice(t('settings.faviconReset'));
     } catch (e) { setError(e.message); } finally { setBusy(false); }
   };
 
   const faviconSrc = faviconVersion ? `/favicon.ico?v=${faviconVersion}` : '/favicon.ico';
 
-  if (!loaded) return <Empty>Loading…</Empty>;
+  if (!loaded) return <Empty>{t('common.loading')}</Empty>;
 
   return (
     <>
       <div className="mb-5">
-        <h1 className="font-display text-xl font-bold">Dashboard settings</h1>
+        <h1 className="font-display text-xl font-bold">{t('settings.title')}</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Branding for this dashboard. It applies to everyone who uses it.
-          {canEdit
-            ? ' Changes take effect immediately for every user.'
-            : ' You can view the current branding but need the "Edit dashboard settings" permission to change it.'}
+          {t('settings.introShared')}{' '}
+          {canEdit ? t('settings.introCanEdit') : t('settings.introReadOnly')}
         </p>
       </div>
 
@@ -119,12 +119,12 @@ export default function Settings({ me }) {
         {/* ── Accent colour ─────────────────────────────────────────────────── */}
         <Card>
           <CardHeader>
-            <CardTitle>Accent colour</CardTitle>
-            <CardDescription>Buttons, highlights, the active menu item and focus rings. Previews live.</CardDescription>
+            <CardTitle>{t('settings.accentTitle')}</CardTitle>
+            <CardDescription>{t('settings.accentHint')}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label>Colour</Label>
+              <Label>{t('settings.accentLabel')}</Label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -132,7 +132,7 @@ export default function Settings({ me }) {
                   onChange={e => preview(e.target.value)}
                   disabled={!canEdit}
                   className="border-input h-9 w-11 shrink-0 cursor-pointer rounded-md border bg-transparent p-0.5 disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label="Accent colour"
+                  aria-label={t('settings.accentTitle')}
                 />
                 <Input
                   className="font-mono"
@@ -142,14 +142,14 @@ export default function Settings({ me }) {
                   disabled={!canEdit}
                 />
               </div>
-              {!validHex && <p className="text-destructive text-xs">Enter a hex colour like {DEFAULT_ACCENT}.</p>}
-              {savedAccent == null && <p className="text-muted-foreground text-xs">Currently using the default ({DEFAULT_ACCENT}).</p>}
+              {!validHex && <p className="text-destructive text-xs">{t('settings.accentInvalid', { hex: DEFAULT_ACCENT })}</p>}
+              {savedAccent == null && <p className="text-muted-foreground text-xs">{t('settings.accentDefault', { hex: DEFAULT_ACCENT })}</p>}
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" disabled={busy || !accentDirty || !canEdit} onClick={saveAccent}>Save colour</Button>
+              <Button size="sm" disabled={busy || !accentDirty || !canEdit} onClick={saveAccent}>{t('settings.accentSave')}</Button>
               <Button size="sm" variant="outline" disabled={busy || savedAccent == null || !canEdit} onClick={resetAccent}>
-                <RotateCcwIcon /> Reset to default
+                <RotateCcwIcon /> {t('common.resetToDefault')}
               </Button>
             </div>
           </CardContent>
@@ -158,23 +158,23 @@ export default function Settings({ me }) {
         {/* ── Favicon ───────────────────────────────────────────────────────── */}
         <Card>
           <CardHeader>
-            <CardTitle>Favicon</CardTitle>
-            <CardDescription>The small icon in the browser tab. PNG or ICO, up to 256 KB.</CardDescription>
+            <CardTitle>{t('settings.faviconTitle')}</CardTitle>
+            <CardDescription>{t('settings.faviconHint')}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
               <img
                 src={faviconSrc}
-                alt="Current favicon"
+                alt={t('settings.faviconAlt')}
                 className="size-10 rounded border bg-white/5 object-contain p-1"
               />
               <div className="text-muted-foreground text-sm">
-                {faviconVersion ? 'Custom favicon in use.' : 'Using the default favicon.'}
+                {faviconVersion ? t('settings.faviconCustom') : t('settings.faviconDefault')}
               </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="favicon-file">Upload a new favicon</Label>
+              <Label htmlFor="favicon-file">{t('settings.faviconUploadLabel')}</Label>
               <input
                 id="favicon-file"
                 ref={fileRef}
@@ -187,9 +187,9 @@ export default function Settings({ me }) {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" disabled={busy || !file || !canEdit} onClick={uploadFavicon}><UploadIcon /> Upload</Button>
+              <Button size="sm" disabled={busy || !file || !canEdit} onClick={uploadFavicon}><UploadIcon /> {t('settings.faviconUpload')}</Button>
               <Button size="sm" variant="outline" disabled={busy || !faviconVersion || !canEdit} onClick={resetFavicon}>
-                <RotateCcwIcon /> Reset to default
+                <RotateCcwIcon /> {t('common.resetToDefault')}
               </Button>
             </div>
           </CardContent>

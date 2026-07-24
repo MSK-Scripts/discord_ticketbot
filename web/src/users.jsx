@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
+import { useT } from './i18n.jsx';
 
 const cache = new Map();      // id → user | null (null = resolved, but unknown)
 const listeners = new Set();  // components waiting for the batch to land
@@ -66,6 +67,7 @@ export function useUsers(ids) {
  */
 export function UserName({ id, fallback = '—' }) {
   const resolved = useUsers(id ? [id] : []);
+  const t = useT();
   if (!id) return <span className="text-muted-foreground">{fallback}</span>;
 
   const user = resolved.get(id);
@@ -75,7 +77,7 @@ export function UserName({ id, fallback = '—' }) {
     <span className="inline-flex min-w-0 items-center gap-1.5" title={`${user.username ?? user.name} · ${id}`}>
       {user.avatar && <img className="size-5 shrink-0 rounded-full bg-white/8" src={user.avatar} alt="" />}
       <span className="truncate">{user.name}</span>
-      {!user.inGuild && <span className="text-muted-foreground" title="No longer in this server"> (left)</span>}
+      {!user.inGuild && <span className="text-muted-foreground" title={t('user.leftTitle')}> {t('user.left')}</span>}
     </span>
   );
 }

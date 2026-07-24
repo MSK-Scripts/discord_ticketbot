@@ -3,6 +3,7 @@ import { InfoIcon } from 'lucide-react';
 import { api } from '../api.js';
 import { Banner, Empty, fmtDate } from '../ui.jsx';
 import { UserName } from '../users.jsx';
+import { useT } from '../i18n.jsx';
 import { cn } from '@/lib/utils.js';
 import { Button } from '@/components/ui/button.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
@@ -31,6 +32,15 @@ export default function Access({ me }) {
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState(false);
   const [confirmKey, setConfirmKey] = useState(null);
+  const t = useT();
+
+  // Permission labels come from the dashboard's own translations so they follow the
+  // language switcher. The server's label (English/German only) stays as a fallback
+  // for a permission this build does not know a translation for yet.
+  const permLabel = (p) => {
+    const translated = t(`permissions.${p}`);
+    return translated === `permissions.${p}` ? (data?.labels?.[p]?.en ?? p) : translated;
+  };
 
   const load = useCallback(() => {
     api.access().then(setData).catch(e => setError(e.message));
@@ -53,7 +63,7 @@ export default function Access({ me }) {
     setBusy(true); setError(null); setNotice(null);
     try {
       await api.saveAccess(form);
-      setNotice('Permissions saved.');
+      setNotice(t('access.savedNotice'));
       setForm(EMPTY_FORM);
       load();
     } catch (e) {
@@ -82,55 +92,51 @@ export default function Access({ me }) {
     }
   };
 
-  if (!data) return <Empty>Loading…</Empty>;
+  if (!data) return <Empty>{t('common.loading')}</Empty>;
 
   return (
     <>
-      <div className="mb-5"><h1 className="font-display text-xl font-bold">Permissions</h1></div>
+      <div className="mb-5"><h1 className="font-display text-xl font-bold">{t('access.title')}</h1></div>
 
       <Banner type="error" onClose={() => setError(null)}>{error}</Banner>
       <Banner type="success" onClose={() => setNotice(null)}>{notice}</Banner>
 
       <Alert className="mb-4">
         <InfoIcon />
-        <AlertDescription>
-          A <strong>user</strong> entry overrides that person&apos;s <strong>role</strong> entries entirely,
-          so you can take a permission away from one person that their role grants.
-          The server owner always has every permission and cannot be locked out.
-        </AlertDescription>
+        <AlertDescription>{t('access.overrideNotice')}</AlertDescription>
       </Alert>
 
       <Card className="mb-4">
         <CardHeader>
-          <CardTitle>{form.subjectId ? 'Edit entry' : 'Grant access'}</CardTitle>
-          <CardDescription>Give a role or a single user access to this dashboard.</CardDescription>
+          <CardTitle>{form.subjectId ? t('access.editTitle') : t('access.grantTitle')}</CardTitle>
+          <CardDescription>{t('access.grantHint')}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label>Type</Label>
+              <Label>{t('access.type')}</Label>
               <Select value={form.subjectType} onValueChange={v => setForm(f => ({ ...f, subjectType: v, subjectId: '' }))}>
                 <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="role">Role</SelectItem><SelectItem value="user">User</SelectItem></SelectContent>
+                <SelectContent><SelectItem value="role">{t('access.role')}</SelectItem><SelectItem value="user">{t('access.user')}</SelectItem></SelectContent>
               </Select>
             </div>
 
             <div className="flex min-w-56 flex-1 flex-col gap-1.5">
-              <Label>{form.subjectType === 'role' ? 'Role' : 'User ID'}</Label>
+              <Label>{form.subjectType === 'role' ? t('access.role') : t('access.userId')}</Label>
               {form.subjectType === 'role' && lookups?.roles?.length ? (
                 <Select value={form.subjectId} onValueChange={v => setForm(f => ({ ...f, subjectId: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select a role…" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t('access.selectRole')} /></SelectTrigger>
                   <SelectContent>{lookups.roles.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}</SelectContent>
                 </Select>
               ) : (
-                <Input placeholder="Discord ID (17–20 digits)" value={form.subjectId}
+                <Input placeholder={t('access.discordIdPlaceholder')} value={form.subjectId}
                   onChange={e => setForm(f => ({ ...f, subjectId: e.target.value.trim() }))} />
               )}
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label>Permissions</Label>
+            <Label>{t('access.permissionsLabel')}</Label>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {data.permissions.map(p => {
                 const on = form.permissions.includes(p);
@@ -141,68 +147,63 @@ export default function Access({ me }) {
                       on ? 'border-primary/50 bg-primary/10 text-foreground' : 'hover:bg-accent text-muted-foreground',
                     )}>
                     <span className={cn('size-3.5 shrink-0 rounded-[4px] border', on ? 'bg-primary border-primary' : 'border-input')} />
-                    {data.labels?.[p]?.en ?? p}
+                    {permLabel(p)}
                   </button>
                 );
               })}
             </div>
-            <p className="text-muted-foreground text-xs leading-relaxed">
-              <strong>View/Edit configuration</strong> covers config.jsonc, snippets and the locale files.
-              The <strong>.env</strong> file (bot token and secrets) stays restricted to the server owner and
-              is never shown to staff, even with these permissions. The dashboard&apos;s own accent colour and
-              favicon are separate: they are governed by <strong>View/Edit dashboard settings</strong>.
-            </p>
+            <p className="text-muted-foreground text-xs leading-relaxed">{t('access.configScopeNote')}</p>
           </div>
 
           <label className="flex items-center gap-2.5 text-sm">
             <Switch checked={form.active} onCheckedChange={v => setForm(f => ({ ...f, active: v }))} />
-            Active (turn off to suspend this entry without deleting it)
+            {t('access.activeToggle')}
           </label>
 
           <div className="flex gap-2">
             <Button disabled={busy || !form.subjectId || form.permissions.length === 0} onClick={submit}>
-              {busy ? 'Saving…' : 'Save'}
+              {busy ? t('common.saving') : t('common.save')}
             </Button>
-            {form.subjectId && <Button variant="outline" onClick={() => setForm(EMPTY_FORM)}>Cancel</Button>}
+            {form.subjectId && <Button variant="outline" onClick={() => setForm(EMPTY_FORM)}>{t('common.cancel')}</Button>}
           </div>
         </CardContent>
       </Card>
 
       <Card className="mb-4">
         <CardHeader>
-          <CardTitle>Who has access</CardTitle>
-          <CardDescription>The server owner is always an admin and is not listed here.</CardDescription>
+          <CardTitle>{t('access.whoTitle')}</CardTitle>
+          <CardDescription>{t('access.whoHint')}</CardDescription>
         </CardHeader>
         <CardContent>
-          {!data.entries.length ? <Empty>Nobody else has dashboard access yet.</Empty> : (
+          {!data.entries.length ? <Empty>{t('access.whoEmpty')}</Empty> : (
             <Table>
               <TableHeader>
-                <TableRow><TableHead>Type</TableHead><TableHead>Subject</TableHead><TableHead>Permissions</TableHead><TableHead>Active</TableHead><TableHead /></TableRow>
+                <TableRow><TableHead>{t('access.type')}</TableHead><TableHead>{t('access.colSubject')}</TableHead><TableHead>{t('access.permissionsLabel')}</TableHead><TableHead>{t('access.colActive')}</TableHead><TableHead /></TableRow>
               </TableHeader>
               <TableBody>
                 {data.entries.map(e => (
                   <TableRow key={`${e.subjectType}:${e.subjectId}`}>
-                    <TableCell><Badge variant={e.subjectType === 'user' ? 'success' : 'muted'}>{e.subjectType}</Badge></TableCell>
+                    <TableCell><Badge variant={e.subjectType === 'user' ? 'success' : 'muted'}>{t(`access.${e.subjectType}`)}</Badge></TableCell>
                     <TableCell>
                       {e.subjectType === 'role'
                         ? (roleName(e.subjectId) ?? <span className="font-mono">{e.subjectId}</span>)
                         : <UserName id={e.subjectId} />}
-                      {e.subjectId === me.user.id && <span className="text-muted-foreground"> (you)</span>}
+                      {e.subjectId === me.user.id && <span className="text-muted-foreground"> {t('access.you')}</span>}
                     </TableCell>
                     <TableCell className="text-muted-foreground max-w-xs text-xs whitespace-normal">
-                      {e.permissions.map(p => data.labels?.[p]?.en ?? p).join(', ') || '—'}
+                      {e.permissions.map(permLabel).join(', ') || '—'}
                     </TableCell>
-                    <TableCell>{e.active ? '✓' : <span className="text-muted-foreground">off</span>}</TableCell>
+                    <TableCell>{e.active ? '✓' : <span className="text-muted-foreground">{t('common.off')}</span>}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => edit(e)}>Edit</Button>
+                        <Button variant="outline" size="sm" onClick={() => edit(e)}>{t('common.edit')}</Button>
                         {confirmKey === `${e.subjectType}:${e.subjectId}` ? (
                           <>
-                            <Button variant="destructive" size="sm" onClick={() => remove(e)}>Confirm</Button>
-                            <Button variant="outline" size="sm" onClick={() => setConfirmKey(null)}>Cancel</Button>
+                            <Button variant="destructive" size="sm" onClick={() => remove(e)}>{t('common.confirm')}</Button>
+                            <Button variant="outline" size="sm" onClick={() => setConfirmKey(null)}>{t('common.cancel')}</Button>
                           </>
                         ) : (
-                          <Button variant="destructive" size="sm" onClick={() => remove(e)}>Remove</Button>
+                          <Button variant="destructive" size="sm" onClick={() => remove(e)}>{t('common.remove')}</Button>
                         )}
                       </div>
                     </TableCell>
@@ -216,14 +217,14 @@ export default function Access({ me }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Audit log</CardTitle>
-          <CardDescription>Every change made through the dashboard.</CardDescription>
+          <CardTitle>{t('access.auditTitle')}</CardTitle>
+          <CardDescription>{t('access.auditHint')}</CardDescription>
         </CardHeader>
         <CardContent>
-          {!audit.length ? <Empty>No entries yet.</Empty> : (
+          {!audit.length ? <Empty>{t('access.auditEmpty')}</Empty> : (
             <Table>
               <TableHeader>
-                <TableRow><TableHead>When</TableHead><TableHead>Who</TableHead><TableHead>Action</TableHead><TableHead>Target</TableHead></TableRow>
+                <TableRow><TableHead>{t('access.auditWhen')}</TableHead><TableHead>{t('access.auditWho')}</TableHead><TableHead>{t('access.auditAction')}</TableHead><TableHead>{t('access.auditTarget')}</TableHead></TableRow>
               </TableHeader>
               <TableBody>
                 {audit.map(a => (

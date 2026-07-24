@@ -20,6 +20,36 @@ aktivierst, ändert sich an deinem Bot nichts.
 | **Konfiguration** | Bearbeite `config.jsonc`, `snippets.jsonc`, `.env` und die Locale-Dateien wahlweise in einer strukturierten **Formular**-Ansicht oder einer rohen **Datei**-Ansicht (mit Zeilennummern und Syntax-Highlighting). Formular-Änderungen erhalten die `//`-Kommentare, und ein Seitenpanel löst Discord-Rollen-/Kanal-/Kategorie-**Namen** auf, sodass du nie nach rohen IDs suchen musst. |
 | **Bot-Steuerung** | Starten, stoppen, neu starten und aktualisieren des Bots, plus eine Live-Konsole. |
 | **Berechtigungen** | Lege fest, welche Rollen und Nutzer das Dashboard verwenden dürfen und was sie tun dürfen. |
+| **Dashboard-Einstellungen** | Akzentfarbe und Favicon, abgesichert über eigene Ansehen-/Bearbeiten-Rechte. |
+| **Sprache** | Jeder Nutzer wählt seine eigene Oberflächensprache aus sieben Übersetzungen. |
+
+---
+
+## Sprache
+
+Das Dashboard gibt es auf **Englisch, Deutsch, Französisch, Spanisch,
+Portugiesisch, Polnisch und Ungarisch**. Die Auswahl sitzt unten in der
+Seitenleiste, direkt über "Abmelden".
+
+Jeder stellt seine Sprache selbst ein: Die Wahl liegt im Browser der jeweiligen
+Person. Wenn du das Panel auf Deutsch stellst, ändert sich für niemanden sonst
+etwas, und es braucht dafür keine Berechtigung. Beim ersten Besuch richtet sich
+das Dashboard nach der Browsersprache und fällt auf Englisch zurück. Datums- und
+Zeitangaben folgen der gewählten Sprache ebenfalls.
+
+> Das ist die Oberflächensprache des **Dashboards**. Sie ist unabhängig von `lang`
+> in der `config.jsonc`, die steuert, was der **Bot** nach Discord schreibt. Ein
+> Teammitglied, das das Panel auf Polnisch liest, ändert nichts an deinen
+> Ticket-Embeds.
+
+Eine Sprache hinzuzufügen braucht keine Code-Änderung: Lege eine
+`web/src/locales/<code>.json` an (kopiere `en.json`, übersetze die Werte, setze
+`$meta.name` auf den Eigennamen der Sprache) und baue das Frontend neu. Sie
+erscheint von allein in der Auswahl. Fehlende Keys fallen auf Englisch zurück,
+statt die Seite zu zerlegen.
+
+Das strukturierte `config.jsonc`-Formular (dessen Feldbezeichnungen und
+Hilfetexte) ist weiterhin nur auf Englisch, der Rest des Dashboards ist übersetzt.
 
 ---
 

@@ -3,6 +3,7 @@ import { RefreshCwIcon } from 'lucide-react';
 import { api } from '../api.js';
 import { Banner, Status, Priority, Empty, fmtDate } from '../ui.jsx';
 import { UserName } from '../users.jsx';
+import { useT } from '../i18n.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Card, CardContent } from '@/components/ui/card.jsx';
 import { Input } from '@/components/ui/input.jsx';
@@ -24,6 +25,7 @@ export default function Tickets({ me, ticketId, onOpen, onClose }) {
   const [typeInput, setTypeInput] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const t = useT();
 
   // Debounce the free-text type filter so typing a codeName fires one request,
   // not one per keystroke.
@@ -56,8 +58,8 @@ export default function Tickets({ me, ticketId, onOpen, onClose }) {
   return (
     <>
       <div className="mb-5 flex items-center justify-between gap-3">
-        <h1 className="font-display text-xl font-bold">Tickets</h1>
-        <span className="text-muted-foreground text-sm">{total} total</span>
+        <h1 className="font-display text-xl font-bold">{t('tickets.title')}</h1>
+        <span className="text-muted-foreground text-sm">{t('tickets.totalCount', { count: total })}</span>
       </div>
 
       <Banner type="error" onClose={() => setError(null)}>{error}</Banner>
@@ -68,31 +70,31 @@ export default function Tickets({ me, ticketId, onOpen, onClose }) {
             <Select value={filters.status || 'all'} onValueChange={setFilter('status')}>
               <SelectTrigger size="sm" className="w-36"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
+                <SelectItem value="all">{t('tickets.allStatuses')}</SelectItem>
+                <SelectItem value="open">{t('tickets.statusOpen')}</SelectItem>
+                <SelectItem value="closed">{t('tickets.statusClosed')}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={filters.priority || 'all'} onValueChange={setFilter('priority')}>
               <SelectTrigger size="sm" className="w-36"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All priorities</SelectItem>
-                {['low', 'medium', 'high', 'urgent'].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                <SelectItem value="all">{t('tickets.allPriorities')}</SelectItem>
+                {['low', 'medium', 'high', 'urgent'].map(p => <SelectItem key={p} value={p}>{t(`priority.${p}`)}</SelectItem>)}
               </SelectContent>
             </Select>
 
-            <Input className="h-8 w-44" placeholder="Type (codeName)" value={typeInput} onChange={e => setTypeInput(e.target.value)} />
+            <Input className="h-8 w-44" placeholder={t('tickets.typeFilter')} value={typeInput} onChange={e => setTypeInput(e.target.value)} />
 
-            <Button variant="outline" size="sm" onClick={load}><RefreshCwIcon /> Refresh</Button>
+            <Button variant="outline" size="sm" onClick={load}><RefreshCwIcon /> {t('common.refresh')}</Button>
           </div>
 
-          {loading ? <Empty>Loading…</Empty> : items.length === 0 ? <Empty>No tickets match these filters.</Empty> : (
+          {loading ? <Empty>{t('common.loading')}</Empty> : items.length === 0 ? <Empty>{t('tickets.noMatch')}</Empty> : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>#</TableHead><TableHead>Type</TableHead><TableHead>Status</TableHead><TableHead>Priority</TableHead>
-                  <TableHead>Creator</TableHead><TableHead>Claimed by</TableHead><TableHead>Created</TableHead><TableHead>Msgs</TableHead>
+                  <TableHead>{t('tickets.colId')}</TableHead><TableHead>{t('tickets.colType')}</TableHead><TableHead>{t('tickets.colStatus')}</TableHead><TableHead>{t('tickets.colPriority')}</TableHead>
+                  <TableHead>{t('tickets.colCreator')}</TableHead><TableHead>{t('tickets.colClaimedBy')}</TableHead><TableHead>{t('tickets.colCreated')}</TableHead><TableHead>{t('tickets.colMessages')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -117,7 +119,7 @@ export default function Tickets({ me, ticketId, onOpen, onClose }) {
           {pages > 1 && (
             <div className="flex items-center justify-center gap-3">
               <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>←</Button>
-              <span className="text-muted-foreground text-sm">Page {page + 1} of {pages}</span>
+              <span className="text-muted-foreground text-sm">{t('tickets.page', { page: page + 1, pages })}</span>
               <Button variant="outline" size="sm" disabled={page + 1 >= pages} onClick={() => setPage(p => p + 1)}>→</Button>
             </div>
           )}

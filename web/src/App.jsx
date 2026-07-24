@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
 import {
   TicketIcon, InboxIcon, BarChart3Icon, SettingsIcon, TerminalIcon, ShieldCheckIcon,
-  PaletteIcon, LogOutIcon, MenuIcon,
+  PaletteIcon, LogOutIcon, MenuIcon, LanguagesIcon,
 } from 'lucide-react';
 import { api, logout } from './api.js';
 import { useRouter, parseRoute, viewPath } from './router.js';
+import { useI18n } from './i18n.jsx';
 import { cn } from '@/lib/utils.js';
 import { Button } from '@/components/ui/button.jsx';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet.jsx';
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from '@/components/ui/select.jsx';
 
 import Tickets from './views/Tickets.jsx';
 import MyTickets from './views/MyTickets.jsx';
@@ -23,13 +27,13 @@ import Settings from './views/Settings.jsx';
  * user cannot use is a UX decision, never the security boundary.
  */
 const NAV = [
-  { id: 'mine',     label: 'My tickets',        icon: TicketIcon,     permission: null },
-  { id: 'tickets',  label: 'Tickets',           icon: InboxIcon,      permission: 'tickets.view' },
-  { id: 'stats',    label: 'Statistics',        icon: BarChart3Icon,  permission: 'stats.view' },
-  { id: 'config',   label: 'Configuration',     icon: SettingsIcon,   permission: ['config.view', 'config.edit'] },
-  { id: 'bot',      label: 'Bot control',       icon: TerminalIcon,   permission: 'bot.control' },
-  { id: 'access',   label: 'Permissions',       icon: ShieldCheckIcon, permission: 'access.manage' },
-  { id: 'settings', label: 'Dashboard settings', icon: PaletteIcon,   permission: ['settings.view', 'settings.edit'] },
+  { id: 'mine',     icon: TicketIcon,      permission: null },
+  { id: 'tickets',  icon: InboxIcon,       permission: 'tickets.view' },
+  { id: 'stats',    icon: BarChart3Icon,   permission: 'stats.view' },
+  { id: 'config',   icon: SettingsIcon,    permission: ['config.view', 'config.edit'] },
+  { id: 'bot',      icon: TerminalIcon,    permission: 'bot.control' },
+  { id: 'access',   icon: ShieldCheckIcon, permission: 'access.manage' },
+  { id: 'settings', icon: PaletteIcon,     permission: ['settings.view', 'settings.edit'] },
 ];
 
 const allowed = (me, item) => {
@@ -40,15 +44,42 @@ const allowed = (me, item) => {
 };
 
 function Brand() {
+  const { t } = useI18n();
   return (
     <div className="flex items-center gap-2 px-2 font-display text-[15px] font-bold">
       <span className="size-2 rounded-full bg-primary" />
-      Ticket Bot
+      {t('nav.brand')}
+    </div>
+  );
+}
+
+/**
+ * Per-user language picker. The list is whatever locale files exist (see i18n.jsx),
+ * so a new translation appears here on its own. The choice is personal and lives in
+ * localStorage, so it changes nothing for anyone else and needs no permission.
+ */
+function LanguagePicker() {
+  const { lang, languages, setLang, t } = useI18n();
+  if (languages.length < 2) return null;
+  return (
+    <div className="mb-2.5 px-1">
+      <Select value={lang} onValueChange={setLang}>
+        <SelectTrigger size="sm" className="w-full" aria-label={t('common.language')}>
+          <span className="flex min-w-0 items-center gap-2">
+            <LanguagesIcon className="size-3.5 shrink-0 opacity-70" />
+            <SelectValue />
+          </span>
+        </SelectTrigger>
+        <SelectContent>
+          {languages.map(l => <SelectItem key={l.code} value={l.code}>{l.name}</SelectItem>)}
+        </SelectContent>
+      </Select>
     </div>
   );
 }
 
 function NavContent({ me, view, onSelect }) {
+  const { t } = useI18n();
   const items = NAV.filter(n => allowed(me, n));
   return (
     <div className="flex h-full flex-col gap-1 p-3">
@@ -70,7 +101,7 @@ function NavContent({ me, view, onSelect }) {
               )}
             >
               <Icon className="size-4 shrink-0" />
-              {item.label}
+              {t(`nav.${item.id}`)}
             </button>
           );
         })}
@@ -84,12 +115,13 @@ function NavContent({ me, view, onSelect }) {
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold">{me.user.name}</div>
             <div className="text-muted-foreground text-xs">
-              {me.isOwner ? 'Server owner' : `${me.permissions.length} permission(s)`}
+              {me.isOwner ? t('app.serverOwner') : t('app.permissionCount', { count: me.permissions.length })}
             </div>
           </div>
         </div>
+        <LanguagePicker />
         <Button variant="outline" size="sm" className="w-full" onClick={logout}>
-          <LogOutIcon /> Sign out
+          <LogOutIcon /> {t('app.signOut')}
         </Button>
       </div>
     </div>
@@ -101,6 +133,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { path, navigate } = useRouter();
+  const { t } = useI18n();
 
   useEffect(() => {
     api.me()
@@ -132,25 +165,27 @@ export default function App() {
     if (error.portalClosed) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center gap-5 p-6 text-center">
-          <h1 className="font-display text-2xl font-bold">Ticket Bot Dashboard</h1>
+          <h1 className="font-display text-2xl font-bold">{t('app.title')}</h1>
           <div className="text-muted-foreground bg-muted/40 border-border max-w-sm rounded-lg border px-4 py-3 text-sm">
-            {error.message} Ask a server administrator to grant you access.
+            {error.message} {t('app.askAdmin')}
           </div>
-          <Button variant="outline" onClick={logout}><LogOutIcon /> Sign out</Button>
+          <Button variant="outline" onClick={logout}><LogOutIcon /> {t('app.signOut')}</Button>
+          <div className="w-44"><LanguagePicker /></div>
         </div>
       );
     }
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-5 p-6 text-center">
-        <h1 className="font-display text-2xl font-bold">Ticket Bot Dashboard</h1>
+        <h1 className="font-display text-2xl font-bold">{t('app.title')}</h1>
         <div className="text-destructive bg-destructive/10 border-destructive/30 max-w-sm rounded-lg border px-4 py-3 text-sm">{error.message}</div>
-        <Button asChild><a href="/auth/login">Sign in with Discord</a></Button>
+        <Button asChild><a href="/auth/login">{t('app.signIn')}</a></Button>
+        <div className="w-44"><LanguagePicker /></div>
       </div>
     );
   }
 
   if (!me) {
-    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</div>;
+    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t('common.loading')}</div>;
   }
 
   const select = (id) => { navigate(viewPath(id)); setMobileOpen(false); };
@@ -172,7 +207,7 @@ export default function App() {
               <Button variant="ghost" size="icon"><MenuIcon /></Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
-              <SheetTitle className="sr-only">Navigation</SheetTitle>
+              <SheetTitle className="sr-only">{t('nav.navigation')}</SheetTitle>
               <NavContent me={me} view={view} onSelect={select} />
             </SheetContent>
           </Sheet>

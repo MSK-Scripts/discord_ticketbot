@@ -1,0 +1,264 @@
+{
+  "$meta": { "name": "English" },
+
+  "common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "discard": "Discard",
+    "edit": "Edit",
+    "remove": "Remove",
+    "confirm": "Confirm",
+    "refresh": "Refresh",
+    "back": "Back",
+    "dismiss": "Dismiss",
+    "none": "None.",
+    "off": "off",
+    "resetToDefault": "Reset to default",
+    "language": "Language"
+  },
+
+  "status": {
+    "open": "open",
+    "closed": "closed"
+  },
+
+  "priority": {
+    "low": "low",
+    "medium": "medium",
+    "high": "high",
+    "urgent": "urgent"
+  },
+
+  "nav": {
+    "brand": "Ticket Bot",
+    "navigation": "Navigation",
+    "mine": "My tickets",
+    "tickets": "Tickets",
+    "stats": "Statistics",
+    "config": "Configuration",
+    "bot": "Bot control",
+    "access": "Permissions",
+    "settings": "Dashboard settings"
+  },
+
+  "app": {
+    "title": "Ticket Bot Dashboard",
+    "serverOwner": "Server owner",
+    "permissionCount": "{count} permission(s)",
+    "signOut": "Sign out",
+    "signIn": "Sign in with Discord",
+    "askAdmin": "Ask a server administrator to grant you access."
+  },
+
+  "user": {
+    "left": "(left)",
+    "leftTitle": "No longer in this server"
+  },
+
+  "stats": {
+    "title": "Statistics",
+    "total": "Tickets total",
+    "open": "Open",
+    "closed": "Closed",
+    "avgRating": "Average rating",
+    "avgHandlingTime": "Average handling time",
+    "avgHandlingTimeHint": "From opening a ticket to closing it.",
+    "teamTitle": "Team performance",
+    "teamHint": "Staff members ranked by tickets closed.",
+    "noClosed": "No closed tickets yet.",
+    "rank": "#",
+    "staff": "Staff",
+    "ticketsClosed": "Tickets closed"
+  },
+
+  "myTickets": {
+    "title": "My tickets",
+    "cardTitle": "Your support requests",
+    "cardHint": "Every ticket you opened. You can reply to open ones right here, your reply is posted in the Discord channel under your name.",
+    "empty": "You have not opened any tickets yet."
+  },
+
+  "tickets": {
+    "title": "Tickets",
+    "totalCount": "{count} total",
+    "allStatuses": "All statuses",
+    "statusOpen": "Open",
+    "statusClosed": "Closed",
+    "allPriorities": "All priorities",
+    "typeFilter": "Type (codeName)",
+    "noMatch": "No tickets match these filters.",
+    "page": "Page {page} of {pages}",
+    "colId": "#",
+    "colType": "Type",
+    "colStatus": "Status",
+    "colPriority": "Priority",
+    "colCreator": "Creator",
+    "colClaimedBy": "Claimed by",
+    "colCreated": "Created",
+    "colMessages": "Msgs"
+  },
+
+  "ticket": {
+    "heading": "Ticket #{id}",
+    "locked": "locked",
+    "claim": "Claim",
+    "unclaim": "Unclaim",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "close": "Close",
+    "reopen": "Reopen",
+    "priority": "Priority",
+    "actionDone": "Ticket action \"{action}\" completed.",
+
+    "closeDialogTitle": "Close this ticket?",
+    "closeDialogHint": "The channel is archived, a transcript is generated and the creator is notified. This can take a few seconds.",
+    "closeReasonLabel": "Reason (optional)",
+    "closeReasonPlaceholder": "e.g. resolved",
+    "closing": "Closing…",
+    "closeConfirm": "Close ticket",
+
+    "detailsTitle": "Details",
+    "detailsHint": "Ticket metadata",
+    "fieldType": "Type",
+    "fieldCreator": "Creator",
+    "fieldPriority": "Priority",
+    "fieldClaimedBy": "Claimed by",
+    "fieldCreated": "Created",
+    "fieldMessages": "Messages",
+    "fieldClosedBy": "Closed by",
+    "fieldClosedAt": "Closed at",
+    "fieldReason": "Reason",
+    "ratingTitle": "Rating",
+    "notesTitle": "Staff notes",
+
+    "conversationTitle": "Conversation",
+    "conversationStored": "Stored transcript of the closed ticket.",
+    "conversationLive": "Live from the Discord channel.",
+    "transcriptSaved": "This ticket is closed. Its full conversation was saved as a transcript.",
+    "openTranscript": "Open transcript",
+    "downloadTranscript": "Download transcript",
+    "noTranscript": "This ticket is closed and no transcript was stored for it.",
+    "noTextContent": "(no text content)",
+    "noMessages": "No messages.",
+    "appBadge": "app",
+
+    "replyAsSelf": "Reply, this is posted in Discord under your name.",
+    "replyAsBot": "Reply as the bot…",
+    "send": "Send",
+    "lockedHint": "This ticket is locked, no replies possible.",
+    "closedHint": "This ticket is closed. Reopen it to reply."
+  },
+
+  "bot": {
+    "title": "Bot control",
+    "running": "Running",
+    "stopped": "Stopped",
+    "starting": "Starting…",
+    "stopping": "Stopping…",
+    "crashed": "Crashed",
+    "pid": "PID {pid}",
+    "start": "Start",
+    "restart": "Restart",
+    "stop": "Stop",
+    "update": "Update",
+    "updating": "Updating…",
+    "updateHint": "git pull + npm install, this can take a couple of minutes.",
+    "actionFinished": "\"{action}\" finished.",
+    "actionTriggered": "\"{action}\" triggered.",
+    "consoleTitle": "Console",
+    "consoleHint": "Live output of the bot process.",
+    "noOutput": "No output yet."
+  },
+
+  "config": {
+    "title": "Configuration",
+    "saved": "Saved. Restart the bot for the changes to take effect.",
+    "unsavedFile": "You have unsaved changes. Switch file and discard them?",
+    "unsavedView": "You have unsaved changes. Switch view and discard them?",
+    "discardAndSwitch": "Discard & switch",
+    "unsavedMarker": "● unsaved changes",
+    "blockingErrors": "{count} problem(s) must be fixed before saving:",
+    "envNotice": "The .env file is restricted to the server owner. It holds the bot token, session secret and OAuth secret, so staff with \"Edit configuration\" can edit config.jsonc, snippets and the locale files, but can never see or edit this file.",
+    "lookupsTitle": "Discord IDs",
+    "lookupsHint": "Click a name to copy its ID.",
+    "lookupsFailed": "Could not load (is the bot in the server?).",
+    "roles": "Roles",
+    "channels": "Channels",
+    "categories": "Categories",
+    "copied": "copied!",
+    "copyHint": "Click to copy the ID",
+    "modeForm": "Form",
+    "modeFile": "File"
+  },
+
+  "access": {
+    "title": "Permissions",
+    "overrideNotice": "A user entry overrides that person's role entries entirely, so you can take a permission away from one person that their role grants. The server owner always has every permission and cannot be locked out.",
+    "grantTitle": "Grant access",
+    "editTitle": "Edit entry",
+    "grantHint": "Give a role or a single user access to this dashboard.",
+    "type": "Type",
+    "role": "Role",
+    "user": "User",
+    "userId": "User ID",
+    "selectRole": "Select a role…",
+    "discordIdPlaceholder": "Discord ID (17 to 20 digits)",
+    "permissionsLabel": "Permissions",
+    "configScopeNote": "\"View/Edit configuration\" covers config.jsonc, snippets and the locale files. The .env file (bot token and secrets) stays restricted to the server owner and is never shown to staff, even with these permissions. The dashboard's own accent colour and favicon are separate: they are governed by \"View/Edit dashboard settings\".",
+    "activeToggle": "Active (turn off to suspend this entry without deleting it)",
+    "savedNotice": "Permissions saved.",
+    "whoTitle": "Who has access",
+    "whoHint": "The server owner is always an admin and is not listed here.",
+    "whoEmpty": "Nobody else has dashboard access yet.",
+    "colSubject": "Subject",
+    "colActive": "Active",
+    "you": "(you)",
+    "auditTitle": "Audit log",
+    "auditHint": "Every change made through the dashboard.",
+    "auditEmpty": "No entries yet.",
+    "auditWhen": "When",
+    "auditWho": "Who",
+    "auditAction": "Action",
+    "auditTarget": "Target"
+  },
+
+  "permissions": {
+    "tickets.view": "View tickets",
+    "tickets.act": "Act on tickets",
+    "tickets.reply": "Reply in tickets",
+    "stats.view": "View statistics",
+    "config.view": "View configuration",
+    "config.edit": "Edit configuration",
+    "settings.view": "View dashboard settings",
+    "settings.edit": "Edit dashboard settings",
+    "bot.control": "Control the bot",
+    "blacklist.manage": "Manage blacklist",
+    "access.manage": "Manage permissions"
+  },
+
+  "settings": {
+    "title": "Dashboard settings",
+    "introShared": "Branding for this dashboard. It applies to everyone who uses it.",
+    "introCanEdit": "Changes take effect immediately for every user.",
+    "introReadOnly": "You can view the current branding but need the \"Edit dashboard settings\" permission to change it.",
+    "accentTitle": "Accent colour",
+    "accentHint": "Buttons, highlights, the active menu item and focus rings. Previews live.",
+    "accentLabel": "Colour",
+    "accentInvalid": "Enter a hex colour like {hex}.",
+    "accentDefault": "Currently using the default ({hex}).",
+    "accentSave": "Save colour",
+    "accentSaved": "Accent colour saved.",
+    "accentReset": "Accent colour reset to the default.",
+    "faviconTitle": "Favicon",
+    "faviconHint": "The small icon in the browser tab. PNG or ICO, up to 256 KB.",
+    "faviconAlt": "Current favicon",
+    "faviconCustom": "Custom favicon in use.",
+    "faviconDefault": "Using the default favicon.",
+    "faviconUploadLabel": "Upload a new favicon",
+    "faviconUpload": "Upload",
+    "faviconUpdated": "Favicon updated.",
+    "faviconReset": "Favicon reset to the default."
+  }
+}

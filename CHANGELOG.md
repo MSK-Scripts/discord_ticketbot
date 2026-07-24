@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.13.0] - 2026-07-25
+
+### Added
+- **The dashboard is translated and every user picks their own language.** A
+  language selector sits at the bottom of the sidebar, offering English, German,
+  French, Spanish, Portuguese, Polish and Hungarian. The choice is personal to the
+  person using it (stored in their browser), so switching the panel to German does
+  not change it for anyone else, and it needs no permission. On a first visit the
+  dashboard follows the browser's language and falls back to English.
+- Language files are picked up automatically: dropping a
+  `web/src/locales/<code>.json` into place and rebuilding adds that language to the
+  selector, with the name taken from the file itself. There is no list to maintain
+  in the code.
+- Dates and times now follow the selected language instead of the browser's.
+
+### Notes
+- This is the dashboard's own interface language. It is separate from `lang` in
+  `config.jsonc`, which still controls what the bot writes into Discord.
+- The structured `config.jsonc` form (field labels and their help texts) stays in
+  English for now, everything else in the dashboard is translated.
+
 ## [2.12.0] - 2026-07-25
 
 ### Added

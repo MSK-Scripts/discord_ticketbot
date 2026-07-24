@@ -1,0 +1,264 @@
+{
+  "$meta": { "name": "Deutsch" },
+
+  "common": {
+    "loading": "Wird geladen…",
+    "save": "Speichern",
+    "saving": "Wird gespeichert…",
+    "cancel": "Abbrechen",
+    "discard": "Verwerfen",
+    "edit": "Bearbeiten",
+    "remove": "Entfernen",
+    "confirm": "Bestätigen",
+    "refresh": "Aktualisieren",
+    "back": "Zurück",
+    "dismiss": "Ausblenden",
+    "none": "Keine.",
+    "off": "aus",
+    "resetToDefault": "Auf Standard zurücksetzen",
+    "language": "Sprache"
+  },
+
+  "status": {
+    "open": "offen",
+    "closed": "geschlossen"
+  },
+
+  "priority": {
+    "low": "niedrig",
+    "medium": "mittel",
+    "high": "hoch",
+    "urgent": "dringend"
+  },
+
+  "nav": {
+    "brand": "Ticket Bot",
+    "navigation": "Navigation",
+    "mine": "Meine Tickets",
+    "tickets": "Tickets",
+    "stats": "Statistiken",
+    "config": "Konfiguration",
+    "bot": "Bot-Steuerung",
+    "access": "Berechtigungen",
+    "settings": "Dashboard-Einstellungen"
+  },
+
+  "app": {
+    "title": "Ticket Bot Dashboard",
+    "serverOwner": "Server-Inhaber",
+    "permissionCount": "{count} Berechtigung(en)",
+    "signOut": "Abmelden",
+    "signIn": "Mit Discord anmelden",
+    "askAdmin": "Bitte einen Server-Administrator, dir Zugriff zu geben."
+  },
+
+  "user": {
+    "left": "(ausgetreten)",
+    "leftTitle": "Nicht mehr auf diesem Server"
+  },
+
+  "stats": {
+    "title": "Statistiken",
+    "total": "Tickets gesamt",
+    "open": "Offen",
+    "closed": "Geschlossen",
+    "avgRating": "Durchschnittliche Bewertung",
+    "avgHandlingTime": "Durchschnittliche Bearbeitungszeit",
+    "avgHandlingTimeHint": "Vom Öffnen eines Tickets bis zum Schließen.",
+    "teamTitle": "Team-Leistung",
+    "teamHint": "Teammitglieder nach geschlossenen Tickets sortiert.",
+    "noClosed": "Noch keine geschlossenen Tickets.",
+    "rank": "#",
+    "staff": "Team",
+    "ticketsClosed": "Geschlossene Tickets"
+  },
+
+  "myTickets": {
+    "title": "Meine Tickets",
+    "cardTitle": "Deine Support-Anfragen",
+    "cardHint": "Alle Tickets, die du geöffnet hast. Auf offene Tickets kannst du direkt hier antworten, deine Antwort erscheint im Discord-Kanal unter deinem Namen.",
+    "empty": "Du hast noch keine Tickets geöffnet."
+  },
+
+  "tickets": {
+    "title": "Tickets",
+    "totalCount": "{count} gesamt",
+    "allStatuses": "Alle Status",
+    "statusOpen": "Offen",
+    "statusClosed": "Geschlossen",
+    "allPriorities": "Alle Prioritäten",
+    "typeFilter": "Typ (codeName)",
+    "noMatch": "Keine Tickets passen zu diesen Filtern.",
+    "page": "Seite {page} von {pages}",
+    "colId": "#",
+    "colType": "Typ",
+    "colStatus": "Status",
+    "colPriority": "Priorität",
+    "colCreator": "Ersteller",
+    "colClaimedBy": "Beansprucht von",
+    "colCreated": "Erstellt",
+    "colMessages": "Nachr."
+  },
+
+  "ticket": {
+    "heading": "Ticket #{id}",
+    "locked": "gesperrt",
+    "claim": "Claimen",
+    "unclaim": "Freigeben",
+    "lock": "Sperren",
+    "unlock": "Entsperren",
+    "close": "Schließen",
+    "reopen": "Wieder öffnen",
+    "priority": "Priorität",
+    "actionDone": "Ticket-Aktion \"{action}\" abgeschlossen.",
+
+    "closeDialogTitle": "Dieses Ticket schließen?",
+    "closeDialogHint": "Der Kanal wird archiviert, ein Transcript wird erstellt und der Ersteller wird benachrichtigt. Das kann ein paar Sekunden dauern.",
+    "closeReasonLabel": "Grund (optional)",
+    "closeReasonPlaceholder": "z. B. erledigt",
+    "closing": "Wird geschlossen…",
+    "closeConfirm": "Ticket schließen",
+
+    "detailsTitle": "Details",
+    "detailsHint": "Ticket-Metadaten",
+    "fieldType": "Typ",
+    "fieldCreator": "Ersteller",
+    "fieldPriority": "Priorität",
+    "fieldClaimedBy": "Beansprucht von",
+    "fieldCreated": "Erstellt",
+    "fieldMessages": "Nachrichten",
+    "fieldClosedBy": "Geschlossen von",
+    "fieldClosedAt": "Geschlossen am",
+    "fieldReason": "Grund",
+    "ratingTitle": "Bewertung",
+    "notesTitle": "Team-Notizen",
+
+    "conversationTitle": "Verlauf",
+    "conversationStored": "Gespeichertes Transcript des geschlossenen Tickets.",
+    "conversationLive": "Live aus dem Discord-Kanal.",
+    "transcriptSaved": "Dieses Ticket ist geschlossen. Der komplette Verlauf wurde als Transcript gespeichert.",
+    "openTranscript": "Transcript öffnen",
+    "downloadTranscript": "Transcript herunterladen",
+    "noTranscript": "Dieses Ticket ist geschlossen und es wurde kein Transcript dazu gespeichert.",
+    "noTextContent": "(kein Textinhalt)",
+    "noMessages": "Keine Nachrichten.",
+    "appBadge": "App",
+
+    "replyAsSelf": "Antworten, das erscheint in Discord unter deinem Namen.",
+    "replyAsBot": "Als Bot antworten…",
+    "send": "Senden",
+    "lockedHint": "Dieses Ticket ist gesperrt, Antworten sind nicht möglich.",
+    "closedHint": "Dieses Ticket ist geschlossen. Öffne es wieder, um zu antworten."
+  },
+
+  "bot": {
+    "title": "Bot-Steuerung",
+    "running": "Läuft",
+    "stopped": "Gestoppt",
+    "starting": "Startet…",
+    "stopping": "Stoppt…",
+    "crashed": "Abgestürzt",
+    "pid": "PID {pid}",
+    "start": "Starten",
+    "restart": "Neu starten",
+    "stop": "Stoppen",
+    "update": "Update",
+    "updating": "Update läuft…",
+    "updateHint": "git pull + npm install, das kann ein paar Minuten dauern.",
+    "actionFinished": "\"{action}\" abgeschlossen.",
+    "actionTriggered": "\"{action}\" gestartet.",
+    "consoleTitle": "Konsole",
+    "consoleHint": "Live-Ausgabe des Bot-Prozesses.",
+    "noOutput": "Noch keine Ausgabe."
+  },
+
+  "config": {
+    "title": "Konfiguration",
+    "saved": "Gespeichert. Starte den Bot neu, damit die Änderungen wirksam werden.",
+    "unsavedFile": "Du hast ungespeicherte Änderungen. Datei wechseln und sie verwerfen?",
+    "unsavedView": "Du hast ungespeicherte Änderungen. Ansicht wechseln und sie verwerfen?",
+    "discardAndSwitch": "Verwerfen & wechseln",
+    "unsavedMarker": "● ungespeicherte Änderungen",
+    "blockingErrors": "{count} Problem(e) müssen vor dem Speichern behoben werden:",
+    "envNotice": "Die .env ist dem Server-Inhaber vorbehalten. Sie enthält den Bot-Token, das Session-Secret und das OAuth-Secret. Teammitglieder mit \"Konfiguration bearbeiten\" können also config.jsonc, snippets und die locale-Dateien bearbeiten, diese Datei aber weder sehen noch ändern.",
+    "lookupsTitle": "Discord-IDs",
+    "lookupsHint": "Klicke auf einen Namen, um die ID zu kopieren.",
+    "lookupsFailed": "Konnte nicht geladen werden (ist der Bot auf dem Server?).",
+    "roles": "Rollen",
+    "channels": "Kanäle",
+    "categories": "Kategorien",
+    "copied": "kopiert!",
+    "copyHint": "Klicken, um die ID zu kopieren",
+    "modeForm": "Formular",
+    "modeFile": "Datei"
+  },
+
+  "access": {
+    "title": "Berechtigungen",
+    "overrideNotice": "Ein Benutzer-Eintrag überschreibt die Rollen-Einträge dieser Person vollständig. So kannst du einer einzelnen Person eine Berechtigung entziehen, die ihre Rolle gewährt. Der Server-Inhaber hat immer alle Berechtigungen und kann sich nicht aussperren.",
+    "grantTitle": "Zugriff gewähren",
+    "editTitle": "Eintrag bearbeiten",
+    "grantHint": "Gib einer Rolle oder einem einzelnen Benutzer Zugriff auf dieses Dashboard.",
+    "type": "Typ",
+    "role": "Rolle",
+    "user": "Benutzer",
+    "userId": "Benutzer-ID",
+    "selectRole": "Rolle auswählen…",
+    "discordIdPlaceholder": "Discord-ID (17 bis 20 Ziffern)",
+    "permissionsLabel": "Berechtigungen",
+    "configScopeNote": "\"Konfiguration ansehen/bearbeiten\" umfasst config.jsonc, snippets und die locale-Dateien. Die .env (Bot-Token und Secrets) bleibt dem Server-Inhaber vorbehalten und wird dem Team auch mit diesen Berechtigungen nie angezeigt. Akzentfarbe und Favicon des Dashboards sind davon getrennt, sie laufen über \"Dashboard-Einstellungen ansehen/bearbeiten\".",
+    "activeToggle": "Aktiv (ausschalten, um den Eintrag zu pausieren, ohne ihn zu löschen)",
+    "savedNotice": "Berechtigungen gespeichert.",
+    "whoTitle": "Wer hat Zugriff",
+    "whoHint": "Der Server-Inhaber ist immer Admin und wird hier nicht aufgelistet.",
+    "whoEmpty": "Sonst hat noch niemand Zugriff auf das Dashboard.",
+    "colSubject": "Betrifft",
+    "colActive": "Aktiv",
+    "you": "(du)",
+    "auditTitle": "Audit-Log",
+    "auditHint": "Jede Änderung, die über das Dashboard gemacht wurde.",
+    "auditEmpty": "Noch keine Einträge.",
+    "auditWhen": "Wann",
+    "auditWho": "Wer",
+    "auditAction": "Aktion",
+    "auditTarget": "Ziel"
+  },
+
+  "permissions": {
+    "tickets.view": "Tickets ansehen",
+    "tickets.act": "Tickets bearbeiten",
+    "tickets.reply": "In Tickets antworten",
+    "stats.view": "Statistiken ansehen",
+    "config.view": "Konfiguration ansehen",
+    "config.edit": "Konfiguration bearbeiten",
+    "settings.view": "Dashboard-Einstellungen ansehen",
+    "settings.edit": "Dashboard-Einstellungen bearbeiten",
+    "bot.control": "Bot steuern",
+    "blacklist.manage": "Blacklist verwalten",
+    "access.manage": "Berechtigungen verwalten"
+  },
+
+  "settings": {
+    "title": "Dashboard-Einstellungen",
+    "introShared": "Das Branding dieses Dashboards. Es gilt für alle, die es nutzen.",
+    "introCanEdit": "Änderungen wirken sofort für jeden Benutzer.",
+    "introReadOnly": "Du kannst das aktuelle Branding sehen, zum Ändern brauchst du aber die Berechtigung \"Dashboard-Einstellungen bearbeiten\".",
+    "accentTitle": "Akzentfarbe",
+    "accentHint": "Buttons, Hervorhebungen, der aktive Menüpunkt und Fokusrahmen. Vorschau in Echtzeit.",
+    "accentLabel": "Farbe",
+    "accentInvalid": "Gib eine Hex-Farbe ein, zum Beispiel {hex}.",
+    "accentDefault": "Aktuell wird der Standard verwendet ({hex}).",
+    "accentSave": "Farbe speichern",
+    "accentSaved": "Akzentfarbe gespeichert.",
+    "accentReset": "Akzentfarbe auf den Standard zurückgesetzt.",
+    "faviconTitle": "Favicon",
+    "faviconHint": "Das kleine Symbol im Browser-Tab. PNG oder ICO, bis zu 256 KB.",
+    "faviconAlt": "Aktuelles Favicon",
+    "faviconCustom": "Eigenes Favicon aktiv.",
+    "faviconDefault": "Es wird das Standard-Favicon verwendet.",
+    "faviconUploadLabel": "Neues Favicon hochladen",
+    "faviconUpload": "Hochladen",
+    "faviconUpdated": "Favicon aktualisiert.",
+    "faviconReset": "Favicon auf den Standard zurückgesetzt."
+  }
+}

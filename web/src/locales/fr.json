@@ -1,0 +1,264 @@
+{
+  "$meta": { "name": "Français" },
+
+  "common": {
+    "loading": "Chargement…",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "cancel": "Annuler",
+    "discard": "Abandonner",
+    "edit": "Modifier",
+    "remove": "Retirer",
+    "confirm": "Confirmer",
+    "refresh": "Actualiser",
+    "back": "Retour",
+    "dismiss": "Ignorer",
+    "none": "Aucune.",
+    "off": "désactivé",
+    "resetToDefault": "Réinitialiser",
+    "language": "Langue"
+  },
+
+  "status": {
+    "open": "ouvert",
+    "closed": "fermé"
+  },
+
+  "priority": {
+    "low": "faible",
+    "medium": "moyenne",
+    "high": "haute",
+    "urgent": "urgente"
+  },
+
+  "nav": {
+    "brand": "Ticket Bot",
+    "navigation": "Navigation",
+    "mine": "Mes tickets",
+    "tickets": "Tickets",
+    "stats": "Statistiques",
+    "config": "Configuration",
+    "bot": "Contrôle du bot",
+    "access": "Permissions",
+    "settings": "Paramètres du Dashboard"
+  },
+
+  "app": {
+    "title": "Dashboard Ticket Bot",
+    "serverOwner": "Propriétaire du serveur",
+    "permissionCount": "{count} permission(s)",
+    "signOut": "Se déconnecter",
+    "signIn": "Se connecter avec Discord",
+    "askAdmin": "Demandez à un administrateur du serveur de vous donner accès."
+  },
+
+  "user": {
+    "left": "(parti)",
+    "leftTitle": "N'est plus sur ce serveur"
+  },
+
+  "stats": {
+    "title": "Statistiques",
+    "total": "Total des tickets",
+    "open": "Ouverts",
+    "closed": "Fermés",
+    "avgRating": "Note moyenne",
+    "avgHandlingTime": "Temps de traitement moyen",
+    "avgHandlingTimeHint": "De l'ouverture du ticket jusqu'à sa fermeture.",
+    "teamTitle": "Performance de l'équipe",
+    "teamHint": "Membres de l'équipe classés par tickets fermés.",
+    "noClosed": "Aucun ticket fermé pour le moment.",
+    "rank": "#",
+    "staff": "Équipe",
+    "ticketsClosed": "Tickets fermés"
+  },
+
+  "myTickets": {
+    "title": "Mes tickets",
+    "cardTitle": "Vos demandes d'assistance",
+    "cardHint": "Tous les tickets que vous avez ouverts. Vous pouvez répondre ici à ceux qui sont encore ouverts, votre réponse est publiée dans le salon Discord sous votre nom.",
+    "empty": "Vous n'avez encore ouvert aucun ticket."
+  },
+
+  "tickets": {
+    "title": "Tickets",
+    "totalCount": "{count} au total",
+    "allStatuses": "Tous les statuts",
+    "statusOpen": "Ouverts",
+    "statusClosed": "Fermés",
+    "allPriorities": "Toutes les priorités",
+    "typeFilter": "Type (codeName)",
+    "noMatch": "Aucun ticket ne correspond à ces filtres.",
+    "page": "Page {page} sur {pages}",
+    "colId": "#",
+    "colType": "Type",
+    "colStatus": "Statut",
+    "colPriority": "Priorité",
+    "colCreator": "Créateur",
+    "colClaimedBy": "Pris par",
+    "colCreated": "Créé le",
+    "colMessages": "Msgs"
+  },
+
+  "ticket": {
+    "heading": "Ticket #{id}",
+    "locked": "verrouillé",
+    "claim": "Prendre en charge",
+    "unclaim": "Libérer",
+    "lock": "Verrouiller",
+    "unlock": "Déverrouiller",
+    "close": "Fermer",
+    "reopen": "Rouvrir",
+    "priority": "Priorité",
+    "actionDone": "Action « {action} » effectuée sur le ticket.",
+
+    "closeDialogTitle": "Fermer ce ticket ?",
+    "closeDialogHint": "Le salon est archivé, une transcription est générée et le créateur est prévenu. Cela peut prendre quelques secondes.",
+    "closeReasonLabel": "Raison (facultatif)",
+    "closeReasonPlaceholder": "ex. résolu",
+    "closing": "Fermeture…",
+    "closeConfirm": "Fermer le ticket",
+
+    "detailsTitle": "Détails",
+    "detailsHint": "Métadonnées du ticket",
+    "fieldType": "Type",
+    "fieldCreator": "Créateur",
+    "fieldPriority": "Priorité",
+    "fieldClaimedBy": "Pris par",
+    "fieldCreated": "Créé le",
+    "fieldMessages": "Messages",
+    "fieldClosedBy": "Fermé par",
+    "fieldClosedAt": "Fermé le",
+    "fieldReason": "Raison",
+    "ratingTitle": "Note",
+    "notesTitle": "Notes de l'équipe",
+
+    "conversationTitle": "Conversation",
+    "conversationStored": "Transcription enregistrée du ticket fermé.",
+    "conversationLive": "En direct depuis le salon Discord.",
+    "transcriptSaved": "Ce ticket est fermé. L'intégralité de la conversation a été enregistrée sous forme de transcription.",
+    "openTranscript": "Ouvrir la transcription",
+    "downloadTranscript": "Télécharger la transcription",
+    "noTranscript": "Ce ticket est fermé et aucune transcription n'a été enregistrée pour lui.",
+    "noTextContent": "(aucun contenu texte)",
+    "noMessages": "Aucun message.",
+    "appBadge": "app",
+
+    "replyAsSelf": "Répondre, votre message est publié dans Discord sous votre nom.",
+    "replyAsBot": "Répondre en tant que bot…",
+    "send": "Envoyer",
+    "lockedHint": "Ce ticket est verrouillé, aucune réponse n'est possible.",
+    "closedHint": "Ce ticket est fermé. Rouvrez-le pour pouvoir répondre."
+  },
+
+  "bot": {
+    "title": "Contrôle du bot",
+    "running": "En marche",
+    "stopped": "Arrêté",
+    "starting": "Démarrage…",
+    "stopping": "Arrêt…",
+    "crashed": "Planté",
+    "pid": "PID {pid}",
+    "start": "Démarrer",
+    "restart": "Redémarrer",
+    "stop": "Arrêter",
+    "update": "Mettre à jour",
+    "updating": "Mise à jour…",
+    "updateHint": "git pull + npm install, cela peut prendre quelques minutes.",
+    "actionFinished": "« {action} » terminé.",
+    "actionTriggered": "« {action} » lancé.",
+    "consoleTitle": "Console",
+    "consoleHint": "Sortie en direct du processus du bot.",
+    "noOutput": "Aucune sortie pour le moment."
+  },
+
+  "config": {
+    "title": "Configuration",
+    "saved": "Enregistré. Redémarrez le bot pour que les changements prennent effet.",
+    "unsavedFile": "Vous avez des modifications non enregistrées. Changer de fichier et les abandonner ?",
+    "unsavedView": "Vous avez des modifications non enregistrées. Changer de vue et les abandonner ?",
+    "discardAndSwitch": "Abandonner et changer",
+    "unsavedMarker": "● modifications non enregistrées",
+    "blockingErrors": "{count} problème(s) à corriger avant de pouvoir enregistrer :",
+    "envNotice": "Le fichier .env est réservé au propriétaire du serveur. Il contient le token du bot, le secret de session et le secret OAuth. Les membres de l'équipe qui ont « Modifier la configuration » peuvent donc modifier config.jsonc, les snippets et les fichiers de langue, mais ne peuvent jamais voir ni modifier ce fichier.",
+    "lookupsTitle": "ID Discord",
+    "lookupsHint": "Cliquez sur un nom pour copier son ID.",
+    "lookupsFailed": "Chargement impossible (le bot est-il bien sur le serveur ?).",
+    "roles": "Rôles",
+    "channels": "Salons",
+    "categories": "Catégories",
+    "copied": "copié !",
+    "copyHint": "Cliquez pour copier l'ID",
+    "modeForm": "Formulaire",
+    "modeFile": "Fichier"
+  },
+
+  "access": {
+    "title": "Permissions",
+    "overrideNotice": "Une entrée utilisateur remplace entièrement les entrées de rôle de cette personne, vous pouvez donc retirer à quelqu'un une permission que son rôle lui accorde. Le propriétaire du serveur possède toujours toutes les permissions et ne peut jamais être exclu.",
+    "grantTitle": "Accorder l'accès",
+    "editTitle": "Modifier l'entrée",
+    "grantHint": "Donnez à un rôle ou à un utilisateur précis l'accès à ce dashboard.",
+    "type": "Type",
+    "role": "Rôle",
+    "user": "Utilisateur",
+    "userId": "ID utilisateur",
+    "selectRole": "Choisissez un rôle…",
+    "discordIdPlaceholder": "ID Discord (17 à 20 chiffres)",
+    "permissionsLabel": "Permissions",
+    "configScopeNote": "« Voir/Modifier la configuration » couvre config.jsonc, les snippets et les fichiers de langue. Le fichier .env (token du bot et secrets) reste réservé au propriétaire du serveur et n'est jamais montré à l'équipe, même avec ces permissions. La couleur d'accentuation et le favicon du dashboard sont à part, ils dépendent de « Voir/Modifier les paramètres du Dashboard ».",
+    "activeToggle": "Actif (désactivez pour suspendre cette entrée sans la supprimer)",
+    "savedNotice": "Permissions enregistrées.",
+    "whoTitle": "Qui a accès",
+    "whoHint": "Le propriétaire du serveur est toujours administrateur et n'apparaît pas dans cette liste.",
+    "whoEmpty": "Personne d'autre n'a encore accès au dashboard.",
+    "colSubject": "Sujet",
+    "colActive": "Actif",
+    "you": "(vous)",
+    "auditTitle": "Journal d'audit",
+    "auditHint": "Toutes les modifications faites depuis le dashboard.",
+    "auditEmpty": "Aucune entrée pour le moment.",
+    "auditWhen": "Quand",
+    "auditWho": "Qui",
+    "auditAction": "Action",
+    "auditTarget": "Cible"
+  },
+
+  "permissions": {
+    "tickets.view": "Voir les tickets",
+    "tickets.act": "Agir sur les tickets",
+    "tickets.reply": "Répondre dans les tickets",
+    "stats.view": "Voir les statistiques",
+    "config.view": "Voir la configuration",
+    "config.edit": "Modifier la configuration",
+    "settings.view": "Voir les paramètres du Dashboard",
+    "settings.edit": "Modifier les paramètres du Dashboard",
+    "bot.control": "Contrôler le bot",
+    "blacklist.manage": "Gérer la liste noire",
+    "access.manage": "Gérer les permissions"
+  },
+
+  "settings": {
+    "title": "Paramètres du Dashboard",
+    "introShared": "Personnalisation visuelle de ce dashboard. Elle s'applique à toutes les personnes qui l'utilisent.",
+    "introCanEdit": "Les changements prennent effet immédiatement pour tous les utilisateurs.",
+    "introReadOnly": "Vous pouvez consulter la personnalisation actuelle, mais il vous faut la permission « Modifier les paramètres du Dashboard » pour la changer.",
+    "accentTitle": "Couleur d'accentuation",
+    "accentHint": "Boutons, éléments mis en avant, entrée de menu active et anneaux de focus. Aperçu en direct.",
+    "accentLabel": "Couleur",
+    "accentInvalid": "Saisissez une couleur hexadécimale, par exemple {hex}.",
+    "accentDefault": "La couleur par défaut est utilisée ({hex}).",
+    "accentSave": "Enregistrer la couleur",
+    "accentSaved": "Couleur d'accentuation enregistrée.",
+    "accentReset": "Couleur d'accentuation remise par défaut.",
+    "faviconTitle": "Favicon",
+    "faviconHint": "La petite icône dans l'onglet du navigateur. PNG ou ICO, jusqu'à 256 Ko.",
+    "faviconAlt": "Favicon actuel",
+    "faviconCustom": "Un Favicon personnalisé est utilisé.",
+    "faviconDefault": "Le Favicon par défaut est utilisé.",
+    "faviconUploadLabel": "Envoyer un nouveau Favicon",
+    "faviconUpload": "Envoyer",
+    "faviconUpdated": "Favicon mis à jour.",
+    "faviconReset": "Favicon remis par défaut."
+  }
+}
