@@ -22,6 +22,8 @@ const PERMISSIONS = Object.freeze([
   'stats.view',       // server + team statistics
   'config.view',      // read config.jsonc / snippets / .env
   'config.edit',      // write them
+  'settings.view',    // read the dashboard appearance (accent + favicon)
+  'settings.edit',    // change the dashboard appearance
   'bot.control',      // start / stop / restart / update the bot process
   'blacklist.manage', // add / remove blacklisted users
   'access.manage',    // manage dashboard permissions themselves
@@ -35,6 +37,8 @@ const PERMISSION_LABELS = Object.freeze({
   'stats.view':       { en: 'View statistics',     de: 'Statistiken ansehen' },
   'config.view':      { en: 'View configuration',  de: 'Konfiguration ansehen' },
   'config.edit':      { en: 'Edit configuration',  de: 'Konfiguration bearbeiten' },
+  'settings.view':    { en: 'View dashboard settings', de: 'Dashboard-Einstellungen ansehen' },
+  'settings.edit':    { en: 'Edit dashboard settings', de: 'Dashboard-Einstellungen bearbeiten' },
   'bot.control':      { en: 'Control the bot',     de: 'Bot steuern' },
   'blacklist.manage': { en: 'Manage blacklist',    de: 'Blacklist verwalten' },
   'access.manage':    { en: 'Manage permissions',  de: 'Rechte verwalten' },

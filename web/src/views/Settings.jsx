@@ -13,11 +13,15 @@ import { Label } from '@/components/ui/label.jsx';
 const DEFAULT_ACCENT = '#5eb131';
 
 /**
- * Dashboard appearance: accent colour + favicon. Owner-only (the tab is hidden for
- * everyone else and the API re-checks ownership). Changes here re-brand the panel
- * for every user, and the accent previews live before you save.
+ * Dashboard appearance: accent colour + favicon. Gated by settings.view (read) and
+ * settings.edit (change); the owner always holds both. A member with only
+ * settings.view sees the current branding but every control is disabled — the API
+ * enforces the same split, this just avoids offering a button that would 403.
+ * Changes here re-brand the panel for every user, and the accent previews live
+ * before you save.
  */
-export default function Settings() {
+export default function Settings({ me }) {
+  const canEdit = me.isOwner || me.permissions.includes('settings.edit');
   const [loaded, setLoaded] = useState(false);
   const [accent, setAccentInput] = useState(DEFAULT_ACCENT);
   const [savedAccent, setSavedAccent] = useState(null);   // null = using the default
@@ -101,7 +105,10 @@ export default function Settings() {
       <div className="mb-5">
         <h1 className="font-display text-xl font-bold">Dashboard settings</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Branding for this dashboard. Only you as the server owner can change it, and it applies to everyone who uses it.
+          Branding for this dashboard. It applies to everyone who uses it.
+          {canEdit
+            ? ' Changes take effect immediately for every user.'
+            : ' You can view the current branding but need the "Edit dashboard settings" permission to change it.'}
         </p>
       </div>
 
@@ -123,7 +130,8 @@ export default function Settings() {
                   type="color"
                   value={hexToRgb(accent) ? accent : DEFAULT_ACCENT}
                   onChange={e => preview(e.target.value)}
-                  className="border-input h-9 w-11 shrink-0 cursor-pointer rounded-md border bg-transparent p-0.5"
+                  disabled={!canEdit}
+                  className="border-input h-9 w-11 shrink-0 cursor-pointer rounded-md border bg-transparent p-0.5 disabled:cursor-not-allowed disabled:opacity-50"
                   aria-label="Accent colour"
                 />
                 <Input
@@ -131,6 +139,7 @@ export default function Settings() {
                   value={accent}
                   placeholder={DEFAULT_ACCENT}
                   onChange={e => preview(e.target.value)}
+                  disabled={!canEdit}
                 />
               </div>
               {!validHex && <p className="text-destructive text-xs">Enter a hex colour like {DEFAULT_ACCENT}.</p>}
@@ -138,8 +147,8 @@ export default function Settings() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" disabled={busy || !accentDirty} onClick={saveAccent}>Save colour</Button>
-              <Button size="sm" variant="outline" disabled={busy || savedAccent == null} onClick={resetAccent}>
+              <Button size="sm" disabled={busy || !accentDirty || !canEdit} onClick={saveAccent}>Save colour</Button>
+              <Button size="sm" variant="outline" disabled={busy || savedAccent == null || !canEdit} onClick={resetAccent}>
                 <RotateCcwIcon /> Reset to default
               </Button>
             </div>
@@ -172,13 +181,14 @@ export default function Settings() {
                 type="file"
                 accept=".png,.ico,image/png,image/x-icon,image/vnd.microsoft.icon"
                 onChange={e => setFile(e.target.files?.[0] ?? null)}
-                className="text-muted-foreground file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80 block w-full text-sm file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-sm"
+                disabled={!canEdit}
+                className="text-muted-foreground file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80 block w-full text-sm file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-sm disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" disabled={busy || !file} onClick={uploadFavicon}><UploadIcon /> Upload</Button>
-              <Button size="sm" variant="outline" disabled={busy || !faviconVersion} onClick={resetFavicon}>
+              <Button size="sm" disabled={busy || !file || !canEdit} onClick={uploadFavicon}><UploadIcon /> Upload</Button>
+              <Button size="sm" variant="outline" disabled={busy || !faviconVersion || !canEdit} onClick={resetFavicon}>
                 <RotateCcwIcon /> Reset to default
               </Button>
             </div>

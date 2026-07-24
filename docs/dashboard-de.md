@@ -131,6 +131,7 @@ glaubt dir nie einfach, welche Berechtigungen du hast.
 | `tickets.reply` | In einem Ticket als Bot antworten |
 | `stats.view` | Statistiken und Team-Leistung sehen |
 | `config.view` / `config.edit` | Config-Dateien lesen / schreiben |
+| `settings.view` / `settings.edit` | Akzentfarbe und Favicon des Dashboards ansehen / ändern |
 | `bot.control` | Bot starten, stoppen, neu starten, aktualisieren |
 | `blacklist.manage` | Die Blacklist verwalten |
 | `access.manage` | Diese Berechtigungen verwalten |

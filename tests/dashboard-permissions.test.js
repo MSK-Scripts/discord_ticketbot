@@ -69,6 +69,20 @@ test('isPermission only accepts permissions that exist', () => {
   assert.ok(!isPermission(1));
 });
 
+test('dashboard settings have their own view + edit permissions', () => {
+  // The appearance tab used to be owner-only; it is now delegable to staff via
+  // these two flags. The owner keeps them automatically (owner = all permissions).
+  assert.ok(isPermission('settings.view'));
+  assert.ok(isPermission('settings.edit'));
+  assert.ok(hasPermission(resolvePermissions({ isOwner: true }), 'settings.edit'));
+
+  // A role can be granted them like any other permission, and edit does not imply
+  // view is a separate flag — both are grantable independently.
+  const rows = [{ subject_type: 'role', subject_id: 'R1', permissions: '["settings.view"]' }];
+  const { roleRows: r } = selectAccessRows(rows, 'U1', ['R1']);
+  assert.deepEqual(resolvePermissions({ roleRows: r }), ['settings.view']);
+});
+
 test('selectAccessRows picks the user row and only the matching roles', () => {
   const userRow = { subject_type: 'user', subject_id: 'U1', permissions: '[]' };
   const { userRow: u, roleRows: r } = selectAccessRows([userRow, ...roleRows], 'U1', ['R1']);

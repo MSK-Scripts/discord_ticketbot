@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.12.0] - 2026-07-25
+
+### Added
+- **The "Dashboard settings" tab has its own `settings.view` and `settings.edit`
+  permissions.** The accent colour and favicon used to be owner-only. Because they
+  carry no secrets and only re-brand the panel, they can now be delegated to
+  trusted staff through two dedicated permissions, granted like any other under
+  **Permissions**. `settings.view` shows the current branding with every control
+  disabled; `settings.edit` allows changing it. The server owner keeps both
+  automatically, and the `.env` file (bot token and secrets) stays owner-only as
+  before.
+
+### Changed
+- The dashboard settings API and navigation item are now gated by the new
+  `settings.view` / `settings.edit` permissions instead of an owner-only check.
+  Existing owners are unaffected (owners hold every permission); no configuration
+  change is needed.
+
 ## [2.11.0] - 2026-07-21
 
 ### Added

@@ -64,7 +64,7 @@ const audit = (req, action, target, detail) =>
     detail: detail ?? null,
   });
 
-function registerRoutes(api, { config, supervisor, requirePermission, requireOwner, invalidateMemberCache }) {
+function registerRoutes(api, { config, supervisor, requirePermission, invalidateMemberCache }) {
   const guildId = config.guildId;
 
   // ── Tickets ────────────────────────────────────────────────────────────────
@@ -388,16 +388,19 @@ function registerRoutes(api, { config, supervisor, requirePermission, requireOwn
   }));
 
   // ── Dashboard appearance settings ──────────────────────────────────────────
-  // Accent colour + favicon. Owner-only: it re-brands the panel for EVERYONE who
-  // uses it, so it sits at the same trust level as the .env file, not day-to-day
-  // config. The actual serving of the values is public (see server.js) since the
-  // colour and favicon are not sensitive.
+  // Accent colour + favicon. Gated by their own settings.view / settings.edit
+  // permissions (the owner always holds both). Unlike the .env file, the accent and
+  // favicon carry no secrets — they only re-brand the panel — so they can safely be
+  // delegated to trusted staff instead of being owner-only. GET accepts either
+  // permission (edit implies read, mirroring the config files) so a member granted
+  // only "edit" is not locked out of the values they may change. The actual serving
+  // of the values is public (see server.js) since they are not sensitive.
 
-  api.get('/dashboard-settings', requireOwner, asyncRoute(async (req, res) => {
+  api.get('/dashboard-settings', requirePermission(['settings.view', 'settings.edit']), asyncRoute(async (req, res) => {
     res.json(settings.loadSettings());
   }));
 
-  api.put('/dashboard-settings', requireOwner, asyncRoute(async (req, res) => {
+  api.put('/dashboard-settings', requirePermission('settings.edit'), asyncRoute(async (req, res) => {
     // `accent` may be a hex string, or null/"" to reset to the default theme.
     const accent = req.body?.accent ?? null;
     const result = settings.setAccent(accent);
@@ -410,7 +413,7 @@ function registerRoutes(api, { config, supervisor, requirePermission, requireOwn
   // parser handles it — the global 64 KB json limit does not apply. The precise
   // size + type check lives in settings.setFavicon (magic bytes, 256 KB).
   api.post('/dashboard-settings/favicon',
-    requireOwner,
+    requirePermission('settings.edit'),
     express.raw({ type: () => true, limit: '1mb' }),
     asyncRoute(async (req, res) => {
       const buf = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
@@ -421,7 +424,7 @@ function registerRoutes(api, { config, supervisor, requirePermission, requireOwn
     }),
   );
 
-  api.delete('/dashboard-settings/favicon', requireOwner, asyncRoute(async (req, res) => {
+  api.delete('/dashboard-settings/favicon', requirePermission('settings.edit'), asyncRoute(async (req, res) => {
     settings.clearFavicon();
     audit(req, 'dashboard.settings', 'favicon', { reset: true });
     res.json({ ok: true });

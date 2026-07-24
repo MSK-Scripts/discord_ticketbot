@@ -326,14 +326,6 @@ async function startServer({ config, supervisor }) {
     };
   }
 
-  /** Owner-only gate. Used for dashboard-wide settings (like the .env file). */
-  function requireOwner(req, res, next) {
-    if (!req.auth.isOwner) {
-      return res.status(403).json({ error: 'Only the server owner can do this.' });
-    }
-    next();
-  }
-
   // ── API ────────────────────────────────────────────────────────────────────
 
   const api = express.Router();
@@ -348,7 +340,7 @@ async function startServer({ config, supervisor }) {
     });
   });
 
-  registerRoutes(api, { config, supervisor, requirePermission, requireOwner, invalidateMemberCache });
+  registerRoutes(api, { config, supervisor, requirePermission, invalidateMemberCache });
 
   app.use('/api', api);
 

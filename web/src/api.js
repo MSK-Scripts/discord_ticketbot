@@ -86,7 +86,7 @@ export const api = {
   addBlacklist: (userId, reason) => request('/blacklist', { method: 'POST', body: { userId, reason } }),
   removeBlacklist: (userId) => request(`/blacklist/${userId}`, { method: 'DELETE' }),
 
-  // Dashboard appearance (owner-only).
+  // Dashboard appearance (settings.view to read, settings.edit to change).
   dashboardSettings: () => request('/dashboard-settings'),
   saveAccent: (accent) => request('/dashboard-settings', { method: 'PUT', body: { accent } }),
   resetFavicon: () => request('/dashboard-settings/favicon', { method: 'DELETE' }),

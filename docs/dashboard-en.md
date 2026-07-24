@@ -128,6 +128,7 @@ takes your word for what permissions you have.
 | `tickets.reply` | Reply in a ticket as the bot |
 | `stats.view` | See statistics and team performance |
 | `config.view` / `config.edit` | Read / write the config files |
+| `settings.view` / `settings.edit` | View / change the dashboard's accent colour and favicon |
 | `bot.control` | Start, stop, restart, update the bot |
 | `blacklist.manage` | Manage the blacklist |
 | `access.manage` | Manage these permissions |

@@ -21,8 +21,6 @@ import Settings from './views/Settings.jsx';
  * Navigation is derived from the permissions the SERVER reported. This is only
  * cosmetic — every route is enforced server-side as well. Hiding a nav item the
  * user cannot use is a UX decision, never the security boundary.
- * `ownerOnly` items (like the .env editor and dashboard settings) show only to the
- * guild owner.
  */
 const NAV = [
   { id: 'mine',     label: 'My tickets',        icon: TicketIcon,     permission: null },
@@ -31,11 +29,10 @@ const NAV = [
   { id: 'config',   label: 'Configuration',     icon: SettingsIcon,   permission: ['config.view', 'config.edit'] },
   { id: 'bot',      label: 'Bot control',       icon: TerminalIcon,   permission: 'bot.control' },
   { id: 'access',   label: 'Permissions',       icon: ShieldCheckIcon, permission: 'access.manage' },
-  { id: 'settings', label: 'Dashboard settings', icon: PaletteIcon,   ownerOnly: true },
+  { id: 'settings', label: 'Dashboard settings', icon: PaletteIcon,   permission: ['settings.view', 'settings.edit'] },
 ];
 
 const allowed = (me, item) => {
-  if (item.ownerOnly) return me.isOwner;
   if (!item.permission) return true;
   if (me.isOwner) return true;
   const list = Array.isArray(item.permission) ? item.permission : [item.permission];
@@ -191,7 +188,7 @@ export default function App() {
           {view === 'config'  && <Config me={me} />}
           {view === 'bot'     && <BotControl />}
           {view === 'access'  && <Access me={me} />}
-          {view === 'settings' && <Settings />}
+          {view === 'settings' && <Settings me={me} />}
         </main>
       </div>
     </div>
