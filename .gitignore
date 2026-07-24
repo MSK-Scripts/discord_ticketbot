@@ -16,6 +16,9 @@
 /out/
 /build
 
+# Graphify
+graphify-out/
+
 # Production
 /dist
 
@@ -60,7 +63,6 @@ next-env.d.ts
 # Local Database Dumps
 *.sql.bak
 /dumps
-
 
 # SQLite database (contains user data)
 data/tickets.db
