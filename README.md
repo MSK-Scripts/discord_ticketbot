@@ -1,4 +1,4 @@
-<img width="1917" height="474" alt="MSK Ticket Bot Banner" src="https://github.com/user-attachments/assets/c656750b-3bca-4fcc-a48e-1d173dec6aa4" />
+![Discord Ticketbot](assets/msk-ticket-bot-banner.png)
 
 <div align="center">
 
