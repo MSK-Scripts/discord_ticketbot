@@ -74,11 +74,11 @@ Instead of sending transcripts as file attachments via DM, the bot can upload th
 
 ### Getting your API Key
 
-1. Visit **[www.msk-scripts.de/verify](https://www.msk-scripts.de/verify)**
+1. Visit **[www.msk-scripts.de/ticketbot/verify](https://www.msk-scripts.de/ticketbot/verify)**
 2. Sign in with your Discord account
 3. Select your server → your API key is generated instantly
 
-To upgrade to Premium/Premium+, open your **[dashboard](https://www.msk-scripts.de/dashboard)** and start the free trial — billing is handled by Stripe.
+To upgrade to Premium/Premium+, open your **[dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** and start the free trial — billing is handled by Stripe.
 
 Then add it to your `.env`:
 ```env
@@ -90,7 +90,7 @@ MSK_API_URL="https://www.msk-scripts.de"
 
 Premium users can serve transcripts under their own domain (e.g. `tickets.yourserver.com`).
 
-1. Visit **[www.msk-scripts.de/dashboard](https://www.msk-scripts.de/dashboard)** after verifying
+1. Visit **[www.msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** after verifying
 2. Enter your domain and set a DNS **A-Record** pointing to the server IP shown
 3. Click **"Check DNS"** once propagation is complete — SSL is set up automatically
 
@@ -100,7 +100,7 @@ Premium users can serve transcripts under their own domain (e.g. `tickets.yourse
 
 ## 🖥️ Hosted Bot Management (Premium & Premium+)
 
-Premium and Premium+ customers can have their bot instance **fully hosted by MSK Scripts** and manage it directly from the dashboard at **[msk-scripts.de/dashboard](https://www.msk-scripts.de/dashboard)** — no SSH access or server knowledge required.
+Premium and Premium+ customers can have their bot instance **fully hosted by MSK Scripts** and manage it directly from the dashboard at **[msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** — no SSH access or server knowledge required.
 
 ![Dashboard — Hosted Bot Management](assets/dashboard-hosted.png)
 

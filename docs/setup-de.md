@@ -42,7 +42,7 @@ Premium-Nutzer erhalten zusätzlich herunterladbare Dateianhänge im Transkript 
 | Dateianhänge im Transkript | ❌ | ✅ | ✅ |
 | Max. Anhangsgröße pro Ticket | — | 150 MB | 500 MB |
 | Eigene Domain | ❌ | ✅ | ✅ |
-| Speicherdauer | 30 Tage | 60 Tage | 90 Tage |
+| Speicherdauer | 30 Tage | 180 Tage | 365 Tage |
 | **Gehostetes Bot-Management** | ❌ | ✅ | ✅ |
 
 > Premium und Premium+ werden im Dashboard über **Stripe** abonniert, mit **14 Tagen kostenloser Testphase**  
@@ -120,7 +120,7 @@ Dieser Prozess muss **einmalig pro Server** von einem Server-Administrator durch
 
 ### 5.1 Website aufrufen
 
-Öffne **[www.msk-scripts.de/verify](https://www.msk-scripts.de/verify)** in deinem Browser.
+Öffne **[www.msk-scripts.de/ticketbot/verify](https://www.msk-scripts.de/ticketbot/verify)** in deinem Browser.
 
 ---
 
@@ -188,7 +188,7 @@ z.B. `https://tickets.deinserver.de/...` statt `https://www.msk-scripts.de/...`
 ### 7.1 Dashboard aufrufen
 
 Klicke nach der Verifizierung auf **„Zum Dashboard"**,  
-oder öffne direkt **[www.msk-scripts.de/dashboard](https://www.msk-scripts.de/dashboard)**.
+oder öffne direkt **[www.msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)**.
 
 ---
 
@@ -302,7 +302,7 @@ Nein. Jeder API Key ist an genau einen Discord-Server gebunden.
 Für jeden Server muss der Verify-Prozess separat durchgeführt werden.
 
 **Ich habe meinen API Key verloren — was nun?**  
-Besuche [www.msk-scripts.de/verify](https://www.msk-scripts.de/verify) erneut und durchlaufe den Prozess.  
+Besuche [www.msk-scripts.de/ticketbot/verify](https://www.msk-scripts.de/ticketbot/verify) erneut und durchlaufe den Prozess.  
 Ein neuer Key wird generiert und der alte wird sofort ungültig.  
 Vergiss nicht, den Key in der `.env` des Bots zu aktualisieren und ihn neu zu starten.
 

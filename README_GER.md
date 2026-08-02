@@ -74,11 +74,11 @@ Anstatt Transkripte als Dateianhang per DM zu versenden, kann der Bot sie auf **
 
 ### API Key erhalten
 
-1. **[www.msk-scripts.de/verify](https://www.msk-scripts.de/verify)** aufrufen
+1. **[www.msk-scripts.de/ticketbot/verify](https://www.msk-scripts.de/ticketbot/verify)** aufrufen
 2. Mit Discord-Account anmelden
 3. Server auswählen → API Key wird sofort generiert
 
-Zum Upgrade auf Premium/Premium+ im **[Dashboard](https://www.msk-scripts.de/dashboard)** die Testphase starten — die Abrechnung läuft über Stripe.
+Zum Upgrade auf Premium/Premium+ im **[Dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** die Testphase starten — die Abrechnung läuft über Stripe.
 
 Dann in die `.env` eintragen:
 ```env
@@ -88,7 +88,7 @@ MSK_API_URL="https://www.msk-scripts.de"
 
 ### Eigene Domain (Premium & Premium+)
 
-1. **[www.msk-scripts.de/dashboard](https://www.msk-scripts.de/dashboard)** aufrufen
+1. **[www.msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** aufrufen
 2. Domain eintragen und einen DNS **A-Record** auf die angezeigte Server-IP setzen
 3. **„DNS prüfen"** klicken — SSL wird automatisch eingerichtet
 
@@ -98,7 +98,7 @@ MSK_API_URL="https://www.msk-scripts.de"
 
 ## 🖥️ Gehostetes Bot-Management (Premium & Premium+)
 
-Premium- und Premium+-Kunden können ihre Bot-Instanz **vollständig von MSK Scripts hosten lassen** und direkt über das Dashboard unter **[msk-scripts.de/dashboard](https://www.msk-scripts.de/dashboard)** verwalten — kein SSH-Zugang oder Server-Wissen erforderlich.
+Premium- und Premium+-Kunden können ihre Bot-Instanz **vollständig von MSK Scripts hosten lassen** und direkt über das Dashboard unter **[msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** verwalten — kein SSH-Zugang oder Server-Wissen erforderlich.
 
 ![Dashboard — Gehostetes Bot-Management](assets/dashboard-hosted.png)
 

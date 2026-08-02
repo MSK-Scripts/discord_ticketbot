@@ -42,7 +42,7 @@ configure a **custom domain** so transcripts are served under their own URL.
 | File attachments in transcript | ❌ | ✅ | ✅ |
 | Max. attachment size per ticket | — | 150 MB | 500 MB |
 | Custom domain | ❌ | ✅ | ✅ |
-| Storage duration | 30 days | 60 days | 90 days |
+| Storage duration | 30 days | 180 days | 365 days |
 | **Hosted bot management** | ❌ | ✅ | ✅ |
 
 > Premium and Premium+ are subscribed in your dashboard via **Stripe**, with a **14-day free trial**  
@@ -120,7 +120,7 @@ This process must be completed **once per server** by a server administrator.
 
 ### 5.1 Open the website
 
-Go to **[www.msk-scripts.de/verify](https://www.msk-scripts.de/verify)** in your browser.
+Go to **[www.msk-scripts.de/ticketbot/verify](https://www.msk-scripts.de/ticketbot/verify)** in your browser.
 
 ---
 
@@ -188,7 +188,7 @@ e.g. `https://tickets.yourserver.com/...` instead of `https://www.msk-scripts.de
 ### 7.1 Open the Dashboard
 
 After completing the verify process, click **"Go to Dashboard"**,  
-or visit **[www.msk-scripts.de/dashboard](https://www.msk-scripts.de/dashboard)** directly.
+or visit **[www.msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** directly.
 
 ---
 
@@ -302,7 +302,7 @@ No. Each API key is bound to one specific Discord server.
 Complete the verify process separately for each server you want to use the service for.
 
 **I lost my API key — what now?**  
-Visit [www.msk-scripts.de/verify](https://www.msk-scripts.de/verify) again and complete the process.  
+Visit [www.msk-scripts.de/ticketbot/verify](https://www.msk-scripts.de/ticketbot/verify) again and complete the process.  
 A new key is generated and the old one is invalidated immediately.  
 Don't forget to update the key in your bot's `.env` and restart.
 
