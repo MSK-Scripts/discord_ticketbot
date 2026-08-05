@@ -54,7 +54,14 @@ jobs:
     runs-on: ubuntu-latest
     # In Forks nicht spiegeln. Ob die Secrets gesetzt sind, prüft der Step unten,
     # der secrets-Kontext ist auf dieser Ebene nicht lesbar.
-    if: github.repository_owner == 'MSK-Scripts'
+    #
+    # Dependabot-Pushes sind ausgenommen: solche Läufe bekommen ausschließlich
+    # Secrets aus dem Dependabot-Store, nicht aus dem Actions-Store. CODEBERG_TOKEN
+    # ist dort nicht hinterlegt, der Guard unten hätte also jeden Dependabot-PR
+    # rot gefärbt, obwohl gar nichts kaputt war. Verloren geht dabei nichts: der
+    # Mirror läuft beim Merge nach main, und die kurzlebigen Dependabot-Branches
+    # würde `--prune` danach ohnehin wieder von Codeberg entfernen.
+    if: github.repository_owner == 'MSK-Scripts' && github.actor != 'dependabot[bot]'
 
     steps:
       - name: Checkout (vollständige History, alle Refs)
