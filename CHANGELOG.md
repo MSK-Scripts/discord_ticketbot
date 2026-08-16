@@ -9,6 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.13.1] - 2026-08-16
+
+### Fixed
+- **Transcript attachments that weren't images couldn't be downloaded.** Files
+  such as `.lua`, `.cfg`, `.rar` or `.log` were not on the allow-list, so they
+  were never copied to the transcript server and the transcript kept pointing at
+  the Discord CDN. Those links are signed and expire roughly a day after the
+  ticket closes, so exactly the attachments a support case is about went dead
+  while the screenshots kept working. The allow-list went from 10 to 77
+  extensions and now covers what tickets actually carry:
+  - **GTA / FiveM resources**: `meta`, `ymap`, `ytyp`, `ytd`, `yft`, `ydr`,
+    `ydd`, `ybn`, `ycd`, `ynv`, `rpf`, `fxap`
+  - **code and configuration**: `lua`, `js`, `ts`, `css`, `json`, `xml`, `sql`,
+    `cfg`, `ini`, `toml`, `yml`, `yaml`, `conf`, `properties`, `patch`, `diff`
+  - **archives**: `zip`, `rar`, `7z`, `tar`, `gz`, `tgz`, `bz2`, `xz`, `zst`
+  - **text, logs, data**: `txt`, `log`, `md`, `csv`, `db`, `sqlite`
+  - **phone photos and screen recordings**: `heic`, `heif`, `jfif`, `tif`,
+    `tiff`, `ico`, `bmp`, `avif`, `mkv`, `avi`, `wmv`, `mpg`, `mpeg`, `m4v`,
+    `webm`, `mov`, `m4a`, `flac`, `opus`, `wav`, `ogg`
+  - **documents**: `docx`, `xlsx`, `pptx`, `odt`, `ods`
+  *(Requires the matching `msk-shop` and Apache update, see below.)*
+- **A single oversized attachment can no longer cost the whole hosted
+  transcript.** The upload is rejected as a whole once the tier's attachment cap
+  is exceeded, which now became reachable because archives are collected too.
+  Attachments are budgeted while collecting (using the size Discord reports, so
+  an oversized file isn't even downloaded); anything that doesn't fit is skipped
+  and keeps its Discord link, instead of taking the transcript down with it.
+
+### Security
+- Non-media attachments are served as `application/octet-stream` with
+  `Content-Disposition: attachment` and `X-Content-Type-Options: nosniff`, so
+  user-supplied file content is downloaded and never interpreted in the origin
+  serving the transcript. `html`, `htm`, `svg` and executable types
+  (`exe`, `bat`, `cmd`, `ps1`, `sh`, `jar`, `msi`, `apk`) remain rejected.
+
+> **Upgrade order matters.** Widen the server side first (Apache `FilesMatch` in
+> the main vhost *and* every custom-domain vhost, then the `msk-shop` upload
+> route), then update the bot. The upload route answers `400` for the entire
+> request over one unknown extension, so a bot that runs ahead of the server
+> loses the hosted transcript instead of gaining attachments. Existing
+> transcripts are snapshots and are not rewritten, so their expired CDN links stay
+> dead, because the files were never uploaded in the first place.
+
 ## [2.13.0] - 2026-07-25
 
 ### Added

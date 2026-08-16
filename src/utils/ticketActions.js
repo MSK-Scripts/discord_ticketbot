@@ -623,9 +623,48 @@ async function performMove(client, channel, ticket, newType, movedBy) {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 // Mirror of the MSK upload route's allow-list. Types the server would reject
-// are skipped here so a single unsupported file can't fail the whole upload.
+// are skipped here so a single unsupported file can't fail the whole upload —
+// but a skipped file keeps the signed Discord CDN link in the transcript, which
+// dies ~24h after the ticket closes. So this list has to actually cover what
+// people attach to support tickets (configs, scripts, archives, logs), not just
+// screenshots.
+//
+// Kept in sync with the server, which is the authority:
+//   msk-shop  lib/transcriptGuards.ts        (upload route rejects the whole
+//                                             request with 400 over one unknown
+//                                             extension)
+//   Apache    <Directory …/transcripts>      FilesMatch, main vhost + the
+//                                             custom-domain template
+//                                             (scripts/vhost-create.sh)
+// Widen the server side FIRST, then this one.
+//
+// Deliberately absent: html/htm/svg (active content in the page origin) and
+// executables (exe/bat/cmd/ps1/sh/jar/msi/apk) — the transcript host must not
+// become a malware mirror. Non-media types are served as an octet-stream
+// download, never rendered.
 const ALLOWED_ATTACHMENT_EXTS = new Set([
-  'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'mp4', 'mp3', 'zip', 'txt',
+  // images (always inline — the transcript renders every image/* as an <img>)
+  'png', 'jpg', 'jpeg', 'jfif', 'gif', 'webp', 'bmp', 'avif',
+  'tif', 'tiff', 'ico', 'heic', 'heif',
+  'pdf',
+  // media the browser can play in place
+  'mp4', 'webm', 'mov', 'mp3', 'wav', 'ogg', 'm4a', 'flac', 'opus',
+  // archives
+  'zip', 'rar', '7z', 'tar', 'gz', 'tgz', 'bz2', 'xz', 'zst',
+  // plain text, logs, tabular
+  'txt', 'log', 'md', 'csv', 'conf', 'properties', 'patch', 'diff',
+  // code and configuration
+  'lua', 'js', 'ts', 'css', 'json', 'xml', 'sql', 'cfg', 'ini', 'toml',
+  'yml', 'yaml',
+  // GTA / FiveM resource formats
+  'meta', 'ymap', 'ytyp', 'ytd', 'yft', 'ydr', 'ydd', 'ybn', 'ycd', 'ynv',
+  'rpf', 'fxap',
+  // databases
+  'db', 'sqlite',
+  // media the browser can't play in place
+  'mkv', 'avi', 'wmv', 'mpg', 'mpeg', 'm4v',
+  // documents
+  'docx', 'xlsx', 'pptx', 'odt', 'ods',
 ]);
 
 /** Lowercased, allow-listed file extension or null. */
@@ -633,6 +672,15 @@ function safeAttachmentExt(name) {
   const ext = path.extname(name || '').slice(1).toLowerCase();
   return ALLOWED_ATTACHMENT_EXTS.has(ext) ? ext : null;
 }
+
+// Total attachment budget per transcript. The server rejects the WHOLE upload
+// with 413 once the tier's attachment cap is exceeded, which would cost the
+// hosted transcript over a single oversized archive. The bot doesn't know its
+// tier here, so stay under the smallest one that allows attachments at all
+// (premium, 150 MB). Files that don't fit are skipped and keep their Discord
+// link — exactly what they did before they were allow-listed, so a huge archive
+// can only lose itself, never the transcript.
+const ATTACHMENT_TOTAL_BUDGET_BYTES = 100 * 1024 * 1024;
 
 /**
  * Collect all attachments from the channel messages.
@@ -648,6 +696,7 @@ async function collectAttachments(channel, client) {
 
   try {
     const attachments = [];
+    let totalBytes = 0;
     let lastId;
 
     while (true) {
@@ -662,11 +711,21 @@ async function collectAttachments(channel, client) {
           // wholesale over one unsupported file (it falls back to the Discord
           // link in the transcript).
           const ext = safeAttachmentExt(att.name);
-          if (!ext) continue;
+          if (!ext) {
+            client.logger?.debug?.(`[collectAttachments] Skipped ${att.name} (type not allow-listed)`);
+            continue;
+          }
+          // Discord reports the size up front, so an oversized file costs no
+          // download at all.
+          if (totalBytes + (att.size ?? 0) > ATTACHMENT_TOTAL_BUDGET_BYTES) {
+            client.logger?.warn(`[collectAttachments] Skipped ${att.name} — transcript attachment budget reached.`);
+            continue;
+          }
           try {
             const res    = await fetch(att.url);
             if (!res.ok) continue;
             const buffer = Buffer.from(await res.arrayBuffer());
+            totalBytes  += buffer.length;
             attachments.push({
               id:        randomUUID(),
               discordId: att.id,
