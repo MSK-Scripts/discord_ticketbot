@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [Unreleased]
+
+### Changed
+- **`better-sqlite3` 12 -> 13.** Version 13 moves the native addon to N-API,
+  which is what makes its prebuilt binaries independent of the Node major
+  version. This is the direct fix for the `ERR_DLOPEN_FAILED`
+  (`NODE_MODULE_VERSION 115` vs `127`) that took a hosted bot down after the
+  Node 20 to 22 upgrade and had to be repaired by hand with
+  `npm rebuild better-sqlite3`. A future Node upgrade can no longer break the
+  database layer this way. The upgrade also drops the deprecated
+  `prebuild-install` dependency, removing 55 transitive packages from the tree.
+  No API changes, all queries are untouched.
+- **`dotenv` 16 -> 17.** Version 17 flipped the `quiet` default from `true` to
+  `false`, so dotenv prints an informational line about the loaded file and key
+  count on every start. All four `config()` call sites (`index.js`,
+  `dashboard.js`, `scripts/dashboard-setup.js`, `scripts/migrate-db.js`) now
+  pass `{ quiet: true }`, keeping that line from appearing above the startup
+  banner.
+
+### Removed
+- **The `undici` override is gone.** It was added in 2.5.1 because
+  `discord.js@14` pulled in a vulnerable `undici@6.24.1` transitively. Current
+  `discord.js` (14.27.0) asks for `undici: ^6.27.0` itself, which resolves to
+  the same 6.28.0 the override pinned, so the override no longer changed
+  anything. `npm audit` stays at 0 vulnerabilities without it.
+
 ## [2.13.1] - 2026-08-16
 
 ### Fixed

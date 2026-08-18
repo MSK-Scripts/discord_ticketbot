@@ -15,18 +15,15 @@
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "better-sqlite3": "^12.11.1",
+    "better-sqlite3": "^13.0.3",
     "discord.js": "^14.27.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^17.4.2",
     "mysql2": "^3.23.3",
     "pg": "^8.23.0"
   },
   "optionalDependencies": {
     "express": "^5.1.0",
     "helmet": "^8.1.0"
-  },
-  "overrides": {
-    "undici": "^6.28.0"
   },
   "license": "SEE LICENSE IN LICENSE.md"
 }

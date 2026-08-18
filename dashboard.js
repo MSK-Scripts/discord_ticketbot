@@ -10,7 +10,7 @@
  * completely unaffected by this file (it does not even load the web stack).
  */
 
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 
 const { loadDashboardConfig, validateDashboardConfig, ensureSessionSecret } = require('./src/dashboard/config');
 const { BotSupervisor } = require('./src/dashboard/supervisor');

@@ -14,7 +14,7 @@
  * reset afterwards so freshly created tickets don't collide.
  */
 
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 const path = require('path');
 const { openDatabase } = require('../src/database');
 const { DEFAULT_SQLITE_PATH } = require('../src/database/url');
