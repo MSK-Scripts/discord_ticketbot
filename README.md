@@ -10,9 +10,12 @@ A modern, self-hosted Discord ticket bot built on **Discord.js v14** — SQLite 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blueviolet?style=flat-square)](https://www.gnu.org/licenses/agpl-3.0)
 [![Node.js](https://img.shields.io/badge/Node.js-v22%2B-339933?style=flat-square&logo=node.js)](https://nodejs.org)
 [![Discord.js](https://img.shields.io/badge/Discord.js-v14-5865F2?style=flat-square&logo=discord)](https://discord.js.org)
-[![Documentation](https://img.shields.io/badge/Docs-docu.msk--scripts.de-5eb131?style=flat-square)](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started)
+[![Website](https://img.shields.io/badge/Website-msk--scripts.de-5eb131?style=flat-square)](https://www.msk-scripts.de/ticketbot)
+[![Documentation](https://img.shields.io/badge/Docs-docu.msk--scripts.de-5eb131?style=flat-square)](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started/)
 
 📄 [Readme (EN)](README.md) · [Readme (DE)](README_GER.md)
+
+**[Self-hosted Discord ticket bot: overview, features and hosted transcripts](https://www.msk-scripts.de/ticketbot)**
 
 </div>
 
@@ -94,7 +97,7 @@ Premium users can serve transcripts under their own domain (e.g. `tickets.yourse
 2. Enter your domain and set a DNS **A-Record** pointing to the server IP shown
 3. Click **"Check DNS"** once propagation is complete — SSL is set up automatically
 
-> 📖 Full setup guide: [docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started)
+> 📖 Full setup guide: [docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started/)
 
 ---
 
@@ -150,7 +153,7 @@ npm run dashboard         # starts the bot WITH the dashboard
 
 Login is Discord OAuth using the application you already created for the bot. Your roles are resolved server-side, the server owner always has full access and cannot be locked out, and every change is written to an audit log.
 
-> 📖 Full guide: [docs/dashboard-en.md](docs/dashboard-en.md) · [docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/dashboard)
+> 📖 Full guide: [docs/dashboard-en.md](docs/dashboard-en.md) · [docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/dashboard/)
 
 ---
 
@@ -617,7 +620,7 @@ to every backend. Missing columns are added automatically on start.
 
 ## 📖 Documentation
 
-Full documentation: **[docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started)**
+Full documentation: **[docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started/)**
 
 - Web dashboard: **[docs/dashboard-en.md](docs/dashboard-en.md)**
 

@@ -10,9 +10,12 @@ Ein moderner, selbst-gehosteter Discord-Ticket-Bot auf Basis von **Discord.js v1
 [![Lizenz: AGPL-3.0](https://img.shields.io/badge/Lizenz-AGPL%203.0-blueviolet?style=flat-square)](https://www.gnu.org/licenses/agpl-3.0)
 [![Node.js](https://img.shields.io/badge/Node.js-v22%2B-339933?style=flat-square&logo=node.js)](https://nodejs.org)
 [![Discord.js](https://img.shields.io/badge/Discord.js-v14-5865F2?style=flat-square&logo=discord)](https://discord.js.org)
-[![Dokumentation](https://img.shields.io/badge/Docs-docu.msk--scripts.de-5eb131?style=flat-square)](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started)
+[![Website](https://img.shields.io/badge/Website-msk--scripts.de-5eb131?style=flat-square)](https://www.msk-scripts.de/de/ticketbot)
+[![Dokumentation](https://img.shields.io/badge/Docs-docu.msk--scripts.de-5eb131?style=flat-square)](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started/)
 
 📄 [Readme (EN)](README.md) · [Readme (DE)](README_GER.md)
+
+**[Discord Ticket Bot zum Selbsthosten: Überblick, Funktionen und gehostete Transkripte](https://www.msk-scripts.de/de/ticketbot)**
 
 </div>
 
@@ -92,7 +95,7 @@ MSK_API_URL="https://www.msk-scripts.de"
 2. Domain eintragen und einen DNS **A-Record** auf die angezeigte Server-IP setzen
 3. **„DNS prüfen"** klicken — SSL wird automatisch eingerichtet
 
-> 📖 Vollständige Anleitung: [docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started)
+> 📖 Vollständige Anleitung: [docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started/)
 
 ---
 
@@ -148,7 +151,7 @@ npm run dashboard         # startet den Bot MIT dem Dashboard
 
 Der Login läuft über Discord OAuth mit der Anwendung, die du ohnehin für den Bot erstellt hast. Deine Rollen werden serverseitig aufgelöst, der Server-Owner hat immer vollen Zugriff und kann sich nicht aussperren, und jede Änderung landet in einem Audit-Log.
 
-> 📖 Vollständige Anleitung: [docs/dashboard-en.md](docs/dashboard-en.md) · [docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/dashboard)
+> 📖 Vollständige Anleitung: [docs/dashboard-en.md](docs/dashboard-en.md) · [docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/dashboard/)
 
 ---
 
@@ -615,7 +618,7 @@ automatisch ergänzt.
 
 ## 📖 Dokumentation
 
-Vollständige Dokumentation: **[docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started)**
+Vollständige Dokumentation: **[docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started/)**
 
 - Web-Dashboard: **[docs/dashboard-en.md](docs/dashboard-en.md)**
 
