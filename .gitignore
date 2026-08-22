@@ -78,5 +78,3 @@ data/dashboard-favicon.*
 # Config (contains IDs/tokens)
 config/config.jsonc
 config/snippets.jsonc
-.claude/
-CLAUDE.md
