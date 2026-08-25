@@ -9,9 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
-## [Unreleased]
+## [2.13.2] - 2026-08-25
 
 ### Changed
+- **`mysql2` 3.23.3 -> 3.23.4.** A patch release from upstream: leading
+  zeros are kept in the fractional seconds of `TIME` values, and the callback
+  `Pool`/`PoolConnection` typings were aligned with the runtime. Neither of the
+  two touches this project in practice (no TypeScript, and timestamps are stored
+  as `Date.now()` integers rather than `TIME` columns), so this is pure hygiene.
 - **`better-sqlite3` 12 -> 13.** Version 13 moves the native addon to N-API,
   which is what makes its prebuilt binaries independent of the Node major
   version. This is the direct fix for the `ERR_DLOPEN_FAILED`
