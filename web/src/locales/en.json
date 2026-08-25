@@ -169,7 +169,8 @@
     "actionTriggered": "\"{action}\" triggered.",
     "consoleTitle": "Console",
     "consoleHint": "Live output of the bot process.",
-    "noOutput": "No output yet."
+    "noOutput": "No output yet.",
+    "jumpToLatest": "Jump to latest"
   },
 
   "config": {

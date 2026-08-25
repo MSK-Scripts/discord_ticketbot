@@ -169,7 +169,8 @@
     "actionTriggered": "A(z) „{action}” elindítva.",
     "consoleTitle": "Konzol",
     "consoleHint": "A bot folyamatának élő kimenete.",
-    "noOutput": "Még nincs kimenet."
+    "noOutput": "Még nincs kimenet.",
+    "jumpToLatest": "Ugrás a végére"
   },
 
   "config": {

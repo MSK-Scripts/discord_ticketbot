@@ -169,7 +169,8 @@
     "actionTriggered": "\"{action}\" en marcha.",
     "consoleTitle": "Consola",
     "consoleHint": "Salida en directo del proceso del Bot.",
-    "noOutput": "Todavía no hay salida."
+    "noOutput": "Todavía no hay salida.",
+    "jumpToLatest": "Ir al final"
   },
 
   "config": {

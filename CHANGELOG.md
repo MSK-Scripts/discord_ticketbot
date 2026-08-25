@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.13.3] - 2026-08-25
+
+### Fixed
+- **The bot console no longer yanks you back to the bottom while you are reading.**
+  The console polls `GET /bot/logs` every 3 seconds, and every response scrolled
+  the pane to the very bottom. Scrolling up to read a stack trace therefore lasted
+  at most three seconds. The console now only follows new output while you are
+  already at the bottom (within 24px); scroll up and it stays where you put it. A
+  "Jump to latest" button appears while you are scrolled up, and clicking it both
+  returns you to the end and resumes following. Polling and the 3s interval are
+  unchanged.
+- **The console no longer re-renders when nothing changed.** Each poll handed React
+  a fresh array even when the lines were identical, which re-rendered the whole
+  console and dropped any text selection you had made in it.
+
 ## [2.13.2] - 2026-08-25
 
 ### Changed

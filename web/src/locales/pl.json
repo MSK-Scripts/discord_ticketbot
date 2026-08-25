@@ -169,7 +169,8 @@
     "actionTriggered": "\"{action}\" uruchomione.",
     "consoleTitle": "Konsola",
     "consoleHint": "Wyjście procesu bota na żywo.",
-    "noOutput": "Brak danych wyjściowych."
+    "noOutput": "Brak danych wyjściowych.",
+    "jumpToLatest": "Przejdź na koniec"
   },
 
   "config": {

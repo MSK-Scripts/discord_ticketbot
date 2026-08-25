@@ -169,7 +169,8 @@
     "actionTriggered": "\"{action}\" gestartet.",
     "consoleTitle": "Konsole",
     "consoleHint": "Live-Ausgabe des Bot-Prozesses.",
-    "noOutput": "Noch keine Ausgabe."
+    "noOutput": "Noch keine Ausgabe.",
+    "jumpToLatest": "Zum Ende springen"
   },
 
   "config": {

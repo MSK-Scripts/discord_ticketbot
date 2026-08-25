@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
-import { PlayIcon, SquareIcon, RotateCwIcon, RefreshCwIcon } from 'lucide-react';
+import { useEffect, useLayoutEffect, useState, useRef } from 'react';
+import { PlayIcon, SquareIcon, RotateCwIcon, RefreshCwIcon, ArrowDownIcon } from 'lucide-react';
 import { api } from '../api.js';
 import { Banner } from '../ui.jsx';
 import { parseAnsi } from '../ansi.js';
@@ -15,6 +15,21 @@ function LogLine({ line }) {
   return <div>{runs.map((run, i) => <span key={i} style={run.style}>{run.text}</span>)}</div>;
 }
 
+/**
+ * How close to the bottom still counts as "following the tail". A couple of
+ * pixels of slack, because fractional scroll positions and zoom levels mean
+ * scrollTop rarely hits scrollHeight - clientHeight exactly.
+ */
+const STICK_THRESHOLD_PX = 24;
+
+/** The poll hands us a fresh array every 3s — only re-render on real changes. */
+function sameLines(a, b) {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
 const DOT = {
   running: 'bg-primary', stopped: 'bg-muted-foreground', crashed: 'bg-destructive',
   starting: 'bg-warn', stopping: 'bg-warn',
@@ -27,11 +42,17 @@ export default function BotControl() {
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
   const consoleRef = useRef(null);
+  // Whether the console should keep following new output. Lives in a ref so the
+  // poll below can read it without re-subscribing every render.
+  const stickToBottom = useRef(true);
+  const [scrolledUp, setScrolledUp] = useState(false);
   const t = useT();
 
   const refresh = () => {
     api.botStatus().then(setState).catch(e => setError(e.message));
-    api.botLogs().then(({ lines }) => setLogs(lines)).catch(() => {});
+    api.botLogs()
+      .then(({ lines }) => setLogs(prev => (sameLines(prev, lines) ? prev : lines)))
+      .catch(() => {});
   };
 
   // The dashboard is the bot's parent process, so it stays reachable even while
@@ -42,9 +63,29 @@ export default function BotControl() {
     return () => clearInterval(t);
   }, []);
 
-  useEffect(() => {
-    if (consoleRef.current) consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+  // Follow the tail, but only while the reader is already at the bottom. Scrolling
+  // up is how you read a stack trace, and the 3s poll used to yank you back down
+  // again a moment later.
+  useLayoutEffect(() => {
+    const el = consoleRef.current;
+    if (el && stickToBottom.current) el.scrollTop = el.scrollHeight;
   }, [logs]);
+
+  const handleConsoleScroll = () => {
+    const el = consoleRef.current;
+    if (!el) return;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight <= STICK_THRESHOLD_PX;
+    stickToBottom.current = atBottom;
+    setScrolledUp(!atBottom);
+  };
+
+  const jumpToLatest = () => {
+    const el = consoleRef.current;
+    if (!el) return;
+    stickToBottom.current = true;
+    setScrolledUp(false);
+    el.scrollTop = el.scrollHeight;
+  };
 
   const act = async (action) => {
     setBusy(action); setError(null); setNotice(null);
@@ -100,10 +141,26 @@ export default function BotControl() {
           <CardDescription>{t('bot.consoleHint')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div ref={consoleRef} className="ansi-console h-[calc(100vh-22rem)] min-h-[420px] overflow-y-auto rounded-md border bg-black/40 p-3 text-[11.5px] leading-relaxed">
-            {logs.length
-              ? logs.map((line, i) => <LogLine key={i} line={line} />)
-              : <span className="text-muted-foreground">{t('bot.noOutput')}</span>}
+          <div className="relative">
+            <div
+              ref={consoleRef}
+              onScroll={handleConsoleScroll}
+              className="ansi-console h-[calc(100vh-22rem)] min-h-[420px] overflow-y-auto rounded-md border bg-black/40 p-3 text-[11.5px] leading-relaxed"
+            >
+              {logs.length
+                ? logs.map((line, i) => <LogLine key={i} line={line} />)
+                : <span className="text-muted-foreground">{t('bot.noOutput')}</span>}
+            </div>
+            {scrolledUp && (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="absolute right-5 bottom-3 shadow-md"
+                onClick={jumpToLatest}
+              >
+                <ArrowDownIcon /> {t('bot.jumpToLatest')}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
