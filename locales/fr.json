@@ -121,6 +121,14 @@
       "ratingField": "Note",
       "categoryField": "Catégorie"
     },
+    "updateAvailable": {
+      "title": "🚀 Mise à jour disponible",
+      "description": "Une nouvelle version du bot de tickets est disponible sur GitHub.",
+      "currentField": "Actuelle",
+      "latestField": "Dernière",
+      "howToField": "Comment mettre à jour",
+      "howToValue": "Auto-hébergé : `git pull && npm install`, puis redémarrez le bot.\nHébergé : utilisez le bouton Update du tableau de bord."
+    },
     "broadcast": {
       "author": "📢 Annonce — {user}",
       "plain": "📢 **Annonce :** {message}"

@@ -121,6 +121,14 @@
       "ratingField": "Ocena",
       "categoryField": "Kategoria"
     },
+    "updateAvailable": {
+      "title": "🚀 Dostępna aktualizacja",
+      "description": "Na GitHubie jest dostępna nowsza wersja bota ticketów.",
+      "currentField": "Obecna",
+      "latestField": "Najnowsza",
+      "howToField": "Jak zaktualizować",
+      "howToValue": "Self-hosting: `git pull && npm install`, potem zrestartuj bota.\nHosting: użyj przycisku Update w panelu."
+    },
     "broadcast": {
       "author": "📢 Ogłoszenie — {user}",
       "plain": "📢 **Ogłoszenie:** {message}"

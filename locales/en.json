@@ -121,6 +121,14 @@
       "ratingField": "Rating",
       "categoryField": "Category"
     },
+    "updateAvailable": {
+      "title": "🚀 Update available",
+      "description": "A newer version of the ticket bot is available on GitHub.",
+      "currentField": "Current",
+      "latestField": "Latest",
+      "howToField": "How to update",
+      "howToValue": "Self-hosted: `git pull && npm install`, then restart the bot.\nHosted: use the Update button in your dashboard."
+    },
     "broadcast": {
       "author": "📢 Broadcast — {user}",
       "plain": "📢 **Broadcast:** {message}"

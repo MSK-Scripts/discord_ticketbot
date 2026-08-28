@@ -4,6 +4,7 @@ const { buildTicketPanel } = require('../utils/panel');
 const { performClose } = require('../utils/ticketActions');
 const { registerBotBridge } = require('../dashboard/botBridge');
 const { checkBotPermissions } = require('../utils/permissionCheck');
+const { startUpdateNotifier } = require('../utils/updateNotice');
 
 const ACTIVITY_TYPE_MAP = {
   PLAYING:   ActivityType.Playing,
@@ -85,6 +86,11 @@ module.exports = {
       setInterval(() => runStaffReminder(client, reminderMs), 15 * 60_000);
       runStaffReminder(client, reminderMs);
     }
+
+    // ── Update notice in the log channel ──────────────────────────────────────
+    // Same information as the console check at boot, but where an unattended
+    // self-host actually sees it. Default on, hourly; no-op without a log channel.
+    startUpdateNotifier(client);
 
     // ── Startup summary (always last) ─────────────────────────────────────────
     console.log('\x1b[0m');

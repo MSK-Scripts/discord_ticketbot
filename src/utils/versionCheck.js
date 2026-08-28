@@ -31,6 +31,34 @@ function isNewer(localVersion, remoteVersion) {
 }
 
 /**
+ * Fetches the latest GitHub release.
+ *
+ * Returns `{ version, url }` on success and `null` on anything else — a missing
+ * release, a rate limit, a timeout. The boot check and the recurring log-channel
+ * notice share this so there is one place that knows the API shape.
+ *
+ * @returns {Promise<{ version: string, url: string } | null>}
+ */
+async function fetchLatestRelease() {
+  try {
+    const res = await fetch(API_URL, {
+      headers: { 'User-Agent': 'discord-ticketbot-version-check' },
+      signal: AbortSignal.timeout(5000), // 5 s timeout
+    });
+
+    if (!res.ok) return { error: `GitHub returned ${res.status}` };
+
+    const data = await res.json();
+    const version = data?.tag_name?.replace(/^v/, '') ?? null;
+    if (!version) return { error: 'no release found' };
+
+    return { version, url: data.html_url || `https://github.com/${REPO}/releases` };
+  } catch {
+    return { error: 'could not reach GitHub' };
+  }
+}
+
+/**
  * Fetches the latest release tag from GitHub and prints a notice
  * if a newer version is available.
  *
@@ -42,24 +70,15 @@ async function checkVersion() {
 
   process.stdout.write(`${gray}Checking for updates...${reset} `);
 
-  try {
-    const res = await fetch(API_URL, {
-      headers: { 'User-Agent': 'discord-ticketbot-version-check' },
-      signal: AbortSignal.timeout(5000), // 5 s timeout
-    });
+  {
+    const result = await fetchLatestRelease();
 
-    if (!res.ok) {
-      console.log(`${gray}skipped (GitHub returned ${res.status})${reset}`);
+    if (result.error) {
+      console.log(`${gray}skipped (${result.error})${reset}`);
       return;
     }
 
-    const { tag_name } = await res.json();
-    const remoteVersion = tag_name?.replace(/^v/, '') ?? null;
-
-    if (!remoteVersion) {
-      console.log(`${gray}skipped (no release found)${reset}`);
-      return;
-    }
+    const remoteVersion = result.version;
 
     if (isNewer(localVersion, remoteVersion)) {
       console.log(`${yellow}${bold}Update available!${reset}`);
@@ -78,11 +97,7 @@ async function checkVersion() {
     } else {
       console.log(`${green}up to date (v${localVersion})${reset}`);
     }
-
-  } catch {
-    // Network issues, timeouts, etc. — just skip silently
-    console.log(`${gray}skipped (could not reach GitHub)${reset}`);
   }
 }
 
-module.exports = { checkVersion };
+module.exports = { checkVersion, fetchLatestRelease, isNewer, REPO };

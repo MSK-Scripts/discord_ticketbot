@@ -177,6 +177,21 @@ function ratingRequestEmbed(client, { count }) {
     .setTimestamp();
 }
 
+/** Posted into the log channel when a newer release exists on GitHub. */
+function updateAvailableEmbed(client, { current, latest, url }) {
+  return new EmbedBuilder()
+    .setTitle(client.t('embeds.updateAvailable.title'))
+    .setDescription(client.t('embeds.updateAvailable.description'))
+    .addFields(
+      { name: client.t('embeds.updateAvailable.currentField'), value: `v${current}`, inline: true },
+      { name: client.t('embeds.updateAvailable.latestField'),  value: `v${latest}`,  inline: true },
+      { name: client.t('embeds.updateAvailable.howToField'),   value: client.t('embeds.updateAvailable.howToValue'), inline: false },
+    )
+    .setURL(url || null)
+    .setColor(Colors.Yellow)
+    .setTimestamp();
+}
+
 function statsEmbed(client, stats) {
   const f = client.locale.embeds?.stats?.fields ?? {};
 
@@ -246,6 +261,7 @@ module.exports = {
   ticketReopenedEmbed,
   ticketLogEmbed,
   ratingRequestEmbed,
+  updateAvailableEmbed,
   statsEmbed,
   userStatsEmbed,
 };

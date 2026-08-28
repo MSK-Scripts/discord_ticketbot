@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.15.0] - 2026-08-28
+
+### Added
+
+- The bot now announces a new release in the log channel, not just in the console
+  at boot. An unattended self-host never sees the console notice, which is where
+  it mattered least.
+- New config block `updateNotification` with `enabled` (default `true`) and
+  `intervalHours` (default `1`, minimum `0.25`). Both are editable in the
+  dashboard config form under Logging.
+- The notice needs `logsChannelId`. Without a log channel there is nowhere to post
+  and the check does not run at all.
+- The same version is never announced twice, not even across restarts: the last
+  announced version is persisted to `data/update-notice.json`, and the marker is
+  only written after the message really went out.
+- New locale keys `embeds.updateAvailable.*` in all 8 languages.
+
+### Changed
+
+- `versionCheck.js` gained `fetchLatestRelease()`, so the boot check and the
+  recurring notice share one place that knows the GitHub API shape. The console
+  output at boot is unchanged.
+
 ## [2.14.0] - 2026-08-28
 
 ### Added

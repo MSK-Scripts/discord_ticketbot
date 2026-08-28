@@ -121,6 +121,14 @@
       "ratingField": "Értékelés",
       "categoryField": "Kategória"
     },
+    "updateAvailable": {
+      "title": "🚀 Elérhető frissítés",
+      "description": "A ticket bot újabb verziója érhető el a GitHubon.",
+      "currentField": "Jelenlegi",
+      "latestField": "Legújabb",
+      "howToField": "Frissítés menete",
+      "howToValue": "Saját üzemeltetés: `git pull && npm install`, majd indítsd újra a botot.\nHosztolt: használd a vezérlőpult Update gombját."
+    },
     "broadcast": {
       "author": "📢 Felhívás — {user}",
       "plain": "📢 **Felhívás:** {message}"

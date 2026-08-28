@@ -73,6 +73,7 @@ data/*.db-wal
 
 # Dashboard appearance settings (per-installation runtime state)
 data/dashboard-settings.json
+data/update-notice.json
 data/dashboard-favicon.*
 
 # Config (contains IDs/tokens)

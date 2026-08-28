@@ -101,6 +101,10 @@ export const CONFIG_SCHEMA = [
     fields: [
       { path: ['logs'], kind: 'toggle', label: 'Enable close logs' },
       { path: ['logsChannelId'], kind: 'text', idKind: 'channel', label: 'Log channel ID' },
+      { path: ['updateNotification', 'enabled'], kind: 'toggle', label: 'Announce new versions in the log channel',
+        help: 'Posts a message in the log channel when a newer release is available on GitHub. Needs the log channel above; the same version is never announced twice, not even after a restart.' },
+      { path: ['updateNotification', 'intervalHours'], kind: 'number', min: 0.25, label: 'Update check interval (hours)',
+        help: 'How often to ask GitHub. Minimum 0.25 (15 minutes), default 1.' },
     ],
   },
   {

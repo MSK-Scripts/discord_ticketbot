@@ -121,6 +121,14 @@
       "ratingField": "Avaliação",
       "categoryField": "Categoria"
     },
+    "updateAvailable": {
+      "title": "🚀 Atualização disponível",
+      "description": "Está disponível no GitHub uma versão mais recente do bot de tickets.",
+      "currentField": "Atual",
+      "latestField": "Mais recente",
+      "howToField": "Como atualizar",
+      "howToValue": "Auto-hospedado: `git pull && npm install`, depois reinicia o bot.\nAlojado: usa o botão Update no teu painel."
+    },
     "broadcast": {
       "author": "📢 Anúncio — {user}",
       "plain": "📢 **Anúncio:** {message}"

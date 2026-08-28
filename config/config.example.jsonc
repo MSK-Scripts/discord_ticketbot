@@ -100,6 +100,15 @@
   "logs": true,
   "logsChannelId": "LOG_CHANNEL_ID_HERE",
 
+  // ─── Update Notice ───────────────────────────────────────────────────────────
+  // Posts a message in the log channel when a newer release is on GitHub.
+  // Needs "logsChannelId" above; without it nothing is posted. The same version
+  // is never announced twice, not even after a restart.
+  "updateNotification": {
+    "enabled": true,                          // Default on
+    "intervalHours": 1                        // How often to check (minimum 0.25 = 15 min)
+  },
+
   // ─── Close Options ───────────────────────────────────────────────────────────
   "closeOption": {
     "closeButton": true,
