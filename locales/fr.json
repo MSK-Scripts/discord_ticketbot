@@ -118,7 +118,8 @@
     "ratingPost": {
       "title": "⭐ Nouvelle évaluation — Ticket #{count}",
       "userField": "Utilisateur",
-      "ratingField": "Note"
+      "ratingField": "Note",
+      "categoryField": "Catégorie"
     },
     "broadcast": {
       "author": "📢 Annonce — {user}",
@@ -146,6 +147,11 @@
       "title": "Évaluer le ticket",
       "label": "Commentaire (facultatif)",
       "placeholder": "Souhaitez-vous ajouter quelque chose à votre évaluation ?"
+    },
+    "feedbackComment": {
+      "title": "Commenter l'avis",
+      "label": "Votre commentaire",
+      "placeholder": "Écrivez une réponse à cet avis..."
     }
   },
   "menus": {
@@ -233,7 +239,13 @@
     "userRemoveFailed": "❌ Échec du retrait de l'utilisateur.",
     "cannotRemoveCreator": "❌ Le créateur du ticket ne peut pas être retiré.",
     "autoCloseAlreadyPaused": "❌ La fermeture automatique est déjà en pause pour ce ticket.",
-    "autoCloseNotPaused": "❌ La fermeture automatique n'est pas en pause pour ce ticket."
+    "autoCloseNotPaused": "❌ La fermeture automatique n'est pas en pause pour ce ticket.",
+    "feedbackNotARating": "❌ Ce message n'est pas un avis publié dans le salon des avis.",
+    "feedbackCommentNoPermission": "❌ Vous n'êtes pas autorisé à commenter les avis.",
+    "feedbackCommentEmpty": "❌ Votre commentaire ne peut pas etre vide.",
+    "feedbackCommentFull": "❌ Cet avis a déjà atteint le nombre maximal de commentaires.",
+    "feedbackCommentFailed": "❌ Le message d'avis n'a pas pu être mis à jour.",
+    "feedbackCommentSaved": "✅ Votre commentaire a été ajouté."
   },
   "priorities": {
     "low": "🟢 Basse",
@@ -247,7 +259,8 @@
     "3": "⭐⭐⭐ Correct",
     "4": "⭐⭐⭐⭐ Bon",
     "5": "⭐⭐⭐⭐⭐ Excellent",
-    "commentField": "💬 Commentaire"
+    "commentField": "💬 Commentaire",
+    "staffCommentField": "💬 Commentaire de l'équipe ({user})"
   },
   "transcript": {
     "dateLocale": "fr-FR",

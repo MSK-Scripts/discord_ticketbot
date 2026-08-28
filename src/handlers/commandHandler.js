@@ -20,8 +20,12 @@ async function loadCommands(client) {
         continue;
       }
       client.commands.set(command.data.name, command);
-      commandData.push(command.data.toJSON());
-      client.logger.info(`[Commands] Loaded: /${command.data.name}`);
+      const json = command.data.toJSON();
+      commandData.push(json);
+      // type 2/3 are the user/message context menus, which are not slash commands
+      // and must not be printed with a leading slash.
+      const isContextMenu = json.type === 2 || json.type === 3;
+      client.logger.info(`[Commands] Loaded: ${isContextMenu ? `[menu] ${json.name}` : `/${json.name}`}`);
     } catch (err) {
       client.logger.error(`[Commands] Failed to load ${file}:`, err);
     }
@@ -30,14 +34,14 @@ async function loadCommands(client) {
   // Register slash commands with Discord via REST
   const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
   try {
-    client.logger.info(`[Commands] Registering ${commandData.length} slash command(s)...`);
+    client.logger.info(`[Commands] Registering ${commandData.length} command(s)...`);
     await rest.put(
       Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
       { body: commandData }
     );
-    client.logger.success('[Commands] Slash commands registered successfully.');
+    client.logger.success('[Commands] Commands registered successfully.');
   } catch (err) {
-    client.logger.error('[Commands] Failed to register slash commands:', err);
+    client.logger.error('[Commands] Failed to register commands:', err);
   }
 }
 

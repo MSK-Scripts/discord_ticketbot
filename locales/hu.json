@@ -118,7 +118,8 @@
     "ratingPost": {
       "title": "⭐ Új értékelés — #{count} Ticket",
       "userField": "Felhasználó",
-      "ratingField": "Értékelés"
+      "ratingField": "Értékelés",
+      "categoryField": "Kategória"
     },
     "broadcast": {
       "author": "📢 Felhívás — {user}",
@@ -146,6 +147,11 @@
       "title": "Ticket értékelése",
       "label": "Megjegyzés (opcionális)",
       "placeholder": "Szeretnél valamit hozzáfűzni az értékelésedhez?"
+    },
+    "feedbackComment": {
+      "title": "Értékelés kommentelése",
+      "label": "A megjegyzésed",
+      "placeholder": "Írj választ erre az értékelésre..."
     }
   },
   "menus": {
@@ -233,7 +239,13 @@
     "userRemoveFailed": "❌ Nem sikerült eltávolítani a felhasználót.",
     "cannotRemoveCreator": "❌ A ticket létrehozóját nem lehet eltávolítani.",
     "autoCloseAlreadyPaused": "❌ Az automatikus lezárás már szünetel ennél a jegynél.",
-    "autoCloseNotPaused": "❌ Az automatikus lezárás nem szünetel ennél a jegynél."
+    "autoCloseNotPaused": "❌ Az automatikus lezárás nem szünetel ennél a jegynél.",
+    "feedbackNotARating": "❌ Ez az üzenet nem értékelés az értékelések csatornájából.",
+    "feedbackCommentNoPermission": "❌ Nincs jogosultságod értékelést kommentelni.",
+    "feedbackCommentEmpty": "❌ A megjegyzés nem lehet üres.",
+    "feedbackCommentFull": "❌ Ez az értékelés már elérte a megjegyzések maximális számát.",
+    "feedbackCommentFailed": "❌ Az értékelés üzenetét nem sikerült frissíteni.",
+    "feedbackCommentSaved": "✅ A megjegyzésed hozzáadva."
   },
   "priorities": {
     "low": "🟢 Alacsony",
@@ -247,7 +259,8 @@
     "3": "⭐⭐⭐ Elfogadható",
     "4": "⭐⭐⭐⭐ Jó",
     "5": "⭐⭐⭐⭐⭐ Kiváló",
-    "commentField": "💬 Megjegyzés"
+    "commentField": "💬 Megjegyzés",
+    "staffCommentField": "💬 Csapat megjegyzés ({user})"
   },
   "transcript": {
     "dateLocale": "hu-HU",

@@ -132,6 +132,8 @@ export const CONFIG_SCHEMA = [
       { path: ['ratingSystem', 'enabled'], kind: 'toggle', label: 'Ask for rating after close' },
       { path: ['ratingSystem', 'dmUser'], kind: 'toggle', label: 'Send rating request via DM' },
       { path: ['ratingSystem', 'ratingsChannelId'], kind: 'text', idKind: 'channel', label: 'Ratings channel ID' },
+      { path: ['ratingSystem', 'commentRoles'], kind: 'idList', idKind: 'role', label: 'Roles allowed to comment on ratings',
+        help: 'Who may use the "Comment Feedback" message context menu on a posted rating. Empty falls back to your staff roles; administrators always may.' },
     ],
   },
   {

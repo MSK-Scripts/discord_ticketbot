@@ -13,6 +13,15 @@ module.exports = {
         return;
       }
 
+      // ── Context menu commands (right-click → Apps) ──────────────────────────
+      // Same registry as slash commands: names cannot collide, so one lookup works.
+      if (interaction.isContextMenuCommand()) {
+        const command = client.commands.get(interaction.commandName);
+        if (!command) return;
+        await command.execute(client, interaction);
+        return;
+      }
+
       // ── Autocomplete ────────────────────────────────────────────────────────
       if (interaction.isAutocomplete()) {
         const command = client.commands.get(interaction.commandName);

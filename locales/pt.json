@@ -118,7 +118,8 @@
     "ratingPost": {
       "title": "⭐ Nova avaliação — Ticket #{count}",
       "userField": "Utilizador",
-      "ratingField": "Avaliação"
+      "ratingField": "Avaliação",
+      "categoryField": "Categoria"
     },
     "broadcast": {
       "author": "📢 Anúncio — {user}",
@@ -146,6 +147,11 @@
       "title": "Avaliar ticket",
       "label": "Comentário (opcional)",
       "placeholder": "Queres acrescentar algo à tua avaliação?"
+    },
+    "feedbackComment": {
+      "title": "Comentar a avaliação",
+      "label": "O teu comentário",
+      "placeholder": "Escreve uma resposta a esta avaliação..."
     }
   },
   "menus": {
@@ -233,7 +239,13 @@
     "userRemoveFailed": "❌ Não foi possível remover o utilizador.",
     "cannotRemoveCreator": "❌ O criador do ticket não pode ser removido.",
     "autoCloseAlreadyPaused": "❌ O fecho automático já está em pausa para este ticket.",
-    "autoCloseNotPaused": "❌ O fecho automático não está em pausa para este ticket."
+    "autoCloseNotPaused": "❌ O fecho automático não está em pausa para este ticket.",
+    "feedbackNotARating": "❌ Esta mensagem não é uma avaliação do canal de avaliações.",
+    "feedbackCommentNoPermission": "❌ Não tens permissão para comentar avaliações.",
+    "feedbackCommentEmpty": "❌ O teu comentário não pode estar vazio.",
+    "feedbackCommentFull": "❌ Esta avaliação já tem o número máximo de comentários.",
+    "feedbackCommentFailed": "❌ Não foi possível atualizar a mensagem da avaliação.",
+    "feedbackCommentSaved": "✅ O teu comentario foi adicionado."
   },
   "priorities": {
     "low": "🟢 Baixa",
@@ -247,7 +259,8 @@
     "3": "⭐⭐⭐ Razoável",
     "4": "⭐⭐⭐⭐ Bom",
     "5": "⭐⭐⭐⭐⭐ Excelente",
-    "commentField": "💬 Comentário"
+    "commentField": "💬 Comentário",
+    "staffCommentField": "💬 Comentário da equipa ({user})"
   },
   "transcript": {
     "dateLocale": "pt-PT",

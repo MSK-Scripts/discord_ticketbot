@@ -118,7 +118,8 @@
     "ratingPost": {
       "title": "⭐ Nueva valoración — Ticket #{count}",
       "userField": "Usuario",
-      "ratingField": "Valoración"
+      "ratingField": "Valoración",
+      "categoryField": "Categoría"
     },
     "broadcast": {
       "author": "📢 Anuncio — {user}",
@@ -146,6 +147,11 @@
       "title": "Valorar ticket",
       "label": "Comentario (opcional)",
       "placeholder": "¿Quieres añadir algo a tu valoración?"
+    },
+    "feedbackComment": {
+      "title": "Comentar la valoración",
+      "label": "Tu comentario",
+      "placeholder": "Escribe una respuesta a esta valoración..."
     }
   },
   "menus": {
@@ -233,7 +239,13 @@
     "userRemoveFailed": "❌ No se pudo eliminar al usuario.",
     "cannotRemoveCreator": "❌ El creador del ticket no puede ser eliminado.",
     "autoCloseAlreadyPaused": "❌ El cierre automático ya está en pausa para este ticket.",
-    "autoCloseNotPaused": "❌ El cierre automático no está en pausa para este ticket."
+    "autoCloseNotPaused": "❌ El cierre automático no está en pausa para este ticket.",
+    "feedbackNotARating": "❌ Este mensaje no es una valoración del canal de valoraciones.",
+    "feedbackCommentNoPermission": "❌ No tienes permiso para comentar valoraciones.",
+    "feedbackCommentEmpty": "❌ Tu comentario no puede estar vacío.",
+    "feedbackCommentFull": "❌ Esta valoración ya tiene el número máximo de comentarios.",
+    "feedbackCommentFailed": "❌ No se pudo actualizar el mensaje de la valoración.",
+    "feedbackCommentSaved": "✅ Tu comentario se ha añadido."
   },
   "priorities": {
     "low": "🟢 Baja",
@@ -247,7 +259,8 @@
     "3": "⭐⭐⭐ Regular",
     "4": "⭐⭐⭐⭐ Bueno",
     "5": "⭐⭐⭐⭐⭐ Excelente",
-    "commentField": "💬 Comentario"
+    "commentField": "💬 Comentario",
+    "staffCommentField": "💬 Comentario del equipo ({user})"
   },
   "transcript": {
     "dateLocale": "es-ES",

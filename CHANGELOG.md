@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.14.0] - 2026-08-28
+
+### Added
+
+- Rating posts now show the ticket category and the rater's avatar. The category
+  is resolved from `ticketTypes[].name` and falls back to the raw code name when a
+  type was removed from the config, so an old ticket still renders.
+- New message context menu **Comment Feedback**: right-click a rating post, pick
+  Apps, and write a reply that is added to the rating embed itself. One field per
+  commenter, so commenting again replaces your own text instead of stacking up.
+- New config key `ratingSystem.commentRoles` (role IDs). Empty falls back to the
+  normal staff roles, administrators always may comment. Editable in the dashboard
+  config form.
+- New locale keys in all 8 languages: `embeds.ratingPost.categoryField`,
+  `ratings.staffCommentField`, `modals.feedbackComment.*` and six
+  `messages.feedback*` strings.
+
+### Changed
+
+- The command handler registers context menu commands alongside slash commands and
+  no longer prints them with a leading slash. `interactionCreate` routes
+  `isContextMenuCommand()` through the same registry.
+
 ## [2.13.3] - 2026-08-25
 
 ### Fixed

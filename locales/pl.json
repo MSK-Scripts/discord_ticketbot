@@ -118,7 +118,8 @@
     "ratingPost": {
       "title": "⭐ Nowa ocena — Zgłoszenie #{count}",
       "userField": "Użytkownik",
-      "ratingField": "Ocena"
+      "ratingField": "Ocena",
+      "categoryField": "Kategoria"
     },
     "broadcast": {
       "author": "📢 Ogłoszenie — {user}",
@@ -146,6 +147,11 @@
       "title": "Oceń zgłoszenie",
       "label": "Komentarz (opcjonalny)",
       "placeholder": "Czy chcesz coś dodać do swojej oceny?"
+    },
+    "feedbackComment": {
+      "title": "Skomentuj opinię",
+      "label": "Twój komentarz",
+      "placeholder": "Napisz odpowiedź na tę opinię..."
     }
   },
   "menus": {
@@ -233,7 +239,13 @@
     "userRemoveFailed": "❌ Nie udało się usunąć użytkownika.",
     "cannotRemoveCreator": "❌ Twórcy zgłoszenia nie można usunąć.",
     "autoCloseAlreadyPaused": "❌ Automatyczne zamykanie jest już wstrzymane dla tego zgłoszenia.",
-    "autoCloseNotPaused": "❌ Automatyczne zamykanie nie jest wstrzymane dla tego zgłoszenia."
+    "autoCloseNotPaused": "❌ Automatyczne zamykanie nie jest wstrzymane dla tego zgłoszenia.",
+    "feedbackNotARating": "❌ Ta wiadomość nie jest opinią z kanału opinii.",
+    "feedbackCommentNoPermission": "❌ Nie masz uprawnień do komentowania opinii.",
+    "feedbackCommentEmpty": "❌ Twój komentarz nie może być pusty.",
+    "feedbackCommentFull": "❌ Ta opinia ma już maksymalną liczbę komentarzy.",
+    "feedbackCommentFailed": "❌ Nie udało się zaktualizować wiadomości z opinią.",
+    "feedbackCommentSaved": "✅ Twój komentarz został dodany."
   },
   "priorities": {
     "low": "🟢 Niski",
@@ -247,7 +259,8 @@
     "3": "⭐⭐⭐ W porządku",
     "4": "⭐⭐⭐⭐ Dobrze",
     "5": "⭐⭐⭐⭐⭐ Doskonale",
-    "commentField": "💬 Komentarz"
+    "commentField": "💬 Komentarz",
+    "staffCommentField": "💬 Komentarz zespołu ({user})"
   },
   "transcript": {
     "dateLocale": "pl-PL",

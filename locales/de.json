@@ -118,7 +118,8 @@
     "ratingPost": {
       "title": "⭐ Neue Bewertung — Ticket #{count}",
       "userField": "Nutzer",
-      "ratingField": "Bewertung"
+      "ratingField": "Bewertung",
+      "categoryField": "Kategorie"
     },
     "broadcast": {
       "author": "📢 Broadcast — {user}",
@@ -146,6 +147,11 @@
       "title": "Ticket bewerten",
       "label": "Kommentar (optional)",
       "placeholder": "Möchtest du noch etwas zu deiner Bewertung sagen?"
+    },
+    "feedbackComment": {
+      "title": "Feedback kommentieren",
+      "label": "Dein Kommentar",
+      "placeholder": "Antwort auf dieses Feedback schreiben..."
     }
   },
   "menus": {
@@ -233,7 +239,13 @@
     "userRemoveFailed": "❌ Fehler beim Entfernen des Nutzers.",
     "cannotRemoveCreator": "❌ Der Ersteller des Tickets kann nicht entfernt werden.",
     "autoCloseAlreadyPaused": "❌ Auto-Close ist für dieses Ticket bereits pausiert.",
-    "autoCloseNotPaused": "❌ Auto-Close ist für dieses Ticket nicht pausiert."
+    "autoCloseNotPaused": "❌ Auto-Close ist für dieses Ticket nicht pausiert.",
+    "feedbackNotARating": "❌ Diese Nachricht ist keine Bewertung aus dem Bewertungs-Channel.",
+    "feedbackCommentNoPermission": "❌ Du darfst Feedback nicht kommentieren.",
+    "feedbackCommentEmpty": "❌ Dein Kommentar darf nicht leer sein.",
+    "feedbackCommentFull": "❌ Diese Bewertung hat bereits die maximale Anzahl an Kommentaren.",
+    "feedbackCommentFailed": "❌ Die Bewertungs-Nachricht konnte nicht aktualisiert werden.",
+    "feedbackCommentSaved": "✅ Dein Kommentar wurde hinzugefügt."
   },
   "priorities": {
     "low": "🟢 Niedrig",
@@ -247,7 +259,8 @@
     "3": "⭐⭐⭐ In Ordnung",
     "4": "⭐⭐⭐⭐ Gut",
     "5": "⭐⭐⭐⭐⭐ Ausgezeichnet",
-    "commentField": "💬 Kommentar"
+    "commentField": "💬 Kommentar",
+    "staffCommentField": "💬 Team-Kommentar ({user})"
   },
   "transcript": {
     "dateLocale": "de-DE",
