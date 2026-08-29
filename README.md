@@ -73,7 +73,7 @@ Instead of sending transcripts as file attachments via DM, the bot can upload th
 | Uploads per hour | 30 | 60 | 300 |
 | **Hosted bot management** | ❌ | ✅ | ✅ |
 
-> Premium and Premium+ are subscribed directly in your dashboard via **Stripe** — with a **14-day free trial** for new customers, cancellable anytime.
+> Premium and Premium+ are subscribed directly in your dashboard via **Stripe** — with a **14-day free trial** for new customers, no credit card required, cancellable anytime.
 
 ### Getting your API Key
 

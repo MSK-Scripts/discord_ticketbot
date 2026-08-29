@@ -73,7 +73,7 @@ Anstatt Transkripte als Dateianhang per DM zu versenden, kann der Bot sie auf **
 | Uploads pro Stunde | 30 | 60 | 300 |
 | **Gehostetes Bot-Management** | ❌ | ✅ | ✅ |
 
-> Premium und Premium+ werden direkt im Dashboard über **Stripe** abonniert — mit **14 Tagen kostenloser Testphase** für Neukunden, jederzeit kündbar.
+> Premium und Premium+ werden direkt im Dashboard über **Stripe** abonniert — mit **14 Tagen kostenloser Testphase** für Neukunden, ohne Kreditkarte, jederzeit kündbar.
 
 ### API Key erhalten
 
