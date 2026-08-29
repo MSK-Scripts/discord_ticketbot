@@ -42,7 +42,7 @@ A modern, self-hosted Discord ticket bot built on **Discord.js v14** — SQLite 
 | ♻️ Reopen Tickets | Reopen a closed ticket via the `♻️` button or `/reopen` — configurable, restores access & moves it back |
 | 🔗 Transcript Links | Transcripts stored online and accessible via a public link |
 | 📄 HTML Transcript | Self-contained HTML transcript in a **modern or classic** style — avatars & custom emojis embedded as Base64, mentions and Created/Claimed/Closed-by shown as names instead of IDs, no CDN required |
-| 🌐 Custom Domain | Premium users can serve transcripts under their own domain |
+| 🌐 Custom Domain | Paid tiers can serve transcripts, and a hosted bot's dashboard, under their own domain |
 | 📊 Statistics | Server-wide stats and detailed per-user stats via `/stats` |
 | 🚫 Blacklist | `/blacklist add/remove/list` to block users from opening tickets |
 | 💬 Canned Responses | Pre-defined snippets sent with one command — configured in `snippets.jsonc` |
@@ -103,24 +103,30 @@ Premium users can serve transcripts under their own domain (e.g. `tickets.yourse
 
 ---
 
-## 🖥️ Hosted Bot Management (Premium & Premium+)
+## 🖥️ Hosted Bot Management (Premium, Premium+ & Business)
 
-Premium and Premium+ customers can have their bot instance **fully hosted by MSK Scripts** and manage it directly from the dashboard at **[msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** — no SSH access or server knowledge required.
+Do not want to run a server at all? Any paid tier can have the bot **hosted by MSK Scripts**. You set it up yourself in the dashboard at **[msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)**, no SSH access or server knowledge required.
 
-![Dashboard — Hosted Bot Management](assets/dashboard-hosted.png)
+![Dashboard - Hosted Bot Management](assets/dashboard-hosted.png)
+
+### Setting it up
+
+1. Open your dashboard and go to **Bot Hosting**.
+2. Enter three values from the [Discord developer portal](https://discord.com/developers/applications): your **bot token**, **client ID** and **client secret**. Everything else, from the guild id to the ports and secrets, is filled in for you.
+3. Press **Activate bot hosting**. We install the bot, start it and check that it really came up. If one of your values is wrong, you get the bot's own log back and can correct it right there.
+4. Add the redirect URL the dashboard shows you under **OAuth2 → Redirects** in the developer portal. Only you can do this, and the dashboard login does not work without it.
 
 ### What's included
 
 | Feature | Description |
 |---|---|
-| **Bot Configuration Editor** | Edit `config.jsonc`, `snippets.jsonc`, `.env` and the active language file (`locales/<lang>.json`) directly in the browser with syntax highlighting. Changes take effect after a restart. |
+| **Its own address** | Your bot's dashboard is published at `tickets-<id>.msk-scripts.de`, or under a domain of your own. The TLS certificate is included either way. |
+| **A login for your team** | That dashboard runs its own Discord login, so your staff sign in with their own account and see exactly what their permissions allow. |
 | **Bot Control** | Start, stop and restart the bot with a single click. |
 | **One-click Update** | Downloads the latest version via `git pull`, installs new dependencies and prompts you to restart. |
-| **Live Log Console** | Real-time stream of the bot's output directly in the browser — no terminal needed. |
-
-### How to get hosted
-
-Contact MSK Scripts via [Discord](https://discord.gg/5hHSBRHvJE) to arrange a hosted Premium+ plan. Once set up, the hosted management panel appears automatically in your dashboard.
+| **Live Log Console** | Real-time stream of the bot's output directly in the browser, no terminal needed. |
+| **Credentials form** | Correct the token or the client secret without a terminal. That matters precisely when the bot is down, because then its own dashboard is the thing you cannot reach. |
+| **Reversible** | Remove hosting whenever you want. The installation is archived for 14 days, and one click brings it back with its tickets and settings intact. |
 
 ---
 

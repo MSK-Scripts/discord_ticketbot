@@ -42,7 +42,7 @@ Ein moderner, selbst-gehosteter Discord-Ticket-Bot auf Basis von **Discord.js v1
 | ♻️ Ticket wieder öffnen | Geschlossenes Ticket per `♻️`-Button oder `/reopen` wieder öffnen — konfigurierbar, stellt Zugriff & Kategorie wieder her |
 | 🔗 Transcript-Links | Transkripte werden online gespeichert und sind per Link abrufbar |
 | 📄 HTML-Transcript | Self-contained HTML-Transcript im **modernen oder klassischen** Design — Avatare & Custom-Emojis als Base64 eingebettet, Mentions sowie Created/Claimed/Closed-by als Namen statt IDs, kein CDN nötig |
-| 🌐 Eigene Domain | Premium-Nutzer können Transkripte unter ihrer eigenen Domain abrufen |
+| 🌐 Eigene Domain | Bezahlte Tarife können Transkripte und das Dashboard eines gehosteten Bots unter der eigenen Domain ausliefern |
 | 📊 Statistiken | Server-weite Stats sowie detaillierte Per-Nutzer-Stats per `/stats` |
 | 🚫 Blacklist | `/blacklist add/remove/list` zum Sperren von Nutzern |
 | 💬 Canned Responses | Vordefinierte Textbausteine per Command senden — konfiguriert in `snippets.jsonc` |
@@ -101,24 +101,30 @@ MSK_API_URL="https://www.msk-scripts.de"
 
 ---
 
-## 🖥️ Gehostetes Bot-Management (Premium & Premium+)
+## 🖥️ Gehostetes Bot-Management (Premium, Premium+ & Business)
 
-Premium- und Premium+-Kunden können ihre Bot-Instanz **vollständig von MSK Scripts hosten lassen** und direkt über das Dashboard unter **[msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** verwalten — kein SSH-Zugang oder Server-Wissen erforderlich.
+Du willst gar keinen eigenen Server betreiben? In jedem bezahlten Tarif kannst du den Bot **von MSK Scripts hosten lassen**. Du richtest das selbst im Dashboard unter **[msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** ein, kein SSH-Zugang und kein Server-Wissen nötig.
 
-![Dashboard — Gehostetes Bot-Management](assets/dashboard-hosted.png)
+![Dashboard - Gehostetes Bot-Management](assets/dashboard-hosted.png)
+
+### Einrichtung
+
+1. Dashboard öffnen und auf **Bot Hosting** gehen.
+2. Drei Werte aus dem [Discord Developer Portal](https://discord.com/developers/applications) eintragen: **Bot-Token**, **Client ID** und **Client Secret**. Alles andere, von der Guild-ID über Ports bis zu den Secrets, füllen wir aus.
+3. Auf **Bot Hosting aktivieren** drücken. Wir installieren den Bot, starten ihn und prüfen, ob er wirklich hochgekommen ist. Stimmt einer deiner Werte nicht, bekommst du das Log des Bots zurück und kannst ihn direkt korrigieren.
+4. Die im Dashboard angezeigte Redirect-URL im Developer Portal unter **OAuth2 → Redirects** eintragen. Das kann nur du, und ohne sie funktioniert der Login ins Dashboard nicht.
 
 ### Was enthalten ist
 
 | Feature | Beschreibung |
 |---|---|
-| **Bot-Konfigurations-Editor** | `config.jsonc`, `snippets.jsonc`, `.env` und die aktive Sprachdatei (`locales/<lang>.json`) direkt im Browser bearbeiten. Änderungen werden nach einem Neustart aktiv. |
+| **Eine eigene Adresse** | Das Dashboard deines Bots läuft unter `tickets-<id>.msk-scripts.de` oder unter deiner eigenen Domain. Das TLS-Zertifikat ist in beiden Fällen dabei. |
+| **Ein Login für dein Team** | Dieses Dashboard hat einen eigenen Discord-Login. Dein Team meldet sich mit dem eigenen Konto an und sieht genau das, was seine Rechte erlauben. |
 | **Bot-Steuerung** | Bot per Klick starten, stoppen und neu starten. |
 | **Update per Klick** | Lädt die neueste Version via `git pull`, installiert neue Abhängigkeiten und fordert anschließend zum Neustart auf. |
-| **Live-Log-Konsole** | Echtzeit-Stream der Bot-Ausgabe direkt im Browser — kein Terminal nötig. |
-
-### Wie man gehostet wird
-
-Kontaktiere MSK Scripts über [Discord](https://discord.gg/5hHSBRHvJE) für ein gehostetes Premium+-Paket. Sobald eingerichtet, erscheint das Management-Panel automatisch in deinem Dashboard.
+| **Live-Log-Konsole** | Echtzeit-Stream der Bot-Ausgabe direkt im Browser, kein Terminal nötig. |
+| **Zugangsdaten-Formular** | Token oder Client Secret ohne Terminal korrigieren. Das zählt genau dann, wenn der Bot unten ist, denn dann ist sein eigenes Dashboard das, was du nicht erreichst. |
+| **Jederzeit umkehrbar** | Hosting wieder entfernen, wann du willst. Die Installation wird 14 Tage aufgehoben, ein Klick holt sie samt Tickets und Einstellungen zurück. |
 
 ---
 
