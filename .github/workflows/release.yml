@@ -128,6 +128,36 @@ jobs:
               "$PREV_TAG" "$CURR_TAG" "$REPO" "$PREV_TAG" "$CURR_TAG" > release_body.md
           fi
 
+          # ── Docker ─────────────────────────────────────────────────────────
+          # Das Image zu diesem Tag baut docker.yml beim selben Tag-Push. Es steht
+          # ein paar Minuten nach dem Release bereit, weil arm64 unter QEMU
+          # emuliert wird und der Release-Job schneller fertig ist als der Build.
+          # Der Pull-Befehl im Body ist deshalb kurz noch nicht einloesbar, aber
+          # dauerhaft richtig.
+          #
+          # GHCR verlangt einen kleingeschriebenen Pfad, GITHUB_REPOSITORY liefert
+          # die Original-Schreibweise (MSK-Scripts/...).
+          IMAGE="ghcr.io/$(echo "$REPO" | tr '[:upper:]' '[:lower:]')"
+          MAJOR="${VERSION%%.*}"
+          MINOR="${VERSION%.*}"
+
+          {
+            echo "## 🐳 Docker"
+            echo
+            echo '```bash'
+            echo "docker pull ${IMAGE}:${VERSION}"
+            echo '```'
+            echo
+            if [ "${{ steps.tag.outputs.prerelease }}" = "true" ]; then
+              # Vorabversionen bewegen weder latest noch die Major-/Minor-Tags.
+              echo "Prerelease, therefore published under \`${VERSION}\` only. Platforms: \`linux/amd64\`, \`linux/arm64\`."
+            else
+              echo "Also tagged \`latest\`, \`${MINOR}\` and \`${MAJOR}\`. Platforms: \`linux/amd64\`, \`linux/arm64\`."
+            fi
+            echo
+            echo "Setup guide: [docu.msk-scripts.de → Docker](https://docu.msk-scripts.de/discord/discord_ticketbot/docker/)"
+            echo
+          } >> release_body.md
           # ── Kuratierter Changelog ──────────────────────────────────────────
           # Hebt den zur Version passenden Abschnitt aus CHANGELOG.md nach oben,
           # damit man auf den ersten Blick sieht, was geändert wurde. Erkennt
