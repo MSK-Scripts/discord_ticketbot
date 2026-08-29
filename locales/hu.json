@@ -24,7 +24,7 @@
     "panel": {
       "title": "Ticket Nyitás",
       "description": "Kattints az alábbi gombra egy ticket megnyitásához.\nEgy csapattag a lehető leghamarabb a segítségedre lesz.",
-      "footer": "© Atlas Roleplay - Minden jog fenntartva"
+      "footer": "© MSK Scripts • msk-scripts.de/ticketbot"
     },
     "ticketOpened": {
       "title": "Ticket megnyitva",

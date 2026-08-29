@@ -24,7 +24,7 @@
     "panel": {
       "title": "Zgłoszenie do wsparcia",
       "description": "Kliknij przycisk poniżej, aby otworzyć zgłoszenie.\nCzłonek zespołu pomoże Ci najszybciej, jak to możliwe.",
-      "footer": "© MSK Scripts - Wszelkie prawa zastrzeżone"
+      "footer": "© MSK Scripts • msk-scripts.de/ticketbot"
     },
     "ticketOpened": {
       "title": "Zgłoszenie otwarte",

@@ -24,7 +24,7 @@
     "panel": {
       "title": "Ticket de support",
       "description": "Cliquez sur le bouton ci-dessous pour ouvrir un ticket.\nUn membre de l'équipe vous aidera dès que possible.",
-      "footer": "© MSK Scripts - Tous droits réservés"
+      "footer": "© MSK Scripts • msk-scripts.de/ticketbot"
     },
     "ticketOpened": {
       "title": "Ticket ouvert",

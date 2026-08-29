@@ -636,4 +636,4 @@ unserem [Code of Conduct](CODE_OF_CONDUCT.md) zu. Sicherheitslücke gefunden? Si
 
 AGPL-3.0 — Quellcode muss bei Weitergabe oder Hosting offen bleiben und unter der gleichen Lizenz veröffentlicht werden.
 
-Forken und Modifikationen, die die MSK Transcript Service-Integration entfernen oder umgehen, sind nicht zulässig.
+Eine zusätzliche Bedingung nach Abschnitt 7(b) der AGPL: Der Hinweis, dass es sich um den MSK Ticket Bot handelt, muss für die Nutzer des Bots sichtbar bleiben. Der genaue Wortlaut steht in der [NOTICE](NOTICE).

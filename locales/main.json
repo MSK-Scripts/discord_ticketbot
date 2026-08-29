@@ -24,7 +24,7 @@
     "panel": {
       "title": "Support Ticket",
       "description": "• Need help with a paid script you own?\n• Question about an order, a license or an invoice?\n• Something wrong with one of our Discord bots?\n• Want us to build a custom script?\n\n**Please open a ticket and select the matching category.**\n\nBug reports belong in <#1088205980686360596>, so they do not get lost when a ticket is closed.\nWe do not provide ticket support for free scripts, please ask in <#939628758229471242>.",
-      "footer": "© MSK Scripts"
+      "footer": "© MSK Scripts • msk-scripts.de/ticketbot"
     },
     "ticketOpened": {
       "title": "Ticket Opened",

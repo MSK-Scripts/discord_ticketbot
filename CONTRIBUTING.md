@@ -249,11 +249,11 @@ in the PR.
 
 ## Licensing
 
-This project is licensed under the **GNU Affero General Public License v3.0**, with
-one **additional term** under Section 7: forks and modifications that remove or
-bypass the MSK Transcript Service integration (communication with
-`www.msk-scripts.de`) are not permitted. See [LICENSE.md](LICENSE.md) for the full
-text.
+This project is licensed under the **GNU Affero General Public License v3.0 only**,
+with one **additional term** under Section 7(b): the notice identifying the software
+as MSK Ticket Bot has to stay visible to the people using the bot. See
+[LICENSE.md](LICENSE.md) for the full license text and [NOTICE](NOTICE) for the
+additional term.
 
 By submitting a contribution, you agree that your contribution is licensed under the
 same terms. Make sure you have the right to submit any code you contribute and that

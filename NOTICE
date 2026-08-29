@@ -1,0 +1,24 @@
+MSK Ticket Bot
+Copyright (C) 2026 Moritz Kohm (MSK Scripts)
+
+This program is licensed under the GNU Affero General Public License,
+version 3 only ("AGPL-3.0-only"). See LICENSE.md for the full license text.
+
+Additional Term under GNU AGPL v3, Section 7(b):
+
+You are required to preserve and display, in a location clearly visible to
+end users interacting with the bot (such as bot embeds, the bot's "Bio"
+Discord profile, status, or equivalent), a notice that the software is
+MSK Ticket Bot by MSK Scripts. Where the surrounding medium allows a link,
+it must point to the original project:
+
+  https://github.com/MSK-Scripts/discord_ticketbot
+  https://www.msk-scripts.de/ticketbot
+
+The notice shipped with this software in the ticket panel embed satisfies
+this requirement. It may be translated or restyled, but it must not be
+removed, obscured, or replaced by an attribution to someone else.
+
+This term applies to the attribution notice only. Every other right the
+AGPL-3.0 grants you, including the right to modify the software and to
+redistribute it under the same license, is unaffected.

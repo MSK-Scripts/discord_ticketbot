@@ -636,6 +636,6 @@ before opening an issue or pull request. By participating you agree to our
 
 ## 📝 License
 
-AGPL-3.0 — Source code must remain open and be published under the same license when distributed or hosted.
+AGPL-3.0-only — Source code must remain open and be published under the same license when distributed or hosted.
 
-Forks and modifications that remove or bypass the MSK Transcript Service integration are not permitted.
+One additional term under Section 7(b) of the AGPL: the notice identifying the software as MSK Ticket Bot has to stay visible to the people using the bot. See [NOTICE](NOTICE) for the exact wording.
