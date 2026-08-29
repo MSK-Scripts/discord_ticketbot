@@ -9,6 +9,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.16.0] - 2026-08-29
+
+### Added
+
+- **Docker.** Official images for `linux/amd64` and `linux/arm64` at
+  `ghcr.io/msk-scripts/discord_ticketbot`, plus `Dockerfile`, `docker-compose.yml`
+  and an entrypoint. Two mounts, `data/` and `config/`, so an image update never
+  touches the database or the configuration.
+- The entrypoint seeds `config.jsonc` and `snippets.jsonc` on the first start.
+  A bind mount over `/app/config` hides the examples shipped in the image, so
+  they are additionally kept outside the mount where the entrypoint can reach
+  them. Existing files are never overwritten.
+- New documentation page **Docker** on docu.msk-scripts.de, covering volume
+  permissions for uid 1000, the dashboard behind a reverse proxy, updating by
+  image, and running MariaDB or PostgreSQL alongside.
+- New tier **Business** (€9.99/month): 200 MB per transcript, 500 MB of
+  attachments per ticket and ten years of storage.
+
+### Changed
+
+- **The attachment budget follows the tier instead of a fixed 100 MB.**
+  `/api/verify/status` now reports the tier's limits, the bot keeps them on the
+  client and `resolveAttachmentBudget()` derives the budget from them. The
+  numbers stay in one place on the server; the bot no longer holds a copy.
+  Without a reachable server or on an older one the previous 100 MB still apply,
+  so nothing changes until the service is updated.
+- **The additional licence term is now an attribution requirement.** `LICENSE.md`
+  carries the verbatim AGPL-3.0 text and the additional term moved to `NOTICE`.
+  Forbidding the removal of the transcript integration was a further restriction
+  that AGPL section 7 does not permit; it is replaced by the attribution term
+  under 7(b) that the licence does allow. Servers with a paid subscription are
+  exempt for as long as it runs. `license` in `package.json` is now the SPDX
+  identifier `AGPL-3.0-only`, and GitHub recognises the licence again.
+- The ticket panel footer names the project website instead of claiming all
+  rights reserved, which sat oddly next to a copyleft licence. Updated in all 8
+  languages.
+- Both readmes lead the installation with Docker and state Node.js 24, matching
+  `engines` in `package.json`.
+- The example config ships with a dynamic bot status (`🎫 {open} open / {total}
+  total tickets`) instead of the static text, and shows the shape of
+  `ratingSystem.commentRoles` rather than an empty list. Both only affect fresh
+  installs; an existing `config.jsonc` is never touched.
+
+### Fixed
+
+- **A single attachment could cost a Basic guild its hosted transcript.** The bot
+  uploaded attachments regardless of tier, and the service answers 413 for the
+  whole request once the tier's cap is exceeded. Basic allows no attachments at
+  all, so one screenshot in a ticket was enough. The bot now collects none when
+  the tier permits none.
+- Premium+ and Business could never use the attachment volume they pay for. Both
+  were capped at the same 100 MB as Premium.
+- The Hungarian locale shipped an attribution to another server in the panel
+  footer.
+
 ## [2.15.0] - 2026-08-28
 
 ### Added

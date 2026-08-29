@@ -251,7 +251,8 @@ in the PR.
 
 This project is licensed under the **GNU Affero General Public License v3.0 only**,
 with one **additional term** under Section 7(b): the notice identifying the software
-as MSK Ticket Bot has to stay visible to the people using the bot. See
+as MSK Ticket Bot has to stay visible to the people using the bot, unless the server
+holds a Premium or Premium+ subscription. See
 [LICENSE.md](LICENSE.md) for the full license text and [NOTICE](NOTICE) for the
 additional term.
 

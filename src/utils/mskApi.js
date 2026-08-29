@@ -139,11 +139,16 @@ async function getTranscriptUrl(ticketId) {
  * Check the validity and tier of the configured API key.
  * Called once at bot startup to inform the user of their premium status.
  *
- * @returns {Promise<{ status: 'not_configured'|'invalid'|'valid', tier: string|null }>}
+ * Returns the tier's limits alongside the tier. The server owns those numbers
+ * (lib/tiers.ts over there); the bot must not keep a second copy, or it will
+ * eventually enforce limits its own service no longer uses. `limits` is null
+ * whenever the tier is unknown, and every caller has to handle that.
+ *
+ * @returns {Promise<{ status: 'not_configured'|'invalid'|'unreachable'|'valid', tier: string|null, limits: object|null }>}
  */
 async function checkApiKey() {
   if (!MSK_API_KEY || MSK_API_KEY === 'YOUR_MSK_API_KEY_HERE') {
-    return { status: 'not_configured', tier: null };
+    return { status: 'not_configured', tier: null, limits: null };
   }
 
   let response;
@@ -153,18 +158,21 @@ async function checkApiKey() {
       headers: { 'Authorization': `Bearer ${MSK_API_KEY}` },
     });
   } catch {
-    return { status: 'unreachable', tier: null };
+    return { status: 'unreachable', tier: null, limits: null };
   }
 
   if (response.status === 401 || response.status === 403) {
-    return { status: 'invalid', tier: null };
+    return { status: 'invalid', tier: null, limits: null };
   }
 
   try {
     const data = await response.json();
-    return { status: 'valid', tier: data.tier };
+    // `limits` is absent when talking to an older server. Null, not a guessed
+    // default, so the caller falls back deliberately instead of silently
+    // running on numbers nobody chose.
+    return { status: 'valid', tier: data.tier, limits: data.limits ?? null };
   } catch {
-    return { status: 'invalid', tier: null };
+    return { status: 'invalid', tier: null, limits: null };
   }
 }
 

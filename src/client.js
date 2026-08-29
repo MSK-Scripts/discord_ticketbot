@@ -43,12 +43,19 @@ function printBanner() {
   console.log('');
 }
 
-async function printApiKeyStatus() {
+async function printApiKeyStatus(client) {
   const reset = '\x1b[0m';
   const gray  = '\x1b[90m';
   process.stdout.write(`${gray}Checking API Key...${reset} `);
 
-  const { status, tier } = await checkApiKey();
+  const { status, tier, limits } = await checkApiKey();
+
+  // Kept on the client so the close flow can size the attachment upload to the
+  // tier instead of a fixed budget. Read once at startup: the tier changes with
+  // a subscription, not during a run, and a restart follows an upgrade anyway
+  // (the hosted dashboard restarts the bot, a self-hoster does it by hand).
+  client.tier       = status === 'valid' ? tier : 'basic';
+  client.tierLimits = status === 'valid' ? limits : null;
 
   if (status === 'not_configured') {
     console.log(`\x1b[90mNo API key configured → Basic${reset}`);
@@ -110,7 +117,7 @@ class TicketClient extends Client {
     await checkVersion();
 
     // Check API Key status before connecting
-    await printApiKeyStatus();
+    await printApiKeyStatus(this);
     console.log('\x1b[0m');
 
     const reset = '\x1b[0m';

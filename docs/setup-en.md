@@ -35,17 +35,18 @@ configure a **custom domain** so transcripts are served under their own URL.
 
 ## 2. Subscription Tiers
 
-| Feature | Basic (free) | Premium (€3.99/month) | Premium+ (€6.99/month) |
-|---|---|---|---|
-| Transcript as link | ✅ | ✅ | ✅ |
-| Max. transcript size | 10 MB | 100 MB | 250 MB |
-| File attachments in transcript | ❌ | ✅ | ✅ |
-| Max. attachment size per ticket | — | 150 MB | 500 MB |
-| Custom domain | ❌ | ✅ | ✅ |
-| Storage duration | 30 days | 180 days | 365 days |
-| **Hosted bot management** | ❌ | ✅ | ✅ |
+| Feature | Basic (free) | Premium (€3.99/month) | Premium+ (€6.99/month) | Business (€9.99/month) |
+|---|---|---|---|---|
+| Transcript as link | ✅ | ✅ | ✅ | ✅ |
+| Max. transcript size | 10 MB | 50 MB | 100 MB | 200 MB |
+| File attachments in transcript | ❌ | ✅ | ✅ | ✅ |
+| Max. attachment size per ticket | — | 100 MB | 200 MB | 500 MB |
+| Custom domain | ❌ | ✅ | ✅ | ✅ |
+| Storage duration | 30 days | 180 days | 365 days | 10 years |
+| Remove the MSK notice | ❌ | ✅ | ✅ | ✅ |
+| **Hosted bot management** | ❌ | ✅ | ✅ | ✅ |
 
-> Premium and Premium+ are subscribed in your dashboard via **Stripe**, with a **14-day free trial**  
+> Paid tiers are subscribed in your dashboard via **Stripe**, with a **14-day free trial** and no card  
 > for new customers (cancel anytime). Manage or cancel anytime via the Stripe customer portal.
 
 ---
@@ -61,6 +62,7 @@ configure a **custom domain** so transcripts are served under their own URL.
    each with a **recurring monthly price**:
    - `Ticketbot Premium` → €3.99 / month
    - `Ticketbot Premium+` → €6.99 / month
+   - `Ticketbot Business` → €9.99 / month
 
    Copy each **Price ID** (`price_…`). Do **not** configure a trial on the price — the
    14-day trial is applied automatically in code for new customers.

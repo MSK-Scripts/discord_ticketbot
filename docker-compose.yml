@@ -1,0 +1,73 @@
+# =============================================================================
+# MSK Ticket Bot
+# -----------------------------------------------------------------------------
+# Before the first start:
+#
+#   cp .env.example .env                            and fill in TOKEN, CLIENT_ID, GUILD_ID
+#   mkdir -p config data
+#   cp config/config.example.jsonc config/config.jsonc
+#   cp config/snippets.example.jsonc config/snippets.jsonc
+#
+# Then edit config/config.jsonc. The bot validates it at startup and exits with
+# a message naming the offending field, so a container that keeps restarting
+# right after launch is almost always an unfinished config, not a broken image.
+#
+#   docker compose up -d
+#   docker compose logs -f
+# =============================================================================
+
+services:
+  ticketbot:
+    image: ghcr.io/msk-scripts/discord_ticketbot:latest
+    # To build from a local checkout instead of pulling the published image:
+    # build: .
+    container_name: ticketbot
+    restart: unless-stopped
+
+    # dashboard.js forks the bot as a child process. Without an init process,
+    # PID 1 would not reap it, and stopping the container would leave the child
+    # behind. Harmless for the plain bot, required for the dashboard.
+    init: true
+
+    env_file:
+      - .env
+
+    volumes:
+      # SQLite database, the update-notice marker and the dashboard settings.
+      - ./data:/app/data
+      # config.jsonc and snippets.jsonc, so the config survives an image update.
+      - ./config:/app/config
+
+    # For the web dashboard: uncomment both lines and set DASHBOARD_ENABLED=true
+    # plus DASHBOARD_HOST=0.0.0.0 in .env. Without the host change the dashboard
+    # only listens on the container's loopback and no port mapping can reach it.
+    #
+    # One limitation worth knowing: the update button in the dashboard runs
+    # git pull and npm install. Inside a container there is no checkout to pull,
+    # so updating means pulling a new image and recreating the container.
+    #
+    # command: node dashboard.js
+    # ports:
+    #   - "127.0.0.1:3010:3010"
+
+  # ---------------------------------------------------------------------------
+  # SQLite is the default and needs no service at all. Uncomment this block and
+  # set DATABASE_URL=mysql://ticketbot:changeme@mariadb:3306/ticketbot in .env
+  # to run against MariaDB instead.
+  # ---------------------------------------------------------------------------
+  # mariadb:
+  #   image: mariadb:11
+  #   container_name: ticketbot-db
+  #   restart: unless-stopped
+  #   environment:
+  #     MARIADB_DATABASE: ticketbot
+  #     MARIADB_USER: ticketbot
+  #     MARIADB_PASSWORD: changeme
+  #     MARIADB_RANDOM_ROOT_PASSWORD: "yes"
+  #   volumes:
+  #     - ./data/mariadb:/var/lib/mysql
+  #   healthcheck:
+  #     test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5

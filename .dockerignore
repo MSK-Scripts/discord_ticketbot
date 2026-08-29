@@ -1,0 +1,39 @@
+# Installed inside the image, never copied in
+node_modules
+web/node_modules
+
+# Git and CI
+.git
+.github
+.gitignore
+.gitattributes
+
+# Secrets and live state. These belong in mounts or environment variables, and
+# baking them into an image would publish them with it.
+.env
+.env.*
+!.env.example
+data
+config/config.jsonc
+config/snippets.jsonc
+
+# Not needed at runtime
+tests
+docs
+graphify-out
+coverage
+CLAUDE.md
+.claude
+ticketbot.service
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# The dashboard is served from web/dist, which is committed. Its sources are not
+# needed in the image; the build never runs there.
+web/src
+web/public
+web/index.html
+web/vite.config.js
+web/package.json
+web/package-lock.json

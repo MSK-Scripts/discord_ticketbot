@@ -8,7 +8,7 @@ Ein moderner, selbst-gehosteter Discord-Ticket-Bot auf Basis von **Discord.js v1
 
 [![Version](https://img.shields.io/github/v/release/MSK-Scripts/discord_ticketbot?style=flat-square&label=Version&color=5eb131)](https://github.com/MSK-Scripts/discord_ticketbot/releases)
 [![Lizenz: AGPL-3.0](https://img.shields.io/badge/Lizenz-AGPL%203.0-blueviolet?style=flat-square)](https://www.gnu.org/licenses/agpl-3.0)
-[![Node.js](https://img.shields.io/badge/Node.js-v22%2B-339933?style=flat-square&logo=node.js)](https://nodejs.org)
+[![Node.js](https://img.shields.io/badge/Node.js-v24%2B-339933?style=flat-square&logo=node.js)](https://nodejs.org)
 [![Discord.js](https://img.shields.io/badge/Discord.js-v14-5865F2?style=flat-square&logo=discord)](https://discord.js.org)
 [![Website](https://img.shields.io/badge/Website-msk--scripts.de-5eb131?style=flat-square)](https://www.msk-scripts.de/de/ticketbot)
 [![Dokumentation](https://img.shields.io/badge/Docs-docu.msk--scripts.de-5eb131?style=flat-square)](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started/)
@@ -62,18 +62,19 @@ Anstatt Transkripte als Dateianhang per DM zu versenden, kann der Bot sie auf **
 
 ### Abo-Modelle
 
-| Feature | Basic (kostenlos) | Premium (3,99 €/Monat) | Premium+ (6,99 €/Monat) |
-|---|---|---|---|
-| Transkript als Link | ✅ | ✅ | ✅ |
-| Max. Transkriptgröße | 10 MB | 100 MB | 250 MB |
-| Dateianhänge im Transkript | ❌ | ✅ | ✅ |
-| Max. Anhangsgröße pro Ticket | — | 150 MB | 500 MB |
-| Eigene Domain | ❌ | ✅ | ✅ |
-| Speicherdauer | 30 Tage | 180 Tage | 365 Tage |
-| Uploads pro Stunde | 30 | 60 | 300 |
-| **Gehostetes Bot-Management** | ❌ | ✅ | ✅ |
+| Feature | Basic (kostenlos) | Premium (3,99 €/Monat) | Premium+ (6,99 €/Monat) | Business (9,99 €/Monat) |
+|---|---|---|---|---|
+| Transkript als Link | ✅ | ✅ | ✅ | ✅ |
+| Max. Transkriptgröße | 10 MB | 50 MB | 100 MB | 200 MB |
+| Dateianhänge im Transkript | ❌ | ✅ | ✅ | ✅ |
+| Max. Anhangsgröße pro Ticket | — | 100 MB | 200 MB | 500 MB |
+| Eigene Domain | ❌ | ✅ | ✅ | ✅ |
+| Speicherdauer | 30 Tage | 180 Tage | 365 Tage | 10 Jahre |
+| Uploads pro Stunde | 30 | 60 | 300 | 300 |
+| MSK-Hinweis entfernen | ❌ | ✅ | ✅ | ✅ |
+| **Gehostetes Bot-Management** | ❌ | ✅ | ✅ | ✅ |
 
-> Premium und Premium+ werden direkt im Dashboard über **Stripe** abonniert — mit **14 Tagen kostenloser Testphase** für Neukunden, ohne Kreditkarte, jederzeit kündbar.
+> Die bezahlten Stufen werden direkt im Dashboard über **Stripe** abonniert — mit **14 Tagen kostenloser Testphase** für Neukunden, ohne Kreditkarte, jederzeit kündbar.
 
 ### API Key erhalten
 
@@ -262,9 +263,28 @@ discord_ticketbot/
 
 ## 🚀 Installation
 
-### Voraussetzungen
+### Docker (der kürzeste Weg)
 
-- **Node.js** v22 oder neuer
+Images gibt es für `linux/amd64` und `linux/arm64`. Kein Node, keine Build-Werkzeuge
+für das native SQLite-Modul.
+
+```bash
+mkdir -p ticketbot/config ticketbot/data && cd ticketbot
+sudo chown -R 1000:1000 config data     # der Container läuft als uid 1000
+curl -O https://raw.githubusercontent.com/MSK-Scripts/discord_ticketbot/main/docker-compose.yml
+# .env mit TOKEN, CLIENT_ID und GUILD_ID anlegen, dann:
+docker compose up -d
+```
+
+Der erste Start legt die Beispiel-Konfiguration in `config/` an und beendet sich
+mit einer Liste der Platzhalter, die noch zu ersetzen sind. Ausfüllen, neu starten.
+
+Ausführliche Anleitung inklusive Dashboard und externer Datenbank:
+**[docu.msk-scripts.de → Docker](https://docu.msk-scripts.de/discord/discord_ticketbot/docker/)**
+
+### Voraussetzungen (ohne Docker)
+
+- **Node.js** v24 oder neuer
 - Discord Bot Token — [discord.com/developers/applications](https://discord.com/developers/applications)
 
 ### 1. Abhängigkeiten installieren
@@ -636,4 +656,4 @@ unserem [Code of Conduct](CODE_OF_CONDUCT.md) zu. Sicherheitslücke gefunden? Si
 
 AGPL-3.0 — Quellcode muss bei Weitergabe oder Hosting offen bleiben und unter der gleichen Lizenz veröffentlicht werden.
 
-Eine zusätzliche Bedingung nach Abschnitt 7(b) der AGPL: Der Hinweis, dass es sich um den MSK Ticket Bot handelt, muss für die Nutzer des Bots sichtbar bleiben. Der genaue Wortlaut steht in der [NOTICE](NOTICE).
+Eine zusätzliche Bedingung nach Abschnitt 7(b) der AGPL: Der Hinweis, dass es sich um den MSK Ticket Bot handelt, muss für die Nutzer des Bots sichtbar bleiben. **Premium und Premium+ sind davon ausgenommen** und dürfen ihn entfernen, solange das Abo läuft. Der genaue Wortlaut steht in der [NOTICE](NOTICE).

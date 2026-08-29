@@ -673,14 +673,41 @@ function safeAttachmentExt(name) {
   return ALLOWED_ATTACHMENT_EXTS.has(ext) ? ext : null;
 }
 
-// Total attachment budget per transcript. The server rejects the WHOLE upload
-// with 413 once the tier's attachment cap is exceeded, which would cost the
-// hosted transcript over a single oversized archive. The bot doesn't know its
-// tier here, so stay under the smallest one that allows attachments at all
-// (premium, 150 MB). Files that don't fit are skipped and keep their Discord
-// link — exactly what they did before they were allow-listed, so a huge archive
-// can only lose itself, never the transcript.
-const ATTACHMENT_TOTAL_BUDGET_BYTES = 100 * 1024 * 1024;
+// Fallback attachment budget, used only when the tier's real cap is unknown:
+// no API key, the MSK server unreachable at startup, or a server too old to
+// report its limits. Deliberately small, because guessing high would cost the
+// whole transcript.
+const ATTACHMENT_FALLBACK_BUDGET_BYTES = 100 * 1024 * 1024;
+
+/**
+ * How many bytes of attachments this bot may upload with one transcript.
+ *
+ * The server rejects the WHOLE upload with 413 once the tier's cap is exceeded,
+ * so the bot has to stop below it. The cap comes from the server together with
+ * the tier (`/api/verify/status`), which is why it is not duplicated here: a
+ * second copy of those numbers is how a Business guild ends up uploading the
+ * 100 MB of a tier it left long ago, and how a Basic guild uploads attachments
+ * its tier does not allow at all — losing the entire hosted transcript to a 413
+ * over a single screenshot.
+ *
+ * Returns 0 when the tier allows no attachments. Callers must treat that as
+ * "collect nothing", not as "no limit".
+ *
+ * @param {object} client
+ * @returns {number} budget in bytes, 0 = attachments not allowed
+ */
+function resolveAttachmentBudget(client) {
+  const limits = client?.tierLimits;
+  if (!limits) return ATTACHMENT_FALLBACK_BUDGET_BYTES;
+
+  if (limits.attachments === false) return 0;
+
+  const cap = limits.attachmentMaxBytes;
+  if (typeof cap !== 'number' || !Number.isFinite(cap) || cap < 0) {
+    return ATTACHMENT_FALLBACK_BUDGET_BYTES;
+  }
+  return cap;
+}
 
 /**
  * Collect all attachments from the channel messages.
@@ -693,6 +720,11 @@ const ATTACHMENT_TOTAL_BUDGET_BYTES = 100 * 1024 * 1024;
  */
 async function collectAttachments(channel, client) {
   if (!process.env.MSK_API_KEY) return [];
+
+  const budget = resolveAttachmentBudget(client);
+  // Basic allows no attachments. Sending them anyway made the server answer 413
+  // for the whole request, so a single image cost the hosted transcript.
+  if (budget === 0) return [];
 
   try {
     const attachments = [];
@@ -717,7 +749,7 @@ async function collectAttachments(channel, client) {
           }
           // Discord reports the size up front, so an oversized file costs no
           // download at all.
-          if (totalBytes + (att.size ?? 0) > ATTACHMENT_TOTAL_BUDGET_BYTES) {
+          if (totalBytes + (att.size ?? 0) > budget) {
             client.logger?.warn(`[collectAttachments] Skipped ${att.name} — transcript attachment budget reached.`);
             continue;
           }
@@ -878,6 +910,7 @@ async function performUnclaim(client, channel, ticket) {
 }
 
 module.exports = {
+  resolveAttachmentBudget,
   openTicket,
   performClose,
   performReopen,
