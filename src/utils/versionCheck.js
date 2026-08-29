@@ -31,6 +31,47 @@ function isNewer(localVersion, remoteVersion) {
 }
 
 /**
+ * Shape of a release tag we are willing to act on: 1.2.3, optionally with a
+ * prerelease suffix and a leading v.
+ */
+const TAG_PATTERN = /^\d+(\.\d+){0,3}(-[0-9A-Za-z.-]+)?$/;
+
+/**
+ * Turn a GitHub release payload into the two values the bot uses.
+ *
+ * Both are validated here rather than trusted, and this is the only place that
+ * happens: the version ends up written to `data/update-notice.json`, and the
+ * url is rendered as the link of an embed that every member of the log channel
+ * sees. Neither should be whatever the response happened to contain. In
+ * practice the payload comes from api.github.com over TLS, so this is a
+ * boundary check, not a defence against a specific attack.
+ *
+ * A tag that does not look like a version is treated as "no usable release"
+ * instead of being passed on: the bot then simply stays quiet.
+ *
+ * Pure and exported so it can be tested without a network call.
+ *
+ * @param {unknown} data parsed JSON body of the releases/latest endpoint
+ * @returns {{version: string, url: string} | {error: string}}
+ */
+function parseRelease(data) {
+  const raw = typeof data?.tag_name === 'string' ? data.tag_name : '';
+  const version = raw.replace(/^v/, '');
+
+  if (!version) return { error: 'no release found' };
+  if (!TAG_PATTERN.test(version)) return { error: `unexpected tag "${version.slice(0, 32)}"` };
+
+  // Only a link into this project's own repository. Anything else falls back to
+  // the releases page, which is always correct.
+  const fallback = `https://github.com/${REPO}/releases`;
+  const url = typeof data.html_url === 'string' && data.html_url.startsWith(`https://github.com/${REPO}/`)
+    ? data.html_url
+    : fallback;
+
+  return { version, url };
+}
+
+/**
  * Fetches the latest GitHub release.
  *
  * Returns `{ version, url }` on success and `null` on anything else — a missing
@@ -48,11 +89,7 @@ async function fetchLatestRelease() {
 
     if (!res.ok) return { error: `GitHub returned ${res.status}` };
 
-    const data = await res.json();
-    const version = data?.tag_name?.replace(/^v/, '') ?? null;
-    if (!version) return { error: 'no release found' };
-
-    return { version, url: data.html_url || `https://github.com/${REPO}/releases` };
+    return parseRelease(await res.json());
   } catch {
     return { error: 'could not reach GitHub' };
   }
@@ -100,4 +137,4 @@ async function checkVersion() {
   }
 }
 
-module.exports = { checkVersion, fetchLatestRelease, isNewer, REPO };
+module.exports = { checkVersion, fetchLatestRelease, parseRelease, isNewer, REPO };

@@ -12,7 +12,7 @@ const assert = require('node:assert/strict');
 
 const { shouldAnnounce, resolveConfig, DEFAULT_INTERVAL_HOURS, MIN_INTERVAL_HOURS } =
   require('../src/utils/updateNotice');
-const { isNewer } = require('../src/utils/versionCheck');
+const { isNewer, parseRelease } = require('../src/utils/versionCheck');
 
 // ── shouldAnnounce ───────────────────────────────────────────────────────────
 
@@ -75,4 +75,51 @@ test('version comparison handles the v prefix and every position', () => {
   assert.equal(isNewer('2.14.0', 'v2.14.0'), false);
   assert.equal(isNewer('2.9.0',  '2.10.0'),  true, 'must compare numerically, not as strings');
   assert.equal(isNewer('3.0.0',  '2.99.99'), false);
+});
+
+// ── parseRelease ────────────────────────────────────────────────────────────
+// Both values from the GitHub payload leave the network boundary here: the
+// version is written to data/update-notice.json, the url becomes the link of an
+// embed everyone in the log channel sees. CodeQL flagged the first as
+// "network data written to file" (js/http-to-file-access), which is the right
+// instinct even though the source is api.github.com over TLS.
+
+test('parseRelease accepts a normal release and keeps its url', () => {
+  assert.deepStrictEqual(
+    parseRelease({
+      tag_name: 'v2.16.0',
+      html_url: 'https://github.com/MSK-Scripts/discord_ticketbot/releases/tag/v2.16.0',
+    }),
+    { version: '2.16.0', url: 'https://github.com/MSK-Scripts/discord_ticketbot/releases/tag/v2.16.0' },
+  );
+});
+
+test('parseRelease strips the v prefix and tolerates prereleases', () => {
+  assert.strictEqual(parseRelease({ tag_name: 'v3.0.0-rc.1' }).version, '3.0.0-rc.1');
+  assert.strictEqual(parseRelease({ tag_name: '10.2' }).version, '10.2');
+});
+
+test('parseRelease refuses a tag that is not a version', () => {
+  for (const tag of ['<script>alert(1)</script>', 'latest', '../../etc/passwd', 'v1.0.0; rm -rf /']) {
+    const out = parseRelease({ tag_name: tag });
+    assert.ok(out.error, `"${tag}" should be rejected`);
+    assert.strictEqual(out.version, undefined);
+  }
+});
+
+test('parseRelease falls back when the url points somewhere else', () => {
+  // Only a link into this repository is passed through; anything else becomes
+  // the releases page rather than a link the bot posts on someone's behalf.
+  for (const url of ['https://evil.example/x', 'javascript:alert(1)', 'https://github.com/other/repo/releases', 42]) {
+    assert.strictEqual(
+      parseRelease({ tag_name: '1.0.0', html_url: url }).url,
+      'https://github.com/MSK-Scripts/discord_ticketbot/releases',
+    );
+  }
+});
+
+test('parseRelease treats a missing tag as no release', () => {
+  assert.ok(parseRelease({}).error);
+  assert.ok(parseRelease({ tag_name: '' }).error);
+  assert.ok(parseRelease(null).error);
 });
