@@ -4,7 +4,7 @@
 
 # 🎫 Discord Ticket Bot
 
-A modern, self-hosted Discord ticket bot built on **Discord.js v14** — SQLite out of the box (no external database required), with optional **MySQL/MariaDB** and **PostgreSQL** support. No telemetry, full feature set out of the box.
+A modern, self-hosted Discord ticket bot built on **Discord.js v14**. SQLite out of the box (no external database required), with optional **MySQL/MariaDB** and **PostgreSQL** support. No telemetry, full feature set out of the box.
 
 It is a **plain Discord bot**: no game server, no FiveM, no ESX or QBCore, no framework. All it needs is Node.js and a bot token.
 
@@ -31,8 +31,8 @@ It is a **plain Discord bot**: no game server, no FiveM, no ESX or QBCore, no fr
 |---|---|
 | 🎫 Ticket Types | Up to 25 configurable types with individual emoji, color, category & questions |
 | 📋 Questionnaires | Modal forms (up to 5 questions) shown when opening a ticket |
-| 🙋 Claim System | Staff can claim/unclaim — button toggles, embed & topic update automatically |
-| 🔴 Priorities | Low / Medium / High / Urgent — predefined per ticket type or set via `/priority`, shown in channel topic & embed |
+| 🙋 Claim System | Staff can claim/unclaim. The button toggles, embed and topic update automatically |
+| 🔴 Priorities | Low / Medium / High / Urgent, predefined per ticket type or set via `/priority`, shown in channel topic & embed |
 | 📝 Staff Notes | Private notes via `/note add` / `/note list` |
 | 🔀 Move Ticket | Move to a different type/category via `/move` or button (staff only) |
 | 🛡️ Type-specific Staff Roles | Each ticket type can define its own staff roles |
@@ -41,19 +41,19 @@ It is a **plain Discord bot**: no game server, no FiveM, no ESX or QBCore, no fr
 | ⭐ Rating System | 1–5 star feedback after closing, automatically posted to a configured channel |
 | ⏰ Staff Reminder | Automatic ping inside the ticket if no staff responds within X hours |
 | ⏰ Auto-Close | Automatically close inactive tickets with a configurable warning period |
-| ♻️ Reopen Tickets | Reopen a closed ticket via the `♻️` button or `/reopen` — configurable, restores access & moves it back |
+| ♻️ Reopen Tickets | Reopen a closed ticket via the `♻️` button or `/reopen`. Configurable, restores access and moves it back |
 | 🔗 Transcript Links | Transcripts stored online and accessible via a public link |
-| 📄 HTML Transcript | Self-contained HTML transcript in a **modern or classic** style — avatars & custom emojis embedded as Base64, mentions and Created/Claimed/Closed-by shown as names instead of IDs, no CDN required |
+| 📄 HTML Transcript | Self-contained HTML transcript in a **modern or classic** style. Avatars and custom emojis are embedded as Base64, mentions and Created/Claimed/Closed-by shown as names instead of IDs, no CDN required |
 | 🌐 Custom Domain | Paid tiers can serve transcripts, and a hosted bot's dashboard, under their own domain |
 | 📊 Statistics | Server-wide stats and detailed per-user stats via `/stats` |
 | 🚫 Blacklist | `/blacklist add/remove/list` to block users from opening tickets |
-| 💬 Canned Responses | Pre-defined snippets sent with one command — configured in `snippets.jsonc` |
+| 💬 Canned Responses | Pre-defined snippets sent with one command, configured in `snippets.jsonc` |
 | 🔒 Ticket Lock | Lock/unlock a ticket to prevent the user from sending messages |
 | 📢 Broadcast | Send a message to all open ticket channels at once |
 | 🔔 User Notifications | Optional DM notification for users when a staff member replies |
 | 🎮 Dynamic Bot Status | Automatically display the number of open tickets in the bot status |
 | 🌍 Multilingual | German and English included, easily extensible |
-| 🗄️ Flexible Database | SQLite out of the box (zero setup) — optional MySQL/MariaDB or PostgreSQL via `DATABASE_URL`, with a migration script |
+| 🗄️ Flexible Database | SQLite out of the box (zero setup). Optional MySQL/MariaDB or PostgreSQL via `DATABASE_URL`, with a migration script |
 | 🔄 Auto-Update Check | Checks for new GitHub releases on startup and notifies with update instructions |
 | 🖥️ Web Dashboard | Optional self-hosted browser dashboard (off by default): tickets, statistics, a form/file config editor, bot control and per-role/user permissions |
 
@@ -61,7 +61,7 @@ It is a **plain Discord bot**: no game server, no FiveM, no ESX or QBCore, no fr
 
 ## 🔗 MSK Transcript Service
 
-Instead of sending transcripts as file attachments via DM, the bot can upload them to **[www.msk-scripts.de](https://www.msk-scripts.de)** and generate a public link — accessible in any browser, no download required.
+Instead of sending transcripts as file attachments via DM, the bot can upload them to **[www.msk-scripts.de](https://www.msk-scripts.de)** and generate a public link. It opens in any browser, no download required.
 
 ### Subscription Tiers
 
@@ -77,7 +77,7 @@ Instead of sending transcripts as file attachments via DM, the bot can upload th
 | Remove the MSK notice | ❌ | ✅ | ✅ | ✅ |
 | **Hosted bot management** | ❌ | ✅ | ✅ | ✅ |
 
-> Paid tiers are subscribed directly in your dashboard via **Stripe** — with a **14-day free trial** for new customers, no credit card required, cancellable anytime.
+> Paid tiers are subscribed directly in your dashboard via **Stripe**, with a **14-day free trial** for new customers, no credit card required, cancellable anytime.
 
 ### Getting your API Key
 
@@ -85,7 +85,7 @@ Instead of sending transcripts as file attachments via DM, the bot can upload th
 2. Sign in with your Discord account
 3. Select your server → your API key is generated instantly
 
-To upgrade to Premium/Premium+, open your **[dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** and start the free trial — billing is handled by Stripe.
+To upgrade to Premium/Premium+, open your **[dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** and start the free trial. Billing is handled by Stripe.
 
 Then add it to your `.env`:
 ```env
@@ -101,7 +101,7 @@ Premium users can serve transcripts under their own domain (e.g. `tickets.yourse
 
 1. Visit **[www.msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** after verifying
 2. Enter your domain and set a DNS **A-Record** pointing to the server IP shown
-3. Click **"Check DNS"** once propagation is complete — SSL is set up automatically
+3. Click **"Check DNS"** once propagation is complete. SSL is set up automatically
 
 > 📖 Full setup guide: [docu.msk-scripts.de](https://docu.msk-scripts.de/discord/discord_ticketbot/getting-started/)
 
@@ -300,7 +300,7 @@ Full guide, including the dashboard and an external database:
 ### Requirements (without Docker)
 
 - **Node.js** v24 or newer
-- A Discord bot token — [discord.com/developers/applications](https://discord.com/developers/applications)
+- A Discord bot token from [discord.com/developers/applications](https://discord.com/developers/applications)
 
 ### 1. Install dependencies
 
@@ -323,11 +323,11 @@ TOKEN="your_bot_token"
 CLIENT_ID="your_application_id"
 GUILD_ID="your_server_id"
 
-# Optional — MSK Transcript Service
+# Optional: MSK Transcript Service
 MSK_API_KEY="your_msk_api_key"
 MSK_API_URL="https://www.msk-scripts.de"
 
-# Optional — Database (leave unset to use the bundled SQLite file)
+# Optional: Database (leave unset to use the bundled SQLite file)
 # MySQL/MariaDB:  mysql://user:pass@host:3306/ticketbot
 # PostgreSQL:     postgres://user:pass@host:5432/ticketbot
 # DATABASE_URL=""
@@ -338,7 +338,7 @@ MSK_API_URL="https://www.msk-scripts.de"
 ```
 
 > **Database backends.** By default the bot stores everything in a local SQLite
-> file (`data/tickets.db`) — no setup needed. To use **MySQL/MariaDB** or
+> file (`data/tickets.db`), no setup needed. To use **MySQL/MariaDB** or
 > **PostgreSQL** instead, set `DATABASE_URL` (append `?ssl=true` for managed
 > databases that need TLS). The schema is created automatically. To move an
 > existing SQLite database into the new backend, run `npm run db:migrate` (it
@@ -443,8 +443,8 @@ sudo journalctl -u ticketbot.service -f
 | `/blacklist add/remove/list` | Manage Guild | Manage the user blacklist |
 | `/snippet send <name>` | Staff | Send a canned response into the ticket |
 | `/snippet list` | Staff | Show all available snippets |
-| `/lock lock [reason]` | Staff | Lock ticket — user cannot send messages |
-| `/lock unlock` | Staff | Unlock ticket — restore user message access |
+| `/lock lock [reason]` | Staff | Lock ticket, user cannot send messages |
+| `/lock unlock` | Staff | Unlock ticket, restore user message access |
 | `/broadcast <message>` | Staff | Send a message to all open ticket channels |
 
 ---
@@ -458,7 +458,7 @@ sudo journalctl -u ticketbot.service -f
 | 🙌 Unclaim | `claimButton: true`, claimed | Release the ticket |
 | 🔀 Move | More than 1 type configured | Open type selection |
 | 🗑️ Delete Ticket | After closing | Delete channel after confirmation |
-| ♻️ Reopen | After closing (`reopenOption.enabled`) | Reopen the ticket — restores access & moves it back to its category |
+| ♻️ Reopen | After closing (`reopenOption.enabled`) | Reopen the ticket, restores access & moves it back to its category |
 | 🔕 Notify me | `userNotifications.enabled: true` | User opts in to DM notifications on staff reply |
 
 ---
@@ -508,7 +508,7 @@ sudo journalctl -u ticketbot.service -f
 
 ### Canned Responses (Snippets)
 
-Snippets are defined in a separate file — **not** in `config.jsonc`:
+Snippets are defined in a separate file, **not** in `config.jsonc`:
 
 ```bash
 cp config/snippets.example.jsonc config/snippets.jsonc
@@ -540,7 +540,7 @@ cp config/snippets.example.jsonc config/snippets.jsonc
 
 **Commands:** `/snippet send <name>` · `/snippet list`
 
-Snippets support autocomplete — start typing the name or description to filter.
+Snippets support autocomplete. Start typing the name or description to filter.
 
 ### Staff Reminder
 
@@ -587,7 +587,7 @@ The HTML transcript can be rendered in a modern, minimal MSK-branded style or th
 
 ```jsonc
 "transcriptDesign": "modern",  // "modern" (default) or "classic"
-"transcriptLang": "en"         // "en" or "de" — falls back to English if omitted/unsupported
+"transcriptLang": "en"         // "en" or "de", falls back to English if omitted/unsupported
 ```
 
 Both styles are fully self-contained (offline-safe): avatars and custom emojis are embedded as Base64, user mentions and the **Created by / Claimed by / Closed by** fields are shown as display names instead of raw IDs, and the header includes the closer and the close reason (the reason only when one was provided). Code blocks have a **copy button**, and `transcriptLang` localizes all transcript labels and the date format.
@@ -600,7 +600,7 @@ Each ticket type may define a `priority` that new tickets of that type start wit
 "ticketTypes": [
   {
     "codeName": "support",
-    "priority": "high",   // "low", "medium", "high" or "urgent" — defaults to "medium" if omitted
+    "priority": "high",   // "low", "medium", "high" or "urgent", defaults to "medium" if omitted
     // ...
   }
 ]
@@ -669,6 +669,6 @@ before opening an issue or pull request. By participating you agree to our
 
 ## 📝 License
 
-AGPL-3.0-only — Source code must remain open and be published under the same license when distributed or hosted.
+AGPL-3.0-only. Source code must remain open and be published under the same license when distributed or hosted.
 
 One additional term under Section 7(b) of the AGPL: the notice identifying the software as MSK Ticket Bot has to stay visible to the people using the bot. **Premium and Premium+ servers are exempt** and may remove it for as long as the subscription runs. See [NOTICE](NOTICE) for the exact wording.
