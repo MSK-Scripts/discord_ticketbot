@@ -93,7 +93,9 @@ MSK_API_URL="https://www.msk-scripts.de"
 
 ### Custom Domain (Premium & Premium+)
 
-Premium users can serve transcripts under their own domain (e.g. `tickets.yourserver.com`).
+Premium users can serve transcripts under their own domain (e.g. `tickets.yourserver.com`). A hosted bot's dashboard can use one too.
+
+![The Custom Domain tab: one card for transcripts, one for the bot dashboard](assets/bot-hosting-domain.png)
 
 1. Visit **[www.msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** after verifying
 2. Enter your domain and set a DNS **A-Record** pointing to the server IP shown
@@ -107,7 +109,7 @@ Premium users can serve transcripts under their own domain (e.g. `tickets.yourse
 
 Do not want to run a server at all? Any paid tier can have the bot **hosted by MSK Scripts**. You set it up yourself in the dashboard at **[msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)**, no SSH access or server knowledge required.
 
-![Dashboard - Hosted Bot Management](assets/dashboard-hosted.png)
+![The Bot Hosting tab before activation](assets/bot-hosting-install.png)
 
 ### Setting it up
 
@@ -117,6 +119,8 @@ Do not want to run a server at all? Any paid tier can have the bot **hosted by M
 4. Add the redirect URL the dashboard shows you under **OAuth2 → Redirects** in the developer portal. Only you can do this, and the dashboard login does not work without it.
 
 ### What's included
+
+![Bot Hosting once it runs: its address, bot control and live logs](assets/bot-hosting-dashboard.png)
 
 | Feature | Description |
 |---|---|

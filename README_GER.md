@@ -93,6 +93,10 @@ MSK_API_URL="https://www.msk-scripts.de"
 
 ### Eigene Domain (Premium & Premium+)
 
+Transkripte unter der eigenen Domain ausliefern (z.B. `tickets.deinserver.de`). Das Dashboard eines gehosteten Bots kann ebenfalls eine bekommen.
+
+![Der Tab Custom Domain: eine Karte für Transkripte, eine für das Bot-Dashboard](assets/bot-hosting-domain.png)
+
 1. **[www.msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** aufrufen
 2. Domain eintragen und einen DNS **A-Record** auf die angezeigte Server-IP setzen
 3. **„DNS prüfen"** klicken — SSL wird automatisch eingerichtet
@@ -105,7 +109,7 @@ MSK_API_URL="https://www.msk-scripts.de"
 
 Du willst gar keinen eigenen Server betreiben? In jedem bezahlten Tarif kannst du den Bot **von MSK Scripts hosten lassen**. Du richtest das selbst im Dashboard unter **[msk-scripts.de/ticketbot/dashboard](https://www.msk-scripts.de/ticketbot/dashboard)** ein, kein SSH-Zugang und kein Server-Wissen nötig.
 
-![Dashboard - Gehostetes Bot-Management](assets/dashboard-hosted.png)
+![Der Tab Bot Hosting vor der Aktivierung](assets/bot-hosting-install.png)
 
 ### Einrichtung
 
@@ -115,6 +119,8 @@ Du willst gar keinen eigenen Server betreiben? In jedem bezahlten Tarif kannst d
 4. Die im Dashboard angezeigte Redirect-URL im Developer Portal unter **OAuth2 → Redirects** eintragen. Das kann nur du, und ohne sie funktioniert der Login ins Dashboard nicht.
 
 ### Was enthalten ist
+
+![Bot Hosting im Betrieb: Adresse, Steuerung und Live-Logs](assets/bot-hosting-dashboard.png)
 
 | Feature | Beschreibung |
 |---|---|
