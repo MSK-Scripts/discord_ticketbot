@@ -501,6 +501,42 @@ function buildMessageRows(messages, avatarMap, emojiMap, nameMap, roleMap, chann
 }
 
 /**
+ * Notice-and-action link required by Art. 16 DSA.
+ *
+ * MSK Scripts hosts the finished transcript (on msk-scripts.de or on the
+ * customer's own domain, both of which point at our server), so we are the
+ * hosting provider for this content and have to offer a way to report it. That
+ * is a legal obligation, not branding: it stays even when a paying guild
+ * strips the MSK footer.
+ *
+ * The transcript does not know its own address at generation time, msk-shop
+ * assigns that on upload, so the href is completed in the browser by
+ * reportScript() below. Without JavaScript the link still opens the form, the
+ * reader just has to paste the address.
+ */
+const REPORT_URL = 'https://www.msk-scripts.de/report';
+
+function reportLink(t) {
+  const label = escapeHtml(t.report || 'Report content');
+  return `<a class="report-link" id="msk-report" href="${REPORT_URL}" target="_blank" rel="noopener nofollow">${label}</a>`;
+}
+
+/**
+ * Fills the report link with the address the reader is actually looking at.
+ * Only for http(s): a transcript opened from disk would otherwise put the
+ * local file path into a query string aimed at our server.
+ */
+function reportScript() {
+  return `<script>
+(function(){
+  var a=document.getElementById('msk-report'); if(!a) return;
+  if(location.protocol!=='http:'&&location.protocol!=='https:') return;
+  a.href=${JSON.stringify(REPORT_URL)}+'?url='+encodeURIComponent(location.href);
+})();
+</script>`;
+}
+
+/**
  * Inline, self-contained script that wires up the code-block copy buttons.
  * Uses the Clipboard API with an execCommand fallback, and reads the localized
  * button labels from the <body data-copy/data-copied> attributes. No external
@@ -586,6 +622,8 @@ function renderClassic({ ticketInfo, channel, guildName, t, locale, lang, messag
     .embed-desc { color: #b9bbbe; font-size: 13px; }
     .mention { background: rgba(88,101,242,.3); color: #dee0fc; border-radius: 3px; padding: 0 3px; font-weight: 500; }
     .footer { text-align: center; padding: 20px; color: #72767d; font-size: 12px; border-top: 1px solid #2b2d31; margin-top: 20px; }
+    .footer .report { margin-top: 8px; }
+    .report-link { color: #949ba4; text-decoration: underline; }
   </style>
 </head>
 <body data-copy="${escapeHtml(t.copy)}" data-copied="${escapeHtml(t.copied)}">
@@ -598,11 +636,11 @@ function renderClassic({ ticketInfo, channel, guildName, t, locale, lang, messag
         <div class="meta-item"><strong>${escapeHtml(t.createdBy)}</strong>${createdBy}</div>
         <div class="meta-item"><strong>${escapeHtml(t.createdOn)}</strong>${openedAt}</div>
         <div class="meta-item"><strong>${escapeHtml(t.closedOn)}</strong>${closedAt}</div>
-        ${closedBy ? `<div class="meta-item"><strong>${escapeHtml(t.closedBy)}</strong>${closedBy}</div>` : ''}
-        ${claimedBy ? `<div class="meta-item"><strong>${escapeHtml(t.claimedBy)}</strong>${claimedBy}</div>` : ''}
+        ${closedBy ? `<div class="meta-item"><strong>${escapeHtml(t.closedBy)}</strong>${closedBy}</div>` : ""}
+        ${claimedBy ? `<div class="meta-item"><strong>${escapeHtml(t.claimedBy)}</strong>${claimedBy}</div>` : ""}
         <div class="meta-item"><strong>${escapeHtml(t.priority)}</strong>${escapeHtml(ticketInfo.priority)}</div>
         <div class="meta-item"><strong>${escapeHtml(t.messages)}</strong>${messageCount}</div>
-        ${closeReason ? `<div class="meta-item"><strong>${escapeHtml(t.closeReason)}</strong>${closeReason}</div>` : ''}
+        ${closeReason ? `<div class="meta-item"><strong>${escapeHtml(t.closeReason)}</strong>${closeReason}</div>` : ""}
       </div>
     </div>
   </div>
@@ -610,9 +648,11 @@ function renderClassic({ ticketInfo, channel, guildName, t, locale, lang, messag
     ${messageRows || `<p style="color:#72767d;text-align:center;padding:40px 0;">${escapeHtml(t.empty)}</p>`}
   </div>
   <div class="footer">
-    ${escapeHtml(t.generatedOn)} ${formatDate(new Date(), locale)} · Discord Ticket Bot
+    ${escapeHtml(t.generatedOn)} ${formatDate(new Date(), locale)} • msk-scripts.de/ticketbot
+    <div class="report">${reportLink(t)}</div>
   </div>
   ${copyScript()}
+  ${reportScript()}
 </body>
 </html>`;
 }
@@ -771,6 +811,9 @@ function renderModern({ ticketInfo, channel, guildName, t, locale, lang, message
     .footer .brand { color: var(--text-2); font-weight: 600; }
     .footer .brand b { color: var(--accent); }
     .footer .gen { font-family: var(--mono); font-size: 11px; margin-top: 6px; letter-spacing: .03em; }
+    .footer .report { margin-top: 10px; }
+    .report-link { color: var(--muted); text-decoration: underline; }
+    .report-link:hover { color: var(--text-2); }
 
     @media (max-width: 560px) {
       body { padding: 0 12px 60px; font-size: 14px; }
@@ -792,11 +835,11 @@ function renderModern({ ticketInfo, channel, guildName, t, locale, lang, message
         <div class="meta-item"><span class="k">${escapeHtml(t.createdBy)}</span><span class="v">${createdBy}</span></div>
         <div class="meta-item"><span class="k">${escapeHtml(t.createdOn)}</span><span class="v">${openedAt}</span></div>
         <div class="meta-item"><span class="k">${escapeHtml(t.closedOn)}</span><span class="v">${closedAt}</span></div>
-        ${closedBy ? `<div class="meta-item"><span class="k">${escapeHtml(t.closedBy)}</span><span class="v">${closedBy}</span></div>` : ''}
-        ${claimedBy ? `<div class="meta-item"><span class="k">${escapeHtml(t.claimedBy)}</span><span class="v">${claimedBy}</span></div>` : ''}
+        ${closedBy ? `<div class="meta-item"><span class="k">${escapeHtml(t.closedBy)}</span><span class="v">${closedBy}</span></div>` : ""}
+        ${claimedBy ? `<div class="meta-item"><span class="k">${escapeHtml(t.claimedBy)}</span><span class="v">${claimedBy}</span></div>` : ""}
         <div class="meta-item"><span class="k">${escapeHtml(t.priority)}</span><span class="v">${escapeHtml(ticketInfo.priority)}</span></div>
         <div class="meta-item"><span class="k">${escapeHtml(t.messages)}</span><span class="v">${messageCount}</span></div>
-        ${closeReason ? `<div class="meta-item meta-item--wide"><span class="k">${escapeHtml(t.closeReason)}</span><span class="v">${closeReason}</span></div>` : ''}
+        ${closeReason ? `<div class="meta-item meta-item--wide"><span class="k">${escapeHtml(t.closeReason)}</span><span class="v">${closeReason}</span></div>` : ""}
       </div>
     </header>
 
@@ -806,11 +849,13 @@ function renderModern({ ticketInfo, channel, guildName, t, locale, lang, message
     </main>
 
     <footer class="footer">
-      <div class="brand">MSK <b>Scripts</b> · Discord Ticket Bot</div>
+      <div class="brand">MSK <b>Scripts</b> • msk-scripts.de/ticketbot</div>
       <div class="gen">${escapeHtml(t.generatedOn)} ${formatDate(new Date(), locale)}</div>
+      <div class="report">${reportLink(t)}</div>
     </footer>
   </div>
   ${copyScript()}
+  ${reportScript()}
 </body>
 </html>`;
 }

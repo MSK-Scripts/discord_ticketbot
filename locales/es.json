@@ -287,6 +287,7 @@
     "empty": "No hay mensajes en este ticket",
     "generatedOn": "Generado el",
     "copy": "Copiar",
-    "copied": "¡Copiado!"
+    "copied": "¡Copiado!",
+    "report": "Denunciar contenido"
   }
 }

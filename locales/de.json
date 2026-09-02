@@ -287,6 +287,7 @@
     "empty": "Keine Nachrichten in diesem Ticket",
     "generatedOn": "Generiert am",
     "copy": "Kopieren",
-    "copied": "Kopiert!"
+    "copied": "Kopiert!",
+    "report": "Inhalt melden"
   }
 }

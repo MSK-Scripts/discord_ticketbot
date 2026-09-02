@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.17.0] - 2026-09-02
+
+### Added
+
+- **"Report content" link in every transcript**, in both the modern and the
+  classic design. MSK Scripts hosts the finished transcript, on
+  msk-scripts.de or on the guild's own domain, and Art. 16 DSA obliges a
+  hosting provider to offer a notice-and-action mechanism for the content it
+  hosts. The link points at the reporting form on
+  `https://www.msk-scripts.de/report`.
+- The transcript does not know its own address while it is generated, msk-shop
+  assigns that on upload, so a small inline script fills the `url` parameter
+  from the address the reader is on. Without JavaScript the link still opens
+  the form and the reader pastes the address. A transcript opened from disk is
+  left alone so a local file path never reaches our server.
+- The label is translated in all seven bundled languages
+  (`transcript.report`); missing languages fall back to English as usual.
+
 ## [2.16.0] - 2026-08-29
 
 ### Added
