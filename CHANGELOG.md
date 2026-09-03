@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [Unreleased]
+
+### Fixed
+
+- **`qs` bumped from 6.15.3 to 6.16.0** (lockfile only), closing two moderate
+  advisories that came in through `express` 5: GHSA-4mjr-xmp4-gh2g (denial of
+  service via an attacker-controlled `isBuffer`) and GHSA-x5fp-wj9c-mxmx
+  (array-limit bypass through comma parsing in bracket keys). `express` and
+  `body-parser` both declare a range that already allows 6.16.0, so no
+  dependency in `package.json` changed. Neither advisory was reachable here:
+  the package only ships with the optional dashboard stack, `express` 5 parses
+  query strings with the simple parser by default, and the dashboard mounts no
+  `express.urlencoded()` middleware, so nothing in this project hands user
+  input to `qs`.
+- `package-lock.json` carried version `2.16.0` while `package.json` was already
+  on `2.17.0`; the release commit had only touched the manifest. Both files are
+  in sync again.
+
 ## [2.17.0] - 2026-09-02
 
 ### Added
