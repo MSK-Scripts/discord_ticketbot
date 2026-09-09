@@ -3,7 +3,7 @@ const { loadCommands }    = require('./handlers/commandHandler');
 const { loadEvents }      = require('./handlers/eventHandler');
 const { loadComponents }  = require('./handlers/componentHandler');
 const { initDatabase }    = require('./database');
-const { loadConfig, validateConfig } = require('./config');
+const { loadConfig, inspectConfig } = require('./config');
 const { checkApiKey }     = require('./utils/mskApi');
 const { checkVersion }    = require('./utils/versionCheck');
 const logger = require('./utils/logger');
@@ -107,6 +107,11 @@ class TicketClient extends Client {
     this.config = null;
     this.db     = null;
     this.locale = null;
+
+    /** @type {string[]} Config fields still to be filled in. Non-empty means the
+     *  bot is up but the ticket flow is closed — see start() and
+     *  events/interactionCreate.js. */
+    this.configPending = [];
   }
 
   async start() {
@@ -127,12 +132,33 @@ class TicketClient extends Client {
 
     // Load & validate config
     this.config = loadConfig();
-    const configErrors = validateConfig(this.config);
-    if (configErrors.length > 0) {
+    const { fatal, pending } = inspectConfig(this.config);
+
+    if (fatal.length > 0) {
       this.logger.error('Config validation failed:');
-      configErrors.forEach(e => this.logger.error(`  - ${e}`));
+      fatal.forEach(e => this.logger.error(`  - ${e}`));
       process.exit(1);
     }
+
+    // An unfinished config is not a reason to refuse the boot. The bot comes up,
+    // the dashboard becomes reachable, and the operator fills in the ids there —
+    // for a hosted install that is the ONLY repair path, because the editor is
+    // part of the very dashboard a dead bot would not be serving.
+    //
+    // What it is a reason for: keeping the ticket flow shut until it is done.
+    // interactionCreate reads this list and answers instead of letting an
+    // interaction reach discord.js with a placeholder in its hands.
+    this.configPending = pending;
+    if (pending.length > 0) {
+      this.logger.warn('Configuration is not finished yet — the ticket flow stays closed:');
+      pending.forEach(e => this.logger.warn(`  - ${e}`));
+      this.logger.warn('Open the dashboard and fill these in, the bot restarts itself afterwards.');
+    }
+
+    // Tell the supervisor, which is what /api/bot/status reports and therefore
+    // what msk-shop sees when it checks whether an installation came up. Without
+    // this a half-configured bot is indistinguishable from a finished one.
+    process.send?.({ type: 'config-state', pending });
 
     // Load locale — __dirname is src/, so ../locales/ is correct
     const localePath = `../locales/${this.config.lang}.json`;

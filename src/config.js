@@ -126,16 +126,23 @@ function describeParseError(source, err) {
 
 /**
  * Load and parse the JSONC config file.
- * If config.jsonc does not exist it is created from config.example.jsonc,
- * and the process exits so the user can fill it in before restarting.
+ * If config.jsonc does not exist it is created from config.example.jsonc and
+ * returned as-is; the caller sorts the placeholders it contains via
+ * inspectConfig() and boots with the ticket flow closed.
  * @returns {object}
  */
 function loadConfig() {
   if (!fs.existsSync(CONFIG_PATH)) {
     if (fs.existsSync(EXAMPLE_PATH)) {
       fs.copyFileSync(EXAMPLE_PATH, CONFIG_PATH);
-      console.warn('[Config] config.jsonc not found — created from example. Please fill in your IDs and restart.');
-      process.exit(0);
+      // Deliberately NOT exiting here. The freshly copied example is all
+      // placeholders, so inspectConfig() reports it as `pending` and the bot
+      // comes up with its ticket flow closed — which is the state the operator
+      // can actually repair from, because the config editor lives in the bot's
+      // own dashboard. Exiting instead (as this did until 09.09.2026) also burnt
+      // one of the supervisor's five restart attempts on a first start that was
+      // never going to succeed.
+      console.warn('[Config] config.jsonc not found — created from example. Fill in your IDs to open the ticket flow.');
     } else {
       console.error('[Config] config.jsonc not found and no example available. Exiting.');
       process.exit(1);
@@ -160,12 +167,31 @@ function loadConfig() {
 }
 
 /**
- * Validate required config fields.
+ * Sort every configuration problem into the two buckets that decide whether the
+ * bot is allowed to boot.
+ *
+ *   fatal    the config is broken — the bot refuses to start
+ *   pending  the config is merely unfinished — the bot starts, but the ticket
+ *            flow stays closed (see events/interactionCreate.js)
+ *
+ * The split exists because a fresh install has NO config.jsonc: loadConfig()
+ * writes one from the example, and that example is nothing but placeholders.
+ * Treating those as fatal — as this did until 09.09.2026 — means a brand new
+ * install can never come up, and for a hosted bot that is a dead end: the editor
+ * the operator is supposed to fix the file in lives in the bot's own dashboard,
+ * which only exists while the bot is installed and running.
+ *
+ * The line between the buckets is what breaks if we carry on regardless. A
+ * missing key or a wrong TYPE takes out unpredictable code paths; an ID that is
+ * simply not filled in yet only breaks the ticket flow, and that flow is gated
+ * on `pending` anyway.
+ *
  * @param {object} config
- * @returns {string[]} Array of error messages (empty = valid)
+ * @returns {{ fatal: string[], pending: string[] }}
  */
-function validateConfig(config) {
-  const errors = [];
+function inspectConfig(config) {
+  const fatal   = [];
+  const pending = [];
 
   const required = [
     ['openTicketChannelId',           'string'],
@@ -179,20 +205,21 @@ function validateConfig(config) {
     const val        = config[key];
     const actualType = Array.isArray(val) ? 'array' : typeof val;
     if (val === undefined || val === null) {
-      errors.push(`Missing required field: "${key}"`);
+      fatal.push(`Missing required field: "${key}"`);
     } else if (actualType !== type) {
-      errors.push(`Field "${key}" must be a ${type}, got ${actualType}`);
+      fatal.push(`Field "${key}" must be a ${type}, got ${actualType}`);
     } else if (type === 'string' && val.trim() === '') {
-      errors.push(`Field "${key}" is empty — please set a value.`);
+      // Present but blank is the shape of an unfinished field, not a broken one.
+      pending.push(`Field "${key}" is empty — please set a value.`);
     }
   }
 
   // mainColor must be a hex color (#rgb or #rrggbb) — otherwise EmbedBuilder
-  // throws at runtime when sending the first embed (bot starts but every
-  // command crashes), which is hard to diagnose. Fail fast with a clear message.
+  // throws at runtime when sending the first embed. Fatal rather than pending
+  // because it breaks EVERY embed the bot sends, not only the ticket flow.
   if (typeof config.mainColor === 'string' && config.mainColor.trim() !== ''
       && !/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(config.mainColor.trim())) {
-    errors.push(`Field "mainColor" must be a hex color like "#2ee676", got "${config.mainColor}".`);
+    fatal.push(`Field "mainColor" must be a hex color like "#2ee676", got "${config.mainColor}".`);
   }
 
   // ── Discord IDs must actually be Discord IDs ────────────────────────────────
@@ -200,14 +227,18 @@ function validateConfig(config) {
   // sail straight through: the bot starts happily and then dies on the FIRST
   // ticket with a cryptic discord.js error ("Supplied parameter is not a cached
   // User or Role"), which tells the operator nothing about what to fix.
-  // Fail here instead, naming the exact field.
+  //
+  // These are all `pending`: naming the field is the point, and the ticket flow
+  // is closed until they are filled in, so the cryptic error can no longer
+  // happen. A typo'd id lands here too — from the outside it is indistinguishable
+  // from a field nobody has got round to yet.
   const SNOWFLAKE = /^\d{17,20}$/;
   const isPlaceholder = (v) => typeof v === 'string' && /_HERE$|^ROLE_ID|^CHANNEL_ID|^CATEGORY_ID/.test(v);
 
   const checkId = (value, field) => {
     if (value === undefined || value === null || value === '') return; // optional/empty is fine
     if (SNOWFLAKE.test(String(value))) return;
-    errors.push(
+    pending.push(
       isPlaceholder(value)
         ? `Field "${field}" is still the example placeholder ("${value}"). Replace it with a real Discord ID.`
         : `Field "${field}" is not a valid Discord ID: "${value}" (expected 17–20 digits).`,
@@ -238,29 +269,46 @@ function validateConfig(config) {
 
   if (Array.isArray(config.ticketTypes)) {
     if (config.ticketTypes.length === 0) {
-      errors.push('ticketTypes must contain at least one entry.');
+      fatal.push('ticketTypes must contain at least one entry.');
     }
     if (config.ticketTypes.length > 25) {
-      errors.push('ticketTypes cannot have more than 25 entries (Discord limit).');
+      fatal.push('ticketTypes cannot have more than 25 entries (Discord limit).');
     }
     config.ticketTypes.forEach((t, i) => {
-      if (!t.codeName)   errors.push(`ticketTypes[${i}] is missing "codeName".`);
-      if (!t.name)       errors.push(`ticketTypes[${i}] is missing "name".`);
-      if (!t.categoryId) errors.push(`ticketTypes[${i}] is missing "categoryId".`);
+      if (!t.codeName)   fatal.push(`ticketTypes[${i}] is missing "codeName".`);
+      if (!t.name)       fatal.push(`ticketTypes[${i}] is missing "name".`);
+      if (!t.categoryId) pending.push(`ticketTypes[${i}] is missing "categoryId".`);
       if (t.staffRoles !== undefined && !Array.isArray(t.staffRoles)) {
-        errors.push(`ticketTypes[${i}].staffRoles must be an array.`);
+        fatal.push(`ticketTypes[${i}].staffRoles must be an array.`);
       }
     });
   }
 
-  if (!process.env.TOKEN)     errors.push('Environment variable TOKEN is not set.');
-  if (!process.env.CLIENT_ID) errors.push('Environment variable CLIENT_ID is not set.');
-  if (!process.env.GUILD_ID)  errors.push('Environment variable GUILD_ID is not set.');
+  // Without these the bot cannot even reach Discord, so there is nothing to keep
+  // running for.
+  if (!process.env.TOKEN)     fatal.push('Environment variable TOKEN is not set.');
+  if (!process.env.CLIENT_ID) fatal.push('Environment variable CLIENT_ID is not set.');
+  if (!process.env.GUILD_ID)  fatal.push('Environment variable GUILD_ID is not set.');
 
-  return errors;
+  return { fatal, pending };
+}
+
+/**
+ * Every configuration problem, fatal and pending in one list.
+ *
+ * Kept as-is for the dashboard, which validates an edited config.jsonc before
+ * saving it: there the operator must see everything that is still wrong, not
+ * only what would stop the bot from booting.
+ *
+ * @param {object} config
+ * @returns {string[]} Array of error messages (empty = valid)
+ */
+function validateConfig(config) {
+  const { fatal, pending } = inspectConfig(config);
+  return [...fatal, ...pending];
 }
 
 // stripJsonComments is exported so the dashboard can validate an edited
 // config.jsonc with exactly the same parser the bot boots with — a file the
 // dashboard accepts must never be one the bot then refuses to start on.
-module.exports = { loadConfig, validateConfig, stripJsonComments, describeParseError };
+module.exports = { loadConfig, inspectConfig, validateConfig, stripJsonComments, describeParseError };

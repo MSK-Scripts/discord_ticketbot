@@ -9,9 +9,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
-## [Unreleased]
+## [2.18.0] - 2026-09-09
+
+### Changed
+
+- **An unfinished configuration no longer stops the bot from booting.** A fresh
+  install has no `config.jsonc`; the bot writes one from the example, and every
+  id in that example is a placeholder. Those placeholders were fatal, so a brand
+  new install crash-looped until the supervisor gave up after five attempts.
+  For a hosted bot that was a dead end: the editor to fix the file lives in the
+  bot's own dashboard, which a dead bot does not serve.
+
+  `inspectConfig()` now sorts problems into two buckets. **Fatal** means the
+  config is broken and the bot still refuses to start: a missing key, a wrong
+  type, a `mainColor` that is not a hex colour (it breaks every embed, not just
+  tickets), an empty or oversized `ticketTypes`, a missing `TOKEN`/`CLIENT_ID`/
+  `GUILD_ID`. **Pending** means it is merely unfinished: an id that is still a
+  placeholder, malformed, or blank. On pending the bot comes up, logs each field
+  by name, and keeps its ticket flow closed.
+
+  `validateConfig()` is unchanged and still returns everything, because the
+  dashboard's config editor must show the operator every problem, not only the
+  ones that would stop a boot.
+- **The ticket flow is gated centrally** in `events/interactionCreate.js`, the
+  one dispatcher every command, button, menu and modal passes through. While
+  fields are outstanding, an interaction is answered with `messages.configError`
+  instead of reaching discord.js with a placeholder in its hands — which is
+  where the cryptic "Supplied parameter is not a cached User or Role" came from.
+  A per-handler check was rejected: that is a list the next handler falls off.
+- **`loadConfig()` no longer exits after writing the example.** It returned exit
+  code 0, which the supervisor counts as a crash, so a first start burnt one of
+  its five restart attempts on an attempt that was never going to succeed.
+- The bot reports its config state to the supervisor over IPC, and
+  `GET /api/bot/status` carries `needsConfig` alongside `status`. "Running" on
+  its own no longer means "ready", and whoever asks — the SPA, or msk-shop
+  checking whether an installation succeeded — has to be able to tell the two
+  apart.
 
 ### Fixed
+
+- **A bot that is not on the guild made every dashboard request answer 500.**
+  `resolveMemberContext()` resolves the guild and the member in parallel;
+  `getGuildMember()` has always treated its own 404 as "not a member", but
+  `getGuild()` had no branch for one, so `Unknown Guild` (code 10004) travelled
+  up through `requireAuth` as an exception. That is the state of every fresh
+  install between creating the application and inviting the bot, and the log it
+  produced named neither the cause nor the fix. The context now carries
+  `botInGuild`, and both the login callback and `requireAuth` answer `409` with
+  a sentence that says to invite the bot. The member cache deliberately does not
+  keep that answer: it is fixed by an invite seconds later, and a minute of stale
+  "not invited" reads as a broken dashboard.
 
 - **`qs` bumped from 6.15.3 to 6.16.0** (lockfile only), closing two moderate
   advisories that came in through `express` 5: GHSA-4mjr-xmp4-gh2g (denial of

@@ -49,6 +49,11 @@ class BotSupervisor extends EventEmitter {
     this.restartTimes = [];
     this.restartTimer = null;
     this.busy = false;
+    /** @type {string[]|null} Config fields the bot reported as still unset, or
+     *  null while it has not reported yet. Sent over IPC from client.js on every
+     *  boot, so it is reset on each start rather than remembered from a run whose
+     *  config has since been edited. */
+    this.configPending = null;
   }
 
   // ── Logs ───────────────────────────────────────────────────────────────────
@@ -83,6 +88,12 @@ class BotSupervisor extends EventEmitter {
       pid: this.child?.pid ?? null,
       startedAt: this.startedAt,
       uptimeMs: this.startedAt ? Date.now() - this.startedAt : 0,
+      // 'running' alone no longer means "ready": since 09.09.2026 the bot also
+      // comes up with an unfinished config, ticket flow closed. Whoever asks —
+      // the SPA, or msk-shop checking whether an install succeeded — needs to be
+      // able to tell those two apart.
+      configPending: this.configPending,
+      needsConfig: Array.isArray(this.configPending) && this.configPending.length > 0,
     };
   }
 
@@ -118,6 +129,16 @@ class BotSupervisor extends EventEmitter {
 
     this.child = child;
     this.startedAt = Date.now();
+    // Forget the previous run's answer. Keeping it would report a config as
+    // unfinished after the operator has just fixed it and restarted.
+    this.configPending = null;
+
+    child.on('message', (msg) => {
+      if (msg?.type === 'config-state' && Array.isArray(msg.pending)) {
+        this.configPending = msg.pending;
+        this.emit('config-state', msg.pending);
+      }
+    });
 
     child.stdout?.on('data', (d) => this.pushLog(d.toString()));
     child.stderr?.on('data', (d) => this.pushLog(d.toString()));

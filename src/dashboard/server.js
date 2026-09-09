@@ -67,7 +67,11 @@ async function getMemberContext(guildId, userId) {
   if (hit && hit.expiresAt > Date.now()) return hit.value;
 
   const value = await resolveMemberContext(guildId, userId);
-  memberCache.set(key, { value, expiresAt: Date.now() + MEMBER_TTL_MS });
+  // Do not cache "the bot is not in the guild". It is the state of a fresh
+  // install, it is fixed by an invite that happens seconds later, and a minute of
+  // stale "not invited" after the operator has just invited the bot reads as a
+  // broken dashboard.
+  if (value.botInGuild) memberCache.set(key, { value, expiresAt: Date.now() + MEMBER_TTL_MS });
   return value;
 }
 
@@ -186,6 +190,12 @@ async function startServer({ config, supervisor }) {
       // Membership is resolved server-side. A user who is not in the guild (and
       // is not the owner) never gets a session at all.
       const ctx = await getMemberContext(config.guildId, user.id);
+      if (!ctx.botInGuild) {
+        return res.status(409).send(
+          'This bot is not on the server yet. Invite it with the Administrator ' +
+          'permission, then sign in again.',
+        );
+      }
       if (!ctx.inGuild && !ctx.isOwner) {
         return res.status(403).send('You are not a member of this server.');
       }
@@ -254,6 +264,15 @@ async function startServer({ config, supervisor }) {
 
     try {
       const ctx = await getMemberContext(config.guildId, userId);
+      // Nobody can be a member of a guild the bot cannot see, so this has to come
+      // first — otherwise the owner of a server the bot was never invited to is
+      // told they are not a member of their own server.
+      if (!ctx.botInGuild) {
+        return res.status(409).json({
+          error: 'This bot is not on the server yet. Invite it with the Administrator permission.',
+          botMissing: true,
+        });
+      }
       if (!ctx.inGuild && !ctx.isOwner) {
         return res.status(403).json({ error: 'You are not a member of this server.' });
       }

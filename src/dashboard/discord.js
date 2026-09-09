@@ -93,11 +93,21 @@ async function getGuildMember(guildId, userId) {
  * `guilds.members.read` scope on every login.
  */
 async function resolveMemberContext(guildId, userId) {
+  // A 404 on the GUILD means the bot itself is not (or no longer) a member —
+  // an expected state right after an install, when the operator has created the
+  // application but not yet invited it. getGuildMember has always treated its own
+  // 404 that way; getGuild did not, so the exception travelled all the way up and
+  // every dashboard request answered 500. The caller gets `botInGuild: false` and
+  // can say what actually needs doing.
   const [guild, member] = await Promise.all([
-    getGuild(guildId),
+    getGuild(guildId).catch((err) => {
+      if (err instanceof DiscordApiError && err.status === 404) return null;
+      throw err;
+    }),
     getGuildMember(guildId, userId),
   ]);
   return {
+    botInGuild: guild !== null,
     inGuild: member !== null,
     isOwner: guild?.owner_id === userId,
     roleIds: member?.roles ?? [],

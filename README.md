@@ -291,8 +291,10 @@ curl -O https://raw.githubusercontent.com/MSK-Scripts/discord_ticketbot/main/doc
 docker compose up -d
 ```
 
-The first start writes the example config into `config/` and stops, naming the
-placeholders you still have to replace. Fill them in and start again.
+The first start writes the example config into `config/` and comes up with its
+ticket flow closed, naming every placeholder you still have to replace. Fill them
+in and restart; until you do, the bot answers commands and buttons with a
+configuration notice instead of opening tickets.
 
 Full guide, including the dashboard and an external database:
 **[docu.msk-scripts.de → Docker](https://docu.msk-scripts.de/discord/discord_ticketbot/docker/)**

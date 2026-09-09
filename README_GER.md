@@ -291,8 +291,10 @@ curl -O https://raw.githubusercontent.com/MSK-Scripts/discord_ticketbot/main/doc
 docker compose up -d
 ```
 
-Der erste Start legt die Beispiel-Konfiguration in `config/` an und beendet sich
-mit einer Liste der Platzhalter, die noch zu ersetzen sind. Ausfüllen, neu starten.
+Der erste Start legt die Beispiel-Konfiguration in `config/` an und fährt mit
+geschlossenem Ticket-Ablauf hoch, mit einer Liste der Platzhalter, die noch zu
+ersetzen sind. Ausfüllen, neu starten; bis dahin antwortet der Bot auf Befehle
+und Knöpfe mit einem Konfigurationshinweis, statt Tickets zu öffnen.
 
 Ausführliche Anleitung inklusive Dashboard und externer Datenbank:
 **[docu.msk-scripts.de → Docker](https://docu.msk-scripts.de/discord/discord_ticketbot/docker/)**
