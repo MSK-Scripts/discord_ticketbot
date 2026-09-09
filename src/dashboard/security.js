@@ -141,16 +141,31 @@ function verifyCsrf(cookieToken, headerToken) {
 // Returns { userId } when the request is a valid trusted-proxy call, else null.
 // null means "fall through to the normal cookie-session path", so an absent or
 // mismatched secret simply behaves like an unauthenticated browser request.
-function verifyTrustedProxy(headers, secret) {
+/**
+ * Just the shared secret, without a user.
+ *
+ * Split out for the liveness probe, which asks whether the bot process is up.
+ * That is an infrastructure question and must not carry a user id: the operator
+ * msk-shop knows about is not necessarily staff in the bot's own dashboard, and
+ * conflating the two made a perfectly healthy installation report itself as
+ * failed. Whoever holds this secret already reaches the loopback port.
+ */
+function verifyProxySecret(headers, secret) {
   // Not configured, or configured too weakly to be a real credential.
-  if (typeof secret !== 'string' || secret.length < 32) return null;
-  if (!headers) return null;
+  if (typeof secret !== 'string' || secret.length < 32) return false;
+  if (!headers) return false;
 
   const provided = headers[PROXY_SECRET_HEADER];
-  const userId   = headers[PROXY_USER_HEADER];
-  if (!provided || !userId) return null;
+  if (!provided) return false;
+  return safeEqual(provided, secret);
+}
+
+function verifyTrustedProxy(headers, secret) {
+  if (!verifyProxySecret(headers, secret)) return null;
+
+  const userId = headers[PROXY_USER_HEADER];
+  if (!userId) return null;
   if (!SNOWFLAKE_RE.test(String(userId))) return null;
-  if (!safeEqual(provided, secret)) return null;
 
   return { userId: String(userId) };
 }
@@ -238,7 +253,7 @@ module.exports = {
   createToken, verifyToken,
   createSession, verifySession,
   createOAuthState, verifyOAuthState,
-  createCsrfToken, verifyCsrf, verifyTrustedProxy,
+  createCsrfToken, verifyCsrf, verifyTrustedProxy, verifyProxySecret,
   getClientIp,
   rateLimit, retryAfter, resetRateLimits,
 };

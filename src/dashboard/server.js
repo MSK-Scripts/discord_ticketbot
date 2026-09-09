@@ -347,6 +347,34 @@ async function startServer({ config, supervisor }) {
 
   // ── API ────────────────────────────────────────────────────────────────────
 
+  // ── Liveness probe ─────────────────────────────────────────────────────────
+  // Registered BEFORE the /api router on purpose, so it never passes through
+  // requireAuth. It answers one question, "is the bot process up and is its
+  // configuration finished", and that question has nothing to do with who is
+  // asking.
+  //
+  // It used to be asked through /api/bot/status with a user id attached, and
+  // that was wrong in a way that took a while to see: the person msk-shop knows
+  // as the owner of a hosted guild is not necessarily the guild owner on Discord
+  // and not necessarily staff in the bot's own dashboard. Such an installation
+  // answered 403, the probe read that as "unreachable", and a bot that had been
+  // running happily for an hour was reported as a failed install.
+  //
+  // Gated on the shared secret alone. It leaks no user data, only the state the
+  // supervisor already prints to its log, and anyone able to present the secret
+  // is already talking to a loopback-bound port.
+  app.get('/api/health', (req, res) => {
+    if (!sec.verifyProxySecret(req.headers, config.trustProxySecret)) {
+      return res.status(401).json({ error: 'Not authorised.' });
+    }
+    const state = supervisor.getState();
+    res.json({
+      status:        state.status,
+      needsConfig:   state.needsConfig,
+      configPending: state.configPending,
+    });
+  });
+
   const api = express.Router();
   api.use(requireAuth);
   api.use(requireCsrf);

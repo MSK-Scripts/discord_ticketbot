@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.19.0] - 2026-09-09
+
+### Added
+
+- **`GET /api/health`, a liveness probe that does not care who is asking.**
+  It answers one question, whether the bot process is up and whether its
+  configuration is finished, and it is gated on the trusted-proxy secret alone.
+  Registered before the `/api` router so it never passes through `requireAuth`.
+  It returns only what the supervisor already prints to its log: `status`,
+  `needsConfig` and the list of outstanding fields.
+
+### Fixed
+
+- **A healthy installation could report itself as failed.** msk-shop checked
+  whether a hosted bot had come up by calling `/api/bot/status` with the shared
+  secret and the customer's Discord id. That route sits behind `requireAuth`,
+  which resolves dashboard permissions live, and the person msk-shop knows as
+  the owner of a hosted guild is not necessarily the guild owner on Discord nor
+  staff in this bot's dashboard. Such an installation answered
+  `403 portalClosed`, the probe read that as "not reachable", and a bot that had
+  been running happily for an hour was recorded as a failed install. Measured on
+  a live customer bot before the fix. `verifyProxySecret()` is now split out of
+  `verifyTrustedProxy()`: the probe needs the secret, the identity check still
+  needs a valid snowflake on top, and a test pins that asymmetry down.
+
 ## [2.18.0] - 2026-09-09
 
 ### Changed
