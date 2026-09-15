@@ -363,8 +363,19 @@ async function startServer({ config, supervisor }) {
   // Gated on the shared secret alone. It leaks no user data, only the state the
   // supervisor already prints to its log, and anyone able to present the secret
   // is already talking to a loopback-bound port.
+  //
+  // Only FAILED attempts are charged. msk-shop polls this from localhost, so
+  // every hosted probe shares one client IP; counting successful calls could
+  // throttle a provisioning check, and a 429 would push msk-shop back onto the
+  // permission-gated fallback this route exists to avoid.
   app.get('/api/health', (req, res) => {
+    const key = `health-fail:${req.clientIp}`;
+    if (sec.isRateLimited(key, LIMIT_AUTH)) {
+      res.set('Retry-After', String(sec.retryAfter(key)));
+      return res.status(429).json({ error: 'Too many failed attempts.' });
+    }
     if (!sec.verifyProxySecret(req.headers, config.trustProxySecret)) {
+      sec.rateLimit(key, LIMIT_AUTH);
       return res.status(401).json({ error: 'Not authorised.' });
     }
     const state = supervisor.getState();

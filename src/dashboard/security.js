@@ -224,6 +224,16 @@ function rateLimit(key, { limit, windowMs }) {
   return true;
 }
 
+/**
+ * Read-only check: is this bucket already exhausted? Does not count as a hit.
+ * Lets a route charge only its failures, so legitimate callers are never
+ * throttled by their own successful requests.
+ */
+function isRateLimited(key, { limit }) {
+  const bucket = buckets.get(key);
+  return Boolean(bucket && bucket.resetAt > Date.now() && bucket.count >= limit);
+}
+
 /** Seconds until the bucket resets — for the Retry-After header. */
 function retryAfter(key) {
   const bucket = buckets.get(key);
@@ -255,5 +265,5 @@ module.exports = {
   createOAuthState, verifyOAuthState,
   createCsrfToken, verifyCsrf, verifyTrustedProxy, verifyProxySecret,
   getClientIp,
-  rateLimit, retryAfter, resetRateLimits,
+  rateLimit, isRateLimited, retryAfter, resetRateLimits,
 };

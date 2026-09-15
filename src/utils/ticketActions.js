@@ -29,6 +29,15 @@ const PRIORITY_EMOJI = { low: '🟢', medium: '🟡', high: '🟠', urgent: '�
 const PRIORITY_LABEL = { low: 'Niedrig', medium: 'Mittel', high: 'Hoch', urgent: 'Dringend' };
 const VALID_PRIORITIES = new Set(['low', 'medium', 'high', 'urgent']);
 
+// Hardcoded English label used before the claim field was localized. Still
+// matched when refreshing, so opening messages posted by older versions get
+// their field replaced instead of duplicated.
+const LEGACY_CLAIM_FIELD = '🙋 Claimed by';
+
+function claimedByLabel(client) {
+  return client?.locale?.embeds?.ticketLog?.fields?.claimed ?? 'Claimed by';
+}
+
 // ─── Channel Topic ────────────────────────────────────────────────────────────
 
 async function updateChannelTopic(channel, ticket, overrides = {}, client) {
@@ -39,7 +48,7 @@ async function updateChannelTopic(channel, ticket, overrides = {}, client) {
     ?? `${PRIORITY_EMOJI[priority]} ${PRIORITY_LABEL[priority]}`;
 
   let topic = priorityLabel;
-  if (claimedBy) topic += ` | 🙋 Claimed by <@${claimedBy}>`;
+  if (claimedBy) topic += ` | 🙋 ${claimedByLabel(client)} <@${claimedBy}>`;
 
   await channel.setTopic(topic).catch(err =>
     client?.logger?.warn(`[Topic] Could not set topic: ${err.message}`)
@@ -80,8 +89,10 @@ async function refreshTicketMessage(channel, isClaimed, ticket, overrides = {}, 
       `**${priorityKey}:** ${priorityLabel}`
     );
 
-    const CLAIM_FIELD = '🙋 Claimed by';
-    const fields      = (oldEmbed?.fields ?? []).filter(f => f.name !== CLAIM_FIELD);
+    const CLAIM_FIELD = `🙋 ${claimedByLabel(client)}`;
+    const fields      = (oldEmbed?.fields ?? []).filter(f =>
+      f.name !== CLAIM_FIELD && f.name !== LEGACY_CLAIM_FIELD
+    );
     if (claimedBy) fields.push({ name: CLAIM_FIELD, value: `<@${claimedBy}>`, inline: true });
 
     const newEmbed   = EmbedBuilder.from(oldEmbed).setDescription(newDescription).setFields(fields);

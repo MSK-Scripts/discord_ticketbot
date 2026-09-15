@@ -9,6 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.19.1] - 2026-09-15
+
+### Fixed
+
+- **"Claimed by" stayed in English after claiming a ticket.** The translation
+  existed in every locale, but two places ignored it: the channel topic and the
+  field that claiming adds to the ticket's opening message. Both now use the
+  configured language. When refreshing the opening message, the old English
+  field is still recognized, so tickets claimed on an older version get their
+  field replaced instead of showing it twice.
+
+### Security
+
+- **`/api/health` now limits failed secret attempts.** The probe added in 2.19.0
+  checked the shared secret on every request without a limit of its own
+  (CodeQL `js/missing-rate-limiting`). Wrong or missing secrets are now charged
+  against a per-IP budget of 10 per 5 minutes, after which the route answers
+  429. Successful calls are never counted: msk-shop polls from localhost, so all
+  hosted probes share one IP, and a throttled probe would fall back to the
+  permission-gated status route this endpoint was built to avoid.
+
+### Changed
+
+- **Dependencies updated.** `mysql2` 3.24.2 → 3.24.4 (supersedes Dependabot
+  PR #27). Dashboard UI: **Vite 7 → 8** and `@vitejs/plugin-react` 5 → 6 (Vite 8
+  builds with Rolldown), React 19.2 → 19.3, `lucide-react` 1.24 → 1.46, plus
+  patch and minor updates to the Radix primitives, Fontsource fonts,
+  `tailwind-merge` and Tailwind. `web/dist` rebuilt. `npm audit` reports 0
+  vulnerabilities in both projects.
+
 ## [2.19.0] - 2026-09-09
 
 ### Added
