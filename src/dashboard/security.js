@@ -198,62 +198,7 @@ function getClientIp(req) {
   return strip(req.socket?.remoteAddress ?? '127.0.0.1');
 }
 
-// ── Rate limiting ────────────────────────────────────────────────────────────
-//
-// In-memory fixed window. That is exactly right here: the dashboard is a single
-// Node process. It does NOT survive a restart and would not work across a PM2
-// cluster — both are acceptable, and a restart only ever resets limits, it never
-// grants extra access.
-
-const buckets = new Map();
-
-/**
- * @returns {boolean} true = request allowed, false = over the limit
- */
-function rateLimit(key, { limit, windowMs }) {
-  const now = Date.now();
-  const bucket = buckets.get(key);
-
-  if (!bucket || bucket.resetAt <= now) {
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return true;
-  }
-  if (bucket.count >= limit) return false;
-
-  bucket.count += 1;
-  return true;
-}
-
-/**
- * Read-only check: is this bucket already exhausted? Does not count as a hit.
- * Lets a route charge only its failures, so legitimate callers are never
- * throttled by their own successful requests.
- */
-function isRateLimited(key, { limit }) {
-  const bucket = buckets.get(key);
-  return Boolean(bucket && bucket.resetAt > Date.now() && bucket.count >= limit);
-}
-
-/** Seconds until the bucket resets — for the Retry-After header. */
-function retryAfter(key) {
-  const bucket = buckets.get(key);
-  if (!bucket) return 0;
-  return Math.max(0, Math.ceil((bucket.resetAt - Date.now()) / 1000));
-}
-
-function resetRateLimits() {
-  buckets.clear();
-}
-
-// Drop expired buckets so the map cannot grow unbounded. unref() so this timer
-// never keeps the process alive on its own.
-const sweeper = setInterval(() => {
-  const now = Date.now();
-  for (const [key, bucket] of buckets) {
-    if (bucket.resetAt <= now) buckets.delete(key);
-  }
-}, 5 * 60 * 1000);
-if (typeof sweeper.unref === 'function') sweeper.unref();
+// Rate limiting lives in ./rateLimits.js (express-rate-limit).
 
 module.exports = {
   SESSION_COOKIE, CSRF_COOKIE, CSRF_HEADER, STATE_COOKIE,
@@ -265,5 +210,4 @@ module.exports = {
   createOAuthState, verifyOAuthState,
   createCsrfToken, verifyCsrf, verifyTrustedProxy, verifyProxySecret,
   getClientIp,
-  rateLimit, isRateLimited, retryAfter, resetRateLimits,
 };

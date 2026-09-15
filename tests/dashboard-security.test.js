@@ -123,19 +123,6 @@ test('falls back to the socket address without a proxy header', () => {
   assert.equal(sec.getClientIp(req(null)), '10.0.0.1');
 });
 
-// ── Rate limiting ────────────────────────────────────────────────────────────
-
-test('the rate limiter allows up to the limit and then blocks', () => {
-  sec.resetRateLimits();
-  const opts = { limit: 3, windowMs: 60_000 };
-
-  assert.equal(sec.rateLimit('k', opts), true);
-  assert.equal(sec.rateLimit('k', opts), true);
-  assert.equal(sec.rateLimit('k', opts), true);
-  assert.equal(sec.rateLimit('k', opts), false, 'the 4th request must be blocked');
-  assert.equal(sec.rateLimit('other', opts), true, 'a different key has its own bucket');
-});
-
 // ── Fail-fast exposure checks ────────────────────────────────────────────────
 
 const baseEnv = { CLIENT_ID: '1', CLIENT_SECRET: '2', GUILD_ID: '3', DASHBOARD_ENABLED: 'true' };

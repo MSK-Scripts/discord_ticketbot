@@ -22,14 +22,9 @@ const { selectAccessRows, resolvePermissions, hasPermission, canUseDashboard } =
 const { resolveMemberContext } = require('./discord');
 const { buildAuthorizeUrl, exchangeCode, fetchOAuthUser } = require('./auth');
 const { registerRoutes } = require('./routes');
+const { createLimiters } = require('./rateLimits');
 
 const WEB_DIST = path.resolve(__dirname, '../../web/dist');
-
-// Rate limit tiers. The login endpoints are far stricter than normal browsing:
-// that is where an attacker would grind, and a legitimate user hits them twice.
-const LIMIT_GLOBAL = { limit: 240, windowMs: 60_000 };   // per IP
-const LIMIT_AUTH   = { limit: 10,  windowMs: 5 * 60_000 }; // per IP
-const LIMIT_WRITE  = { limit: 30,  windowMs: 60_000 };   // per user
 
 /** Cookie parsing without pulling in cookie-parser. */
 function parseCookies(req) {
@@ -131,14 +126,9 @@ async function startServer({ config, supervisor }) {
   });
 
   // ── Global rate limit ──────────────────────────────────────────────────────
-  app.use((req, res, next) => {
-    const key = `global:${req.clientIp}`;
-    if (!sec.rateLimit(key, LIMIT_GLOBAL)) {
-      res.set('Retry-After', String(sec.retryAfter(key)));
-      return res.status(429).json({ error: 'Too many requests. Please slow down.' });
-    }
-    next();
-  });
+  // Tiers and their reasoning live in ./rateLimits.js.
+  const limiters = createLimiters();
+  app.use(limiters.global);
 
   const secureCookie = config.publicUrl.startsWith('https://');
   const cookieBase = { httpOnly: true, secure: secureCookie, sameSite: 'lax', path: '/' };
@@ -157,22 +147,13 @@ async function startServer({ config, supervisor }) {
 
   // ── OAuth ──────────────────────────────────────────────────────────────────
 
-  app.get('/auth/login', (req, res) => {
-    const key = `auth:${req.clientIp}`;
-    if (!sec.rateLimit(key, LIMIT_AUTH)) {
-      return res.status(429).send('Too many login attempts. Please try again later.');
-    }
+  app.get('/auth/login', limiters.auth, (req, res) => {
     const state = sec.createOAuthState();
     res.cookie(sec.STATE_COOKIE, state, { ...cookieBase, maxAge: sec.STATE_TTL_MS });
     res.redirect(buildAuthorizeUrl(config, state));
   });
 
-  app.get('/auth/callback', async (req, res) => {
-    const key = `auth:${req.clientIp}`;
-    if (!sec.rateLimit(key, LIMIT_AUTH)) {
-      return res.status(429).send('Too many login attempts. Please try again later.');
-    }
-
+  app.get('/auth/callback', limiters.auth, async (req, res) => {
     // The state cookie is cleared on EVERY path, success or failure, so a stale
     // state can never be replayed.
     const stateCookie = req.cookies[sec.STATE_COOKIE];
@@ -314,7 +295,7 @@ async function startServer({ config, supervisor }) {
     // A trusted-proxy request carries no CSRF cookie by design and originates from
     // msk-shop, which already ran its own origin + CSRF checks before forwarding.
     // Re-checking here would reject every hosted mutation. The per-user write
-    // rate limit below still applies.
+    // rate limit (limiters.write, mounted after this) still applies.
     if (!req.viaTrustedProxy) {
       const origin = req.headers.origin;
       if (origin && origin !== config.publicUrl) {
@@ -323,14 +304,6 @@ async function startServer({ config, supervisor }) {
       if (!sec.verifyCsrf(req.cookies[sec.CSRF_COOKIE], req.headers[sec.CSRF_HEADER])) {
         return res.status(403).json({ error: 'Invalid CSRF token.' });
       }
-    }
-
-    // Per-user write budget, on top of the per-IP one. A browser client must not
-    // be able to spend the bot's global Discord rate-limit quota.
-    const key = `write:${req.auth.userId}`;
-    if (!sec.rateLimit(key, LIMIT_WRITE)) {
-      res.set('Retry-After', String(sec.retryAfter(key)));
-      return res.status(429).json({ error: 'Too many changes. Please slow down.' });
     }
     next();
   }
@@ -362,20 +335,10 @@ async function startServer({ config, supervisor }) {
   //
   // Gated on the shared secret alone. It leaks no user data, only the state the
   // supervisor already prints to its log, and anyone able to present the secret
-  // is already talking to a loopback-bound port.
-  //
-  // Only FAILED attempts are charged. msk-shop polls this from localhost, so
-  // every hosted probe shares one client IP; counting successful calls could
-  // throttle a provisioning check, and a 429 would push msk-shop back onto the
-  // permission-gated fallback this route exists to avoid.
-  app.get('/api/health', (req, res) => {
-    const key = `health-fail:${req.clientIp}`;
-    if (sec.isRateLimited(key, LIMIT_AUTH)) {
-      res.set('Retry-After', String(sec.retryAfter(key)));
-      return res.status(429).json({ error: 'Too many failed attempts.' });
-    }
+  // is already talking to a loopback-bound port. limiters.health charges failed
+  // secret attempts only (see ./rateLimits.js for why successes never count).
+  app.get('/api/health', limiters.health, (req, res) => {
     if (!sec.verifyProxySecret(req.headers, config.trustProxySecret)) {
-      sec.rateLimit(key, LIMIT_AUTH);
       return res.status(401).json({ error: 'Not authorised.' });
     }
     const state = supervisor.getState();
@@ -389,6 +352,7 @@ async function startServer({ config, supervisor }) {
   const api = express.Router();
   api.use(requireAuth);
   api.use(requireCsrf);
+  api.use(limiters.write);
 
   api.get('/me', (req, res) => {
     res.json({

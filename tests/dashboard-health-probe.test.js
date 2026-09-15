@@ -48,17 +48,6 @@ test('verifyTrustedProxy still rejects a user id that is not a snowflake', () =>
   assert.equal(sec.verifyTrustedProxy({ [HEADER]: SECRET, [USER]: 'admin' }, SECRET), null);
 });
 
-test('isRateLimited only reports an exhausted bucket and never counts a hit', () => {
-  sec.resetRateLimits();
-  const opts = { limit: 2, windowMs: 60_000 };
-  for (let i = 0; i < 5; i++) assert.equal(sec.isRateLimited('health-fail:test', opts), false);
-  sec.rateLimit('health-fail:test', opts);
-  assert.equal(sec.isRateLimited('health-fail:test', opts), false);
-  sec.rateLimit('health-fail:test', opts);
-  assert.equal(sec.isRateLimited('health-fail:test', opts), true);
-  sec.resetRateLimits();
-});
-
 test('the two checks disagree in exactly one direction', () => {
   // Secret only: the probe passes, the identity check does not. That asymmetry
   // is the point of the split; losing it would put the permission gate back in

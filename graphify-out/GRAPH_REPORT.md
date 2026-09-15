@@ -1,27 +1,27 @@
 # Graph Report - discord_ticketbot  (2026-09-15)
 
 ## Corpus Check
-- 177 files · ~181,844 words
+- 179 files · ~182,249 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1251 nodes · 2079 edges · 116 communities (70 shown, 24 thin omitted)
-- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 220 edges (avg confidence: 0.84)
+- 1258 nodes · 2093 edges · 113 communities (67 shown, 24 thin omitted)
+- Extraction: 89% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 218 edges (avg confidence: 0.84)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c8bf4348`
+- Built from commit: `4dc8a05a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - App.jsx
-- FormRenderer.jsx
+- Config.jsx
 - Bot Bridge and Webhooks
 - BotSupervisor
 - Dashboard Documentation and Features
 - panelSelect.js
-- updateNotice.js
+- dependencies
 - database/index.js
 - utils/transcript.js
 - Dashboard Settings and Favicons
@@ -34,13 +34,13 @@
 - Snippet Management System
 - permissions.js
 - Ticket Move Command
-- Discord API Integration
+- dashboard/discord.js
 - dependencies
 - client.js
 - embeds.js
 - feedback-comments.test.js
 - Development and Release Policies
-- Database Migration Tools
+- migrate-db.js
 - performReopen
 - Interaction Create Event
 - Transcript Preview Utility
@@ -60,20 +60,20 @@
 - Transcript Service and Licensing
 - Community and Security Guidelines
 - src/config.js
-- Ticket Client Core
+- rateLimits.js
 - priority.js
-- Command Loading Handler
+- updateNotice.js
 - Multi-Dialect Database Support
 - Release and Commit Workflow
 - Ticket Lock Commands
 - Ticket Note Commands
 - stats.js
-- Component Loading Handler
+- package.json
 - Syntax Highlighting Utilities
-- config-boot-gate.test.js
+- update-notice.test.js
 - Auto-Close Management
-- Event Loading Handler
-- Logging Utility
+- optionalDependencies
+- scripts
 - User Resolution Tests
 - Alert UI Components
 - Security Hardening and CodeQL
@@ -85,7 +85,7 @@
 - Panel Asset Configuration
 - Reverse Proxy Documentation
 - Transcript Design Updates
-- deleteConfirm.js
+- mskApi.js
 - DM Sans Font
 - Syne Font
 - JSONC Parser
@@ -96,19 +96,16 @@
 - Radix Tabs Primitive
 - Radix Tooltip Primitive
 - React DOM Library
-- validateConfig
+- versionCheck.js
 - Tailwind Merge Utility
 - Software Release Notes
 - Dependency Update Configuration
-- Activity Tracking Events
+- attachment-budget.test.js
 - React Icon Library
 - Permission Check Utilities
-- dashboard-guild-missing.test.js
 - blacklist.js
 - docker-entrypoint.sh
 - react
-- applySchema
-- mskApi.js
 
 ## God Nodes (most connected - your core abstractions)
 1. `getTicketByChannel()` - 51 edges
@@ -116,7 +113,7 @@
 3. `generateTranscript()` - 20 edges
 4. `BotSupervisor` - 17 edges
 5. `registerRoutes()` - 16 edges
-6. `startServer()` - 15 edges
+6. `startServer()` - 16 edges
 7. `openTicket()` - 15 edges
 8. `isBlacklisted()` - 11 edges
 9. `performClose()` - 11 edges
@@ -145,15 +142,15 @@
 - **Lean Runtime Discipline (no build step, minimal deps)** — contributing_dependency_light_principle, changelog_optional_dependencies_express_helmet, changelog_committed_web_dist, changelog_node_builtin_test_suite, changelog_dashboard_url_routing, github_dependabot_major_bump_block [INFERRED 0.85]
 - **Transcript Rendering Family (modern / classic / localized)** — readme_html_transcript, docs_preview_preview_transcript_modern_sample, docs_preview_preview_transcript_de_localized_sample, docs_preview_preview_transcript_classic_sample, docs_preview_preview_transcript_modern_design_tokens [INFERRED 0.85]
 
-## Communities (116 total, 24 thin omitted)
+## Communities (113 total, 24 thin omitted)
 
 ### Community 0 - "App.jsx"
-Cohesion: 0.05
-Nodes (78): COLORS, parseAnsi(), api, ApiError, logout(), readCookie(), request(), allowed() (+70 more)
+Cohesion: 0.06
+Nodes (71): COLORS, parseAnsi(), api, ApiError, logout(), readCookie(), request(), allowed() (+63 more)
 
-### Community 1 - "FormRenderer.jsx"
+### Community 1 - "Config.jsx"
 Cohesion: 0.07
-Nodes (50): ConfigForm(), detectEol(), parseEnv(), setEnvValue(), splitLines(), unquote(), EnvEditor(), isTruthy() (+42 more)
+Nodes (57): ConfigForm(), detectEol(), parseEnv(), setEnvValue(), splitLines(), unquote(), EnvEditor(), isTruthy() (+49 more)
 
 ### Community 2 - "Bot Bridge and Webhooks"
 Cohesion: 0.13
@@ -179,13 +176,13 @@ Nodes (30): {
   StringSelectMenuBuilder, StringSelectMenuOptionBuilder, MessageFlags,
 } (+22 more)
 
-### Community 6 - "updateNotice.js"
-Cohesion: 0.05
-Nodes (51): better-sqlite3, dotenv, express, helmet, mysql2, dependencies, better-sqlite3, discord.js (+43 more)
+### Community 6 - "dependencies"
+Cohesion: 0.18
+Nodes (11): better-sqlite3, dotenv, mysql2, dependencies, better-sqlite3, discord.js, dotenv, mysql2 (+3 more)
 
 ### Community 7 - "database/index.js"
-Cohesion: 0.11
-Nodes (7): clampInt(), countTickets(), { getCreateStatements, getMigrations }, getDashboardAudit(), listTickets(), { parseDatabaseUrl }, ticketFilterSql()
+Cohesion: 0.09
+Nodes (16): applySchema(), clampInt(), countTickets(), createDriver(), { getCreateStatements, getMigrations }, getDashboardAudit(), initDatabase(), listTickets() (+8 more)
 
 ### Community 8 - "utils/transcript.js"
 Cohesion: 0.14
@@ -196,12 +193,12 @@ Cohesion: 0.11
 Nodes (25): clearFavicon(), DATA_DIR, detectFaviconType(), ensureDataDir(), FAVICON_BASE, FAVICON_TYPES, fs, getFaviconFile() (+17 more)
 
 ### Community 10 - "getTicketByChannel"
-Cohesion: 0.12
-Nodes (16): execute(), { getTicketByChannel }, { SlashCommandBuilder, MessageFlags }, execute(), { getTicketByChannel }, { SlashCommandBuilder, MessageFlags }, execute(), { getTicketByChannel } (+8 more)
+Cohesion: 0.10
+Nodes (20): execute(), { getTicketByChannel }, { SlashCommandBuilder, MessageFlags }, execute(), { getTicketByChannel }, { SlashCommandBuilder, MessageFlags }, execute(), { getTicketByChannel } (+12 more)
 
 ### Community 11 - "server.js"
-Cohesion: 0.10
-Nodes (28): buildAuthorizeUrl(), exchangeCode(), fetchOAuthUser(), { redirectUri }, redirectUri(), canUseDashboard(), { buildAuthorizeUrl, exchangeCode, fetchOAuthUser }, db (+20 more)
+Cohesion: 0.11
+Nodes (26): buildAuthorizeUrl(), exchangeCode(), fetchOAuthUser(), { redirectUri }, redirectUri(), canUseDashboard(), { buildAuthorizeUrl, exchangeCode, fetchOAuthUser }, { createLimiters } (+18 more)
 
 ### Community 12 - "routes.js"
 Cohesion: 0.13
@@ -212,12 +209,12 @@ Cohesion: 0.14
 Nodes (21): crypto, ENV_PATH, fs, main(), path, printLinuxReverseProxy(), printWindowsReverseProxy(), readline (+13 more)
 
 ### Community 14 - "ticketActions.js"
-Cohesion: 0.10
-Nodes (25): ratingRequestEmbed(), ticketClosedDMEmbed(), ticketClosedEmbed(), ALLOWED_ATTACHMENT_EXTS, buildClosedButtons(), buildRatingRow(), closingChannels, collectAttachments() (+17 more)
+Cohesion: 0.11
+Nodes (22): ratingRequestEmbed(), ticketClosedDMEmbed(), ticketClosedEmbed(), ALLOWED_ATTACHMENT_EXTS, buildClosedButtons(), buildRatingRow(), closingChannels, collectAttachments() (+14 more)
 
 ### Community 15 - "security.js"
-Cohesion: 0.10
-Nodes (20): b64url(), buckets, createOAuthState(), createSession(), createToken(), crypto, getSecret(), safeEqual() (+12 more)
+Cohesion: 0.14
+Nodes (18): b64url(), createOAuthState(), createSession(), createToken(), crypto, getSecret(), safeEqual(), sign() (+10 more)
 
 ### Community 16 - "Snippet Management System"
 Cohesion: 0.20
@@ -238,21 +235,21 @@ Nodes (9): execute(), { getTicketByChannel }, { performMove }, {
   ActionRowBuilder, MessageFlags,
 }, execute(), { getTicketByChannel }, { MessageFlags }, { performMove } (+1 more)
 
-### Community 19 - "Discord API Integration"
-Cohesion: 0.25
-Nodes (14): avatarUrl(), cacheUser(), DiscordApiError, getChannelMessages(), getGuild(), getGuildChannels(), getGuildLookups(), getGuildMember() (+6 more)
+### Community 19 - "dashboard/discord.js"
+Cohesion: 0.17
+Nodes (17): avatarUrl(), cacheUser(), DiscordApiError, getChannelMessages(), getGuild(), getGuildChannels(), getGuildLookups(), getGuildMember() (+9 more)
 
 ### Community 20 - "dependencies"
 Cohesion: 0.13
 Nodes (15): class-variance-authority, clsx, @fontsource/space-mono, @radix-ui/react-label, @radix-ui/react-scroll-area, @radix-ui/react-select, @radix-ui/react-switch, dependencies (+7 more)
 
 ### Community 21 - "client.js"
-Cohesion: 0.15
-Nodes (13): { checkApiKey }, { checkVersion }, { Client, GatewayIntentBits, Partials, Collection }, { initDatabase }, { loadCommands }, { loadComponents }, { loadConfig, inspectConfig }, { loadEvents } (+5 more)
+Cohesion: 0.06
+Nodes (36): client, { TicketClient }, { checkApiKey }, { checkVersion }, { Client, GatewayIntentBits, Partials, Collection }, { initDatabase }, { loadCommands }, { loadComponents } (+28 more)
 
 ### Community 22 - "embeds.js"
-Cohesion: 0.24
-Nodes (11): execute(), { getAllOpenTickets }, { parseColor }, { SlashCommandBuilder, EmbedBuilder, MessageFlags }, getAllOpenTickets(), { EmbedBuilder, Colors }, formatDuration(), parseColor() (+3 more)
+Cohesion: 0.23
+Nodes (12): execute(), { getAllOpenTickets }, { parseColor }, { SlashCommandBuilder, EmbedBuilder, MessageFlags }, getAllOpenTickets(), { EmbedBuilder, Colors }, formatDuration(), panelEmbed() (+4 more)
 
 ### Community 23 - "feedback-comments.test.js"
 Cohesion: 0.20
@@ -270,13 +267,13 @@ Nodes (14): {
 Cohesion: 0.17
 Nodes (12): Auto-Close Routed Through Shared performClose Flow, Committed web/dist so Self-Hosters Never Build, node:test Built-In Test Suite (zero new dependencies), express/helmet as optionalDependencies, package.json overrides Forcing undici ^6.27.0, v2.5.1 — Auto-close parity + undici advisories patched, Coding Conventions (CommonJS, tb_ prefix, client.logger), Dependency-Light, No-Build-Step Principle (+4 more)
 
-### Community 25 - "Database Migration Tools"
-Cohesion: 0.15
-Nodes (10): { DEFAULT_SQLITE_PATH }, { openDatabase }, path, TABLES, createDriver(), initDatabase(), openDatabase(), DEFAULT_SQLITE_PATH (+2 more)
+### Community 25 - "migrate-db.js"
+Cohesion: 0.18
+Nodes (7): { DEFAULT_SQLITE_PATH }, { openDatabase }, path, TABLES, DEFAULT_SQLITE_PATH, parseDatabaseUrl(), path
 
 ### Community 26 - "performReopen"
-Cohesion: 0.18
-Nodes (11): execute(), { getTicketByChannel }, { performReopen }, { SlashCommandBuilder, MessageFlags }, execute(), { getTicketByChannel }, { MessageFlags }, { performReopen } (+3 more)
+Cohesion: 0.20
+Nodes (10): execute(), { getTicketByChannel }, { performReopen }, { SlashCommandBuilder, MessageFlags }, execute(), { getTicketByChannel }, { MessageFlags }, { performReopen } (+2 more)
 
 ### Community 28 - "Transcript Preview Utility"
 Cohesion: 0.20
@@ -288,18 +285,18 @@ Nodes (9): execute(), { getTicketByChannel }, { performClaim }, { SlashCommandBu
 
 ### Community 30 - "panel.js"
 Cohesion: 0.21
-Nodes (11): { buildTicketPanel }, execute(), { savePanelMessage }, {
+Nodes (10): { buildTicketPanel }, execute(), { savePanelMessage }, {
   SlashCommandBuilder,
   PermissionFlagsBits,
   MessageFlags,
-}, savePanelMessage(), panelEmbed(), {
+}, savePanelMessage(), {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
   AttachmentBuilder,
-}, buildTicketPanel() (+3 more)
+}, buildTicketPanel(), fs (+2 more)
 
 ### Community 31 - "Ticket Unclaim Command"
 Cohesion: 0.22
@@ -360,20 +357,20 @@ Cohesion: 0.25
 Nodes (8): Contributor Covenant Code of Conduct v2.0, Community Impact Enforcement Ladder, Mozilla Code of Conduct Enforcement Ladder (cited source), Contributing Guide, Private Security Disclosure Policy, GitHub Sponsors Funding (MSK-Scripts), Bug Report Issue Template, Feature Request Issue Template
 
 ### Community 47 - "src/config.js"
-Cohesion: 0.32
-Nodes (7): CONFIG_PATH, describeParseError(), EXAMPLE_PATH, fs, loadConfig(), path, stripJsonComments()
+Cohesion: 0.13
+Nodes (18): CONFIG_PATH, describeParseError(), EXAMPLE_PATH, fs, inspectConfig(), loadConfig(), path, stripJsonComments() (+10 more)
 
-### Community 50 - "Ticket Client Core"
-Cohesion: 0.29
-Nodes (3): client, { TicketClient }, TicketClient
+### Community 50 - "rateLimits.js"
+Cohesion: 0.22
+Nodes (11): build(), byClientIp(), createLimiters(), DEFAULT_LIMITS, { rateLimit, ipKeyGenerator }, retryAfterSeconds(), assert, { createLimiters } (+3 more)
 
 ### Community 51 - "priority.js"
-Cohesion: 0.17
-Nodes (12): execute(), { getTicketByChannel, setPriority }, { SlashCommandBuilder, MessageFlags }, { updateChannelTopic, refreshTicketMessage }, setPriority(), claimedByLabel(), refreshTicketMessage(), updateChannelTopic() (+4 more)
+Cohesion: 0.15
+Nodes (13): execute(), { getTicketByChannel, setPriority }, { SlashCommandBuilder, MessageFlags }, { updateChannelTopic, refreshTicketMessage }, setPriority(), buildTicketButtons(), claimedByLabel(), refreshTicketMessage() (+5 more)
 
-### Community 52 - "Command Loading Handler"
-Cohesion: 0.33
-Nodes (6): COMMANDS_DIR, fs, getFiles(), loadCommands(), path, { REST, Routes }
+### Community 52 - "updateNotice.js"
+Cohesion: 0.25
+Nodes (10): updateAvailableEmbed(), { fetchLatestRelease, isNewer }, fs, path, readAnnounced(), runUpdateCheck(), shouldAnnounce(), STORE_FILE (+2 more)
 
 ### Community 54 - "Multi-Dialect Database Support"
 Cohesion: 0.33
@@ -395,29 +392,29 @@ Nodes (5): execute(), { getTicketByChannel, addNote, getNotes }, { SlashCommandB
 Cohesion: 0.29
 Nodes (9): execute(), { getStats, getUserStats }, { SlashCommandBuilder, MessageFlags }, { statsEmbed, userStatsEmbed }, getStats(), getTotalTicketCount(), getUserStats(), num() (+1 more)
 
-### Community 59 - "Component Loading Handler"
-Cohesion: 0.40
-Nodes (5): COMPONENTS_DIR, fs, getFiles(), loadComponents(), path
+### Community 59 - "package.json"
+Cohesion: 0.25
+Nodes (7): description, engines, node, license, main, name, version
 
 ### Community 60 - "Syntax Highlighting Utilities"
 Cohesion: 0.60
 Nodes (5): esc(), ESCAPE, highlight(), highlightEnv(), highlightJsonc()
 
-### Community 61 - "config-boot-gate.test.js"
-Cohesion: 0.32
-Nodes (6): inspectConfig(), assert, inspect(), { inspectConfig, validateConfig }, notEnv(), test
+### Community 61 - "update-notice.test.js"
+Cohesion: 0.29
+Nodes (7): resolveConfig(), startUpdateNotifier(), assert, cfg(), { isNewer, parseRelease }, { shouldAnnounce, resolveConfig, DEFAULT_INTERVAL_HOURS, MIN_INTERVAL_HOURS }, test
 
 ### Community 62 - "Auto-Close Management"
 Cohesion: 0.50
 Nodes (4): execute(), { getTicketByChannel, setAutoClosePaused }, { SlashCommandBuilder, MessageFlags }, setAutoClosePaused()
 
-### Community 63 - "Event Loading Handler"
+### Community 63 - "optionalDependencies"
 Cohesion: 0.29
-Nodes (5): printBanner(), EVENTS_DIR, fs, loadEvents(), path
+Nodes (7): express, express-rate-limit, helmet, optionalDependencies, express, express-rate-limit, helmet
 
-### Community 64 - "Logging Utility"
-Cohesion: 0.50
-Nodes (4): COLORS, format(), logger, timestamp()
+### Community 64 - "scripts"
+Cohesion: 0.29
+Nodes (7): scripts, dashboard, dashboard:setup, db:migrate, dev, start, test
 
 ### Community 65 - "User Resolution Tests"
 Cohesion: 0.40
@@ -435,37 +432,25 @@ Nodes (3): Self-Contained Offline HTML Transcript (Base64 assets), v2.2.2 — Tr
 Cohesion: 0.67
 Nodes (3): Per-Guild API Key Verification, Discord Verify OAuth App, Startup Console Output & Tier Detection
 
-### Community 79 - "deleteConfirm.js"
-Cohesion: 0.40
-Nodes (5): { captureFinalTranscript }, execute(), { getTicketByChannel }, { MessageFlags }, captureFinalTranscript()
+### Community 79 - "mskApi.js"
+Cohesion: 0.21
+Nodes (10): { captureFinalTranscript }, execute(), { getTicketByChannel }, { MessageFlags }, attemptUpload(), RETRYABLE_STATUS, sleep(), UPLOAD_RETRY_DELAYS_MS (+2 more)
 
-### Community 90 - "validateConfig"
-Cohesion: 0.33
-Nodes (5): validateConfig(), assert, errorsOf(), test, { validateConfig }
+### Community 90 - "versionCheck.js"
+Cohesion: 0.70
+Nodes (4): checkVersion(), fetchLatestRelease(), isNewer(), parseRelease()
 
-### Community 106 - "Activity Tracking Events"
-Cohesion: 0.60
-Nodes (4): setLastNotifySent(), updateLastActivity(), execute(), { updateLastActivity, getTicketByChannel, setLastNotifySent }
+### Community 106 - "attachment-budget.test.js"
+Cohesion: 0.50
+Nodes (3): assert, { resolveAttachmentBudget }, test
 
 ### Community 108 - "Permission Check Utilities"
 Cohesion: 0.33
 Nodes (6): BITFIELD, checkBotPermissions(), inviteUrl(), OPTIONAL, { PermissionFlagsBits }, REQUIRED
 
-### Community 109 - "dashboard-guild-missing.test.js"
-Cohesion: 0.40
-Nodes (3): assert, { resolveMemberContext }, test
-
 ### Community 110 - "blacklist.js"
 Cohesion: 0.43
 Nodes (6): { addToBlacklist, removeFromBlacklist, isBlacklisted, getBlacklist }, execute(), { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits, MessageFlags }, addToBlacklist(), getBlacklist(), removeFromBlacklist()
-
-### Community 114 - "applySchema"
-Cohesion: 0.33
-Nodes (6): applySchema(), migrateBlacklistUnique(), migrateTranscriptColumnType(), getCreateStatements(), getMigrations(), TYPES
-
-### Community 115 - "mskApi.js"
-Cohesion: 0.47
-Nodes (5): attemptUpload(), RETRYABLE_STATUS, sleep(), UPLOAD_RETRY_DELAYS_MS, uploadTranscript()
 
 ## Ambiguous Edges - Review These
 - `AGPL Section 13 Remote Network Interaction` → `DASHBOARD_PUBLIC_PORTAL End-User Portal`  [AMBIGUOUS]
@@ -478,8 +463,8 @@ Nodes (5): attemptUpload(), RETRYABLE_STATUS, sleep(), UPLOAD_RETRY_DELAYS_MS, u
   .github/workflows/mirror.yml · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **422 isolated node(s):** `{ loadDashboardConfig, validateDashboardConfig, ensureSessionSecret }`, `{ BotSupervisor }`, `docker-entrypoint.sh script`, `fs`, `path` (+417 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 585 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **424 isolated node(s):** `{ loadDashboardConfig, validateDashboardConfig, ensureSessionSecret }`, `{ BotSupervisor }`, `docker-entrypoint.sh script`, `fs`, `path` (+419 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 583 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **24 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
@@ -493,9 +478,9 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: semantically_similar_to) - confidence is low._
 - **What is the exact relationship between `Mirror to Codeberg Workflow` and `GNU Affero General Public License v3.0`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `getTicketByChannel()` connect `getTicketByChannel` to `panelSelect.js`, `database/index.js`, `utils/transcript.js`, `performClose`, `Activity Tracking Events`, `deleteConfirm.js`, `Snippet Management System`, `Ticket Move Command`, `priority.js`, `Ticket Lock Commands`, `Ticket Note Commands`, `performReopen`, `Ticket Claim Command`, `Auto-Close Management`, `Ticket Unclaim Command`?**
+- **Why does `getTicketByChannel()` connect `getTicketByChannel` to `panelSelect.js`, `database/index.js`, `utils/transcript.js`, `performClose`, `mskApi.js`, `Snippet Management System`, `Ticket Move Command`, `priority.js`, `Ticket Lock Commands`, `Ticket Note Commands`, `performReopen`, `Ticket Claim Command`, `Auto-Close Management`, `Ticket Unclaim Command`?**
   _High betweenness centrality (0.020) - this node is a cross-community bridge._
-- **Why does `checkVersion()` connect `updateNotice.js` to `client.js`, `Event Loading Handler`?**
-  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+- **Why does `checkVersion()` connect `versionCheck.js` to `package.json`, `client.js`?**
+  _High betweenness centrality (0.019) - this node is a cross-community bridge._
 - **What connects `{ loadDashboardConfig, validateDashboardConfig, ensureSessionSecret }`, `{ BotSupervisor }`, `docker-entrypoint.sh script` to the rest of the system?**
-  _422 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _424 weakly-connected nodes found - possible documentation gaps or missing edges._

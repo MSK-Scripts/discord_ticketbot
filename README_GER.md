@@ -211,7 +211,8 @@ discord_ticketbot/
     ├── dashboard/              # Optionales Web-Dashboard (nur geladen, wenn aktiviert)
     │   ├── server.js           # Express-App + eine zentrale Security-Middleware-Kette
     │   ├── supervisor.js       # Forkt und verwaltet den Bot-Prozess
-    │   ├── security.js         # Session, CSRF, Rate-Limit, Client-IP
+    │   ├── security.js         # Session, CSRF, Client-IP
+    │   ├── rateLimits.js       # Rate-Limits (express-rate-limit)
     │   ├── permissions.js      # Rechtemodell (Rolle/Nutzer)
     │   ├── auth.js             # Discord OAuth (identify-Scope)
     │   ├── discord.js          # REST-Client + Namensauflösung

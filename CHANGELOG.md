@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [2.19.2] - 2026-09-15
+
+### Changed
+
+- **Dashboard rate limiting now runs on `express-rate-limit`.** The hand-rolled
+  fixed-window limiter in `security.js` is gone. All four tiers live in the new
+  `src/dashboard/rateLimits.js` and keep their previous budgets: global
+  (240/min per IP), login and callback (10 per 5 min per IP, shared), writes
+  (30/min per user, reads skipped) and `/api/health` (10 failed attempts per
+  5 min per IP, successful calls never counted). Responses, status codes and
+  the `Retry-After` header are unchanged. IPv6 clients are now grouped by
+  subnet, so rotating addresses no longer resets a limit. CodeQL recognizes the
+  library, which closes the `js/missing-rate-limiting` finding that 2.19.1 only
+  fixed in substance.
+- `express-rate-limit` is an optional dependency like `express` and `helmet`,
+  so it is only installed alongside the dashboard.
+
 ## [2.19.1] - 2026-09-15
 
 ### Fixed
