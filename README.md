@@ -63,6 +63,8 @@ It is a **plain Discord bot**: no game server, no FiveM, no ESX or QBCore, no fr
 
 Instead of sending transcripts as file attachments via DM, the bot can upload them to **[www.msk-scripts.de](https://www.msk-scripts.de)** and generate a public link. It opens in any browser, no download required.
 
+Without an API key nothing is uploaded: the transcript is attached as an HTML file to the log channel and, if `closeOption.dmUser` is on, to the user's close DM. Set `closeOption.transcriptToUser` to `false` to keep transcripts staff-only (no link or file in the DM).
+
 ### Subscription Tiers
 
 | Feature | Basic (free) | Premium (€3.99/mo) | Premium+ (€6.99/mo) | Business (€9.99/mo) |

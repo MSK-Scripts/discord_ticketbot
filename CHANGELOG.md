@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [Unreleased]
+
+### Added
+
+- **`closeOption.transcriptToUser`** (default `true`). Set it to `false` to keep
+  transcripts staff-only: the close DM then carries neither the transcript link
+  nor the file.
+
+### Fixed
+
+- **The placeholder `MSK_API_KEY` no longer uploads transcripts.** The value
+  shipped in `.env.example` was treated as "no key" only by the startup check;
+  uploads and attachment collection still sent every transcript to
+  msk-scripts.de with it.
+- **Without an API key nothing is uploaded.** The transcript is attached to the
+  log channel as an HTML file, without an "upload failed" warning. A real upload
+  failure still falls back to the file, with the warning.
+- **The close DM respects `closeOption.dmUser`.** It used to be forced whenever
+  a fallback file existed, with a misleading "service unavailable" note.
+- **Transcripts include the answers to the ticket questions.** Embed fields were
+  not rendered, so the intake answers were missing from every transcript.
+- **Custom-emoji fetching is capped** at 200 unique emojis, ten at a time.
+  Pasting thousands of fake emoji ids caused that many concurrent CDN requests
+  when the ticket was closed.
+- **Long question answers no longer break ticket creation.** Answer fields are
+  truncated to Discord's limits (name 256, value 1024 characters).
+- MSK requests have timeouts (60 s upload, 10 s otherwise), so a hung server
+  cannot block a close or the startup key check.
+
 ## [2.19.2] - 2026-09-15
 
 ### Changed
