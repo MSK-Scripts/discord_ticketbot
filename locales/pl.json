@@ -253,7 +253,8 @@
     "feedbackCommentEmpty": "❌ Twój komentarz nie może być pusty.",
     "feedbackCommentFull": "❌ Ta opinia ma już maksymalną liczbę komentarzy.",
     "feedbackCommentFailed": "❌ Nie udało się zaktualizować wiadomości z opinią.",
-    "feedbackCommentSaved": "✅ Twój komentarz został dodany."
+    "feedbackCommentSaved": "✅ Twój komentarz został dodany.",
+    "orphanedTicketReason": "Kanał zgłoszenia już nie istnieje"
   },
   "priorities": {
     "low": "🟢 Niski",

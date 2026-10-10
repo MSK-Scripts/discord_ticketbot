@@ -253,7 +253,8 @@
     "feedbackCommentEmpty": "❌ O teu comentário não pode estar vazio.",
     "feedbackCommentFull": "❌ Esta avaliação já tem o número máximo de comentários.",
     "feedbackCommentFailed": "❌ Não foi possível atualizar a mensagem da avaliação.",
-    "feedbackCommentSaved": "✅ O teu comentario foi adicionado."
+    "feedbackCommentSaved": "✅ O teu comentario foi adicionado.",
+    "orphanedTicketReason": "O canal do ticket já não existe"
   },
   "priorities": {
     "low": "🟢 Baixa",

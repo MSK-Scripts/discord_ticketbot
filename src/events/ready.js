@@ -1,7 +1,7 @@
 const { ActivityType } = require('discord.js');
-const { getInactiveTickets, getTicketsNeedingStaffReminder, setStaffReminded, getStats, getPanelMessage, deletePanelMessage } = require('../database');
+const { getInactiveTickets, getTicketsNeedingStaffReminder, setStaffReminded, getStats, getPanelMessage, deletePanelMessage, getAllOpenTickets } = require('../database');
 const { buildTicketPanel } = require('../utils/panel');
-const { performClose } = require('../utils/ticketActions');
+const { performClose, fetchTicketChannel } = require('../utils/ticketActions');
 const { registerBotBridge } = require('../dashboard/botBridge');
 const { checkBotPermissions } = require('../utils/permissionCheck');
 const { startUpdateNotifier } = require('../utils/updateNotice');
@@ -56,6 +56,10 @@ module.exports = {
         client.logger.info(`[Ready] Status set: ${statusCfg.type} "${statusCfg.text}"`);
       }
     }
+
+    // ── Orphaned tickets ──────────────────────────────────────────────────────
+    // Channels deleted while the bot was offline never fired channelDelete.
+    reconcileOpenTickets(client);
 
     // ── Auto-close loop ───────────────────────────────────────────────────────
     const autoCfg = client.config.autoClose;
@@ -139,6 +143,18 @@ async function refreshTicketPanel(client) {
     .catch(err => client.logger.warn(`[Panel] Failed to refresh panel: ${err.message}`));
 }
 
+// ─── Orphaned tickets ─────────────────────────────────────────────────────────
+
+/** Close every "open" ticket whose channel no longer exists (see fetchTicketChannel). */
+async function reconcileOpenTickets(client) {
+  try {
+    const tickets = await getAllOpenTickets(process.env.GUILD_ID);
+    for (const ticket of tickets) await fetchTicketChannel(client, ticket.channel_id);
+  } catch (err) {
+    client.logger.error('[Tickets] Open-ticket reconciliation failed:', err);
+  }
+}
+
 // ─── Auto-close ───────────────────────────────────────────────────────────────
 
 async function runAutoClose(client, thresholdMs, warnMs, excludeClaimed) {
@@ -160,7 +176,7 @@ async function runAutoClose(client, thresholdMs, warnMs, excludeClaimed) {
 
   for (const ticket of tickets) {
     try {
-      const channel = await client.channels.fetch(ticket.channel_id).catch(() => null);
+      const channel = await fetchTicketChannel(client, ticket.channel_id);
       if (!channel) continue;
 
       const idleMs      = Date.now() - ticket.last_activity;
@@ -242,7 +258,7 @@ async function runStaffReminder(client, reminderMs) {
 
   for (const ticket of tickets) {
     try {
-      const channel = await client.channels.fetch(ticket.channel_id).catch(() => null);
+      const channel = await fetchTicketChannel(client, ticket.channel_id);
       if (!channel) continue;
 
       const hoursIdle = Math.floor((Date.now() - ticket.last_activity) / 3_600_000);

@@ -253,7 +253,8 @@
     "feedbackCommentEmpty": "❌ Dein Kommentar darf nicht leer sein.",
     "feedbackCommentFull": "❌ Diese Bewertung hat bereits die maximale Anzahl an Kommentaren.",
     "feedbackCommentFailed": "❌ Die Bewertungs-Nachricht konnte nicht aktualisiert werden.",
-    "feedbackCommentSaved": "✅ Dein Kommentar wurde hinzugefügt."
+    "feedbackCommentSaved": "✅ Dein Kommentar wurde hinzugefügt.",
+    "orphanedTicketReason": "Ticket-Kanal existiert nicht mehr"
   },
   "priorities": {
     "low": "🟢 Niedrig",

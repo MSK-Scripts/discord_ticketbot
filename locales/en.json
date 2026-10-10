@@ -253,7 +253,8 @@
     "feedbackCommentEmpty": "❌ Your comment cannot be empty.",
     "feedbackCommentFull": "❌ This rating already carries the maximum number of comments.",
     "feedbackCommentFailed": "❌ The rating message could not be updated.",
-    "feedbackCommentSaved": "✅ Your comment has been added."
+    "feedbackCommentSaved": "✅ Your comment has been added.",
+    "orphanedTicketReason": "Ticket channel no longer exists"
   },
   "priorities": {
     "low": "🟢 Low",
