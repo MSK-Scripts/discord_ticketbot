@@ -17,7 +17,7 @@
 require('dotenv').config({ quiet: true });
 const path = require('path');
 const { openDatabase } = require('../src/database');
-const { DEFAULT_SQLITE_PATH } = require('../src/database/url');
+const { DEFAULT_SQLITE_PATH, redactUrl } = require('../src/database/url');
 
 // ── Args ────────────────────────────────────────────────────────────────────
 function parseArgs(argv) {
@@ -66,8 +66,8 @@ async function rowCount(driver, table) {
     process.exit(1);
   }
 
-  console.log(`[Migrate] Source: ${sourceUrl}`);
-  console.log(`[Migrate] Target: ${targetUrl}`);
+  console.log(`[Migrate] Source: ${redactUrl(sourceUrl)}`);
+  console.log(`[Migrate] Target: ${redactUrl(targetUrl)}`);
 
   let source, target;
   try {
