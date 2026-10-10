@@ -77,12 +77,16 @@ module.exports = {
 
       const reason = interaction.options.getString('reason') ?? null;
 
+      // One permission edit per participant can outlast Discord's 3 s reply
+      // window, so acknowledge first.
+      await interaction.deferReply();
+
       // Remove SendMessages from the creator and every /add-ed user
       await editParticipantAccess(client, channel, ticket, { SendMessages: false });
 
       await lockTicket(interaction.channelId);
 
-      return interaction.reply({
+      return interaction.editReply({
         embeds: [{
           description: reason
             ? client.t('embeds.locked.withReason', { user: `<@${interaction.user.id}>`, reason })
@@ -101,12 +105,14 @@ module.exports = {
         });
       }
 
+      await interaction.deferReply();
+
       // Restore SendMessages for the creator and every /add-ed user
       await editParticipantAccess(client, channel, ticket, { SendMessages: true });
 
       await unlockTicket(interaction.channelId);
 
-      return interaction.reply({
+      return interaction.editReply({
         embeds: [{
           description: client.t('embeds.unlocked.description', { user: `<@${interaction.user.id}>` }),
           color: 0x57f287,
