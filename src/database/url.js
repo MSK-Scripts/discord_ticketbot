@@ -23,6 +23,16 @@ const DEFAULT_SQLITE_PATH = path.resolve(__dirname, '../../data/tickets.db');
  *           | { client: 'postgres', options: object }}
  * @throws {Error} on an unsupported scheme or an unparseable URL
  */
+/**
+ * The URL with its password masked, for error messages and logs: a malformed
+ * DATABASE_URL must not end up in the journal with the credentials in it.
+ */
+function redactUrl(urlStr) {
+  // Greedy up to the LAST "@": an unencoded "@" inside the password must not
+  // leave its tail visible. Over-masking a stray "@" later in the URL is fine.
+  return String(urlStr ?? '').replace(/(\/\/[^:/@]*:).*@/, '$1***@');
+}
+
 function parseDatabaseUrl(urlStr) {
   const raw = (urlStr ?? '').trim();
 
@@ -35,7 +45,7 @@ function parseDatabaseUrl(urlStr) {
   if (!schemeMatch) {
     throw new Error(
       `DATABASE_URL is set but has no scheme. Expected e.g. "postgres://…", `
-      + `"mysql://…" or "sqlite:./data/tickets.db". Got: "${raw}".`
+      + `"mysql://…" or "sqlite:./data/tickets.db". Got: "${redactUrl(raw)}".`
     );
   }
   const scheme = schemeMatch[1].toLowerCase();
@@ -64,12 +74,12 @@ function parseDatabaseUrl(urlStr) {
   try {
     parsed = new URL(raw);
   } catch {
-    throw new Error(`DATABASE_URL could not be parsed as a URL: "${raw}".`);
+    throw new Error(`DATABASE_URL could not be parsed as a URL: "${redactUrl(raw)}".`);
   }
 
   const database = decodeURIComponent(parsed.pathname.replace(/^\//, ''));
   if (!database) {
-    throw new Error(`DATABASE_URL is missing the database name (the path after the host): "${raw}".`);
+    throw new Error(`DATABASE_URL is missing the database name (the path after the host): "${redactUrl(raw)}".`);
   }
 
   const sslRequested =
@@ -113,4 +123,4 @@ function parseDatabaseUrl(urlStr) {
   );
 }
 
-module.exports = { parseDatabaseUrl, DEFAULT_SQLITE_PATH };
+module.exports = { parseDatabaseUrl, redactUrl, DEFAULT_SQLITE_PATH };

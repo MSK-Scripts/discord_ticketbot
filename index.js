@@ -16,7 +16,10 @@ process.on('unhandledRejection', (err) => {
 // state: log it and exit so the service manager restarts a clean process.
 process.on('uncaughtException', (err) => {
   client.logger.error('[Process] Uncaught exception — exiting:', err);
-  process.exit(1);
+  // stdout is a pipe under the dashboard supervisor (async on Linux): give the
+  // log line a moment to drain instead of exiting on the spot.
+  process.exitCode = 1;
+  setTimeout(() => process.exit(1), 200);
 });
 
 /**
