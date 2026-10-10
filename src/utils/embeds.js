@@ -86,7 +86,11 @@ function ticketOpenedEmbed(client, { user, ticketType, priority, count, answers 
   // Always show answers as fields when questions are defined
   if (hasAnswers) {
     ticketType.questions.forEach((q, i) => {
-      if (answers[i]) embed.addFields({ name: q.label, value: answers[i], inline: false });
+      // Discord limits: field name 256, value 1024 characters. A longer question
+      // maxLength in the config made addFields throw after the channel existed.
+      if (answers[i]) {
+        embed.addFields({ name: String(q.label).slice(0, 256), value: answers[i].slice(0, 1024), inline: false });
+      }
     });
   }
 

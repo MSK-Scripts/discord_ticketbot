@@ -263,6 +263,9 @@ async function buildAvatarMap(messages) {
  * @param {import('discord.js').Message[]} messages
  * @returns {Promise<Map<string, string>>}
  */
+const MAX_TRANSCRIPT_EMOJIS   = 200;
+const EMOJI_FETCH_CONCURRENCY = 10;
+
 async function buildEmojiMap(messages) {
   // Collect unique emoji ids → CDN url
   const urls = new Map();
@@ -281,15 +284,23 @@ async function buildEmojiMap(messages) {
 
   for (const msg of messages) {
     scan(msg.content);
-    for (const e of msg.embeds) { scan(e.title); scan(e.description); }
+    for (const e of msg.embeds) {
+      scan(e.title); scan(e.description);
+      for (const f of e.fields ?? []) scan(f.value);
+    }
   }
 
   if (urls.size === 0) return new Map();
 
-  const entries = [...urls.entries()];
-  const results = await Promise.allSettled(
-    entries.map(([, url]) => fetchAsDataUri(url))
-  );
+  // A user can paste thousands of fake <:x:id> tokens; without a cap every one
+  // became a concurrent CDN request at close time. Emojis past the cap render
+  // as their ":name:" text fallback.
+  const entries = [...urls.entries()].slice(0, MAX_TRANSCRIPT_EMOJIS);
+  const results = [];
+  for (let i = 0; i < entries.length; i += EMOJI_FETCH_CONCURRENCY) {
+    const batch = entries.slice(i, i + EMOJI_FETCH_CONCURRENCY);
+    results.push(...await Promise.allSettled(batch.map(([, url]) => fetchAsDataUri(url))));
+  }
 
   const emojiMap = new Map();
   entries.forEach(([id], i) => {
@@ -479,10 +490,16 @@ function buildMessageRows(messages, avatarMap, emojiMap, nameMap, roleMap, chann
     const embeds = msg.embeds.map(e => {
       const title = e.title       ? `<div class="embed-title">${escapeHtml(e.title)}</div>`             : '';
       const desc  = e.description ? `<div class="embed-desc">${parseMarkdown(e.description, emojiMap, nameMap, roleMap, channelMap)}</div>`    : '';
+      // Fields carry the answers to the ticket questions (and claim info), so
+      // leaving them out dropped the intake answers from every transcript.
+      const fields = (e.fields ?? []).map(f =>
+        `<div class="embed-field"><div class="embed-field-name">${escapeHtml(f.name)}</div>` +
+        `<div class="embed-desc">${parseMarkdown(f.value, emojiMap, nameMap, roleMap, channelMap)}</div></div>`
+      ).join('');
       const color = e.color != null
         ? `border-left: 4px solid #${e.color.toString(16).padStart(6, '0')}`
         : '';
-      return `<div class="embed" style="${color}">${title}${desc}</div>`;
+      return `<div class="embed" style="${color}">${title}${desc}${fields}</div>`;
     }).join('');
 
     return `
@@ -620,6 +637,8 @@ function renderClassic({ ticketInfo, channel, guildName, t, locale, lang, messag
     .embed { background: #2b2d31; border-left: 4px solid #4f545c; border-radius: 0 4px 4px 0; padding: 10px 14px; margin-top: 6px; max-width: 520px; }
     .embed-title { font-weight: 600; color: #fff; margin-bottom: 4px; }
     .embed-desc { color: #b9bbbe; font-size: 13px; }
+    .embed-field { margin-top: 8px; }
+    .embed-field-name { font-weight: 600; color: #fff; font-size: 13px; margin-bottom: 2px; }
     .mention { background: rgba(88,101,242,.3); color: #dee0fc; border-radius: 3px; padding: 0 3px; font-weight: 500; }
     .footer { text-align: center; padding: 20px; color: #72767d; font-size: 12px; border-top: 1px solid #2b2d31; margin-top: 20px; }
     .footer .report { margin-top: 8px; }
@@ -800,6 +819,8 @@ function renderModern({ ticketInfo, channel, guildName, t, locale, lang, message
     }
     .embed-title { font-weight: 600; color: #fff; margin-bottom: 4px; }
     .embed-desc { color: var(--text-2); font-size: 14px; }
+    .embed-field { margin-top: 8px; }
+    .embed-field-name { font-weight: 600; color: #fff; font-size: 14px; margin-bottom: 2px; }
 
     .empty { color: var(--muted); text-align: center; padding: 60px 0; font-family: var(--mono); letter-spacing: .04em; }
 
