@@ -5,7 +5,28 @@
  */
 
 const MSK_API_URL = process.env.MSK_API_URL ?? 'https://www.msk-scripts.de';
-const MSK_API_KEY = process.env.MSK_API_KEY ?? '';
+
+// The value .env.example ships with. A copied example file must behave exactly
+// like "no key": nothing may be sent to the MSK server with it.
+const PLACEHOLDER_KEY = 'YOUR_MSK_API_KEY_HERE';
+
+/** The configured API key, or '' when it is unset or still the placeholder. */
+function configuredKey(raw) {
+  const key = (raw ?? '').trim();
+  return key && key !== PLACEHOLDER_KEY ? key : '';
+}
+
+const MSK_API_KEY = configuredKey(process.env.MSK_API_KEY);
+
+/** True when transcripts are uploaded to the MSK service (a real key is set). */
+function isMskConfigured() {
+  return configuredKey(process.env.MSK_API_KEY) !== '';
+}
+
+// Without a timeout a hung MSK server would block a ticket close (or, for the
+// key check, the bot's startup) indefinitely.
+const UPLOAD_TIMEOUT_MS  = 60_000;
+const REQUEST_TIMEOUT_MS = 10_000;
 
 // Transient upload failures worth retrying: a network-level error, or a status
 // that means the reverse proxy is up but the backend was momentarily
@@ -82,6 +103,7 @@ async function attemptUpload(body) {
         'Authorization': `Bearer ${MSK_API_KEY}`,
       },
       body,
+      signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
     });
   } catch (err) {
     // Network-level failure (DNS, connection reset, timeout) — transient.
@@ -119,13 +141,14 @@ async function attemptUpload(body) {
  * @returns {Promise<string|null>} the public URL, or null if none / not premium
  */
 async function getTranscriptUrl(ticketId) {
-  const apiKey = process.env.MSK_API_KEY ?? '';
+  const apiKey = configuredKey(process.env.MSK_API_KEY);
   if (!apiKey) return null;
 
   try {
     const response = await fetch(`${MSK_API_URL}/api/transcript/url?ticketId=${encodeURIComponent(ticketId)}`, {
       method:  'GET',
       headers: { 'Authorization': `Bearer ${apiKey}` },
+      signal:  AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
     if (!response.ok) return null;
     const data = await response.json();
@@ -147,7 +170,7 @@ async function getTranscriptUrl(ticketId) {
  * @returns {Promise<{ status: 'not_configured'|'invalid'|'unreachable'|'valid', tier: string|null, limits: object|null }>}
  */
 async function checkApiKey() {
-  if (!MSK_API_KEY || MSK_API_KEY === 'YOUR_MSK_API_KEY_HERE') {
+  if (!MSK_API_KEY) {
     return { status: 'not_configured', tier: null, limits: null };
   }
 
@@ -156,6 +179,7 @@ async function checkApiKey() {
     response = await fetch(`${MSK_API_URL}/api/verify/status`, {
       method:  'GET',
       headers: { 'Authorization': `Bearer ${MSK_API_KEY}` },
+      signal:  AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
   } catch {
     return { status: 'unreachable', tier: null, limits: null };
@@ -176,4 +200,4 @@ async function checkApiKey() {
   }
 }
 
-module.exports = { uploadTranscript, checkApiKey, getTranscriptUrl };
+module.exports = { uploadTranscript, checkApiKey, getTranscriptUrl, isMskConfigured, configuredKey };
