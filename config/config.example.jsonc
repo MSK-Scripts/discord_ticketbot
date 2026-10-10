@@ -114,6 +114,7 @@
     "closeButton": true,
     "dmUser": true,                           // DM the user when ticket is closed
     "createTranscript": true,                 // Attach HTML transcript to the log message
+    "transcriptToUser": true,                 // Include the transcript (link or file) in the close DM; false = staff only
     "askReason": true,
     "whoCanCloseTicket": "EVERYONE",          // "EVERYONE" or "STAFFONLY"
     "closeTicketCategoryId": ""               // Category ID to move closed tickets to, or "" to not move
