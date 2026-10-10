@@ -188,15 +188,76 @@ function buildClosedButtons(client) {
 
 // ─── Open ─────────────────────────────────────────────────────────────────────
 
-async function openTicket(client, guild, user, ticketType, answers = []) {
-  const cfg = client.config;
+/**
+ * Why `member` may not open a ticket (of `ticketType`, when given), or null if
+ * they may. The single source of truth for every open path: the panel button,
+ * both select menus, the questions modal and openTicket() itself.
+ *
+ * @param {object} client
+ * @param {import('discord.js').GuildMember} member
+ * @param {object|null} ticketType  null = "any type" (before a type is picked)
+ * @returns {Promise<{key: string, vars?: object}|null>} locale key + variables
+ */
+async function getOpenRefusal(client, member, ticketType = null) {
+  const cfg     = client.config;
+  const guildId = member.guild.id;
+  const hasAnyRole = (ids) => (ids ?? []).some(roleId => member.roles.cache.has(roleId));
 
-  if (await db.isBlacklisted(user.id, guild.id)) return null;
+  if (await db.isBlacklisted(member.id, guildId)) return { key: 'messages.blacklisted' };
+
+  if (hasAnyRole(cfg.rolesWhoCanNotCreateTickets)) return { key: 'messages.cannotCreateTickets' };
+
+  if (ticketType && hasAnyRole(ticketType.cantAccess)) return { key: 'messages.noAccessToType' };
 
   if (cfg.maxTicketOpened > 0) {
-    const open = await db.getOpenTicketsByUser(user.id, guild.id);
-    if (open.length >= cfg.maxTicketOpened) return null;
+    const open = await db.getOpenTicketsByUser(member.id, guildId);
+    if (open.length >= cfg.maxTicketOpened) {
+      return { key: 'messages.ticketLimitReached', vars: { limit: String(cfg.maxTicketOpened) } };
+    }
   }
+
+  return null;
+}
+
+/** Locale text for a refusal from getOpenRefusal / openTicket. */
+function refusalText(client, refusal) {
+  return client.t(refusal.key, refusal.vars ?? {});
+}
+
+// Users whose ticket is being created right now. The limit check and the DB
+// insert are separated by the channel creation, so without this a burst of
+// select-menu picks or modal submits would each pass the check.
+const openingUsers = new Set();
+
+/**
+ * Open a ticket: checks eligibility, creates the channel and the DB row.
+ *
+ * @returns {Promise<{channel: import('discord.js').TextChannel|null, refusal: {key: string, vars?: object}|null}>}
+ *          `refusal` is set when the user may not open the ticket; both null
+ *          means creation failed.
+ */
+async function openTicket(client, guild, user, ticketType, answers = []) {
+  if (openingUsers.has(user.id)) {
+    return { channel: null, refusal: { key: 'messages.ticketOpenInProgress' } };
+  }
+
+  openingUsers.add(user.id);
+  try {
+    const member = await guild.members.fetch(user.id).catch(() => null);
+    if (!member) return { channel: null, refusal: null };
+
+    const refusal = await getOpenRefusal(client, member, ticketType);
+    if (refusal) return { channel: null, refusal };
+
+    const channel = await createTicketChannel(client, guild, user, ticketType, answers);
+    return { channel, refusal: null };
+  } finally {
+    openingUsers.delete(user.id);
+  }
+}
+
+async function createTicketChannel(client, guild, user, ticketType, answers) {
+  const cfg = client.config;
 
   const totalCount   = await db.getTotalTicketCount(guild.id);
   const ticketNumber = totalCount + 1;
@@ -923,6 +984,8 @@ async function performUnclaim(client, channel, ticket) {
 module.exports = {
   resolveAttachmentBudget,
   openTicket,
+  getOpenRefusal,
+  refusalText,
   performClose,
   performReopen,
   performMove,
