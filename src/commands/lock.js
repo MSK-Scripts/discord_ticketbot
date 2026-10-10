@@ -1,10 +1,11 @@
 /**
  * Command: /lock & /unlock (subcommands)
- * Locks or unlocks a ticket — prevents the creator from sending messages.
+ * Locks or unlocks a ticket — prevents the creator and added users from sending messages.
  * Staff-only.
  */
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel, lockTicket, unlockTicket } = require('../database');
+const { editParticipantAccess } = require('../utils/ticketActions');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -76,10 +77,8 @@ module.exports = {
 
       const reason = interaction.options.getString('reason') ?? null;
 
-      // Remove SendMessages from the ticket creator
-      await channel.permissionOverwrites.edit(ticket.creator_id, {
-        SendMessages: false,
-      }).catch(err => client.logger.warn(`[Lock] Permission edit failed: ${err.message}`));
+      // Remove SendMessages from the creator and every /add-ed user
+      await editParticipantAccess(client, channel, ticket, { SendMessages: false });
 
       await lockTicket(interaction.channelId);
 
@@ -102,10 +101,8 @@ module.exports = {
         });
       }
 
-      // Restore SendMessages for the ticket creator
-      await channel.permissionOverwrites.edit(ticket.creator_id, {
-        SendMessages: true,
-      }).catch(err => client.logger.warn(`[Unlock] Permission edit failed: ${err.message}`));
+      // Restore SendMessages for the creator and every /add-ed user
+      await editParticipantAccess(client, channel, ticket, { SendMessages: true });
 
       await unlockTicket(interaction.channelId);
 
