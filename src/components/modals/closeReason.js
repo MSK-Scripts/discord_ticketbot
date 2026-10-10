@@ -17,6 +17,13 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.ticketAlreadyClosed'), flags: MessageFlags.Ephemeral });
     }
 
+    // The close button checked this before showing the modal; a modal submit is
+    // its own interaction, so check it again.
+    const whoCanClose = client.config.closeOption?.whoCanCloseTicket;
+    if (whoCanClose === 'STAFFONLY' && !client.isStaff(interaction.member, client.ticketTypeOf(ticket))) {
+      return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
+    }
+
     // interaction.channel can be null for modal submissions if the channel
     // is not cached — always fetch to guarantee a valid channel object.
     const channel = interaction.channel

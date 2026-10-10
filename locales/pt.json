@@ -215,6 +215,7 @@
     "notInvalidRating": "❌ Avaliação inválida.",
     "ratingRefNotFound": "❌ Referência do ticket não encontrada.",
     "alreadyRated": "✅ Já avaliaste este ticket.",
+    "onlyCreatorCanRate": "❌ Só quem abriu este ticket o pode avaliar.",
     "onlyCreatorNotify": "❌ Apenas o criador do ticket pode alternar as notificações.",
     "deletingChannel": "🗑️ O canal está a ser eliminado...",
     "deleteCancelled": "✅ Eliminação cancelada.",

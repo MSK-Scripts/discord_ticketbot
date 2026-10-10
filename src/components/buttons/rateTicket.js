@@ -2,7 +2,7 @@ const {
   ModalBuilder, TextInputBuilder, TextInputStyle,
   ActionRowBuilder, MessageFlags,
 } = require('discord.js');
-const { getRating } = require('../../database');
+const { getRating, getTicketById } = require('../../database');
 
 module.exports = {
   customId: 'tb_rate',
@@ -27,6 +27,13 @@ module.exports = {
 
     if (isNaN(ticketId)) {
       return interaction.reply({ content: client.t('messages.ratingRefNotFound'), flags: MessageFlags.Ephemeral });
+    }
+
+    // Only the person who opened the ticket rates it — not staff, not users
+    // added with /add who can still see an in-channel rating request.
+    const ticket = await getTicketById(ticketId);
+    if (!ticket || ticket.creator_id !== interaction.user.id) {
+      return interaction.reply({ content: client.t('messages.onlyCreatorCanRate'), flags: MessageFlags.Ephemeral });
     }
 
     if (await getRating(ticketId)) {
