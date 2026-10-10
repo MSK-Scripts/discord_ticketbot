@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [Unreleased]
+
+### Fixed
+
+- **A PostgreSQL restart no longer crashes the bot.** The pool now handles the
+  idle-client `error` event and has a 10 s `connectionTimeoutMillis`.
+- **A failing event handler no longer takes the process down.** Event handlers
+  are awaited inside a try/catch, unhandled rejections are logged instead of
+  ending the process, and the client `error` event has a listener.
+- **Graceful shutdown.** On SIGTERM/SIGINT the bot lets an in-flight ticket close
+  finish (up to 7 s), then destroys the client and closes the database pool.
+- **Tickets no longer stay "open" when their channel is gone.** Deleting a
+  ticket with transcripts disabled, deleting its channel by hand, or deleting it
+  while the bot was offline left the row open, which counted against
+  `maxTicketOpened` forever. The row is now closed on delete, on `channelDelete`,
+  when the background loops get *Unknown Channel*, and by a check at startup.
+- **Closing without a new transcript keeps the stored one** instead of
+  overwriting it with nothing.
+- **Database passwords are masked** in malformed-URL errors and in the
+  `db:migrate` output.
+
+### Added
+
+- Locale key `messages.orphanedTicketReason` in every language.
+
 ## [2.19.2] - 2026-09-15
 
 ### Changed

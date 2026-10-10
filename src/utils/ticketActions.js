@@ -326,6 +326,17 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
 // two rating requests).
 const closingChannels = new Set();
 
+/**
+ * Resolve once no close is in progress, or after timeoutMs. Used on shutdown so
+ * a SIGTERM does not cut a close off between the Discord changes and the DB write.
+ */
+async function waitForPendingCloses(timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (closingChannels.size > 0 && Date.now() < deadline) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+}
+
 async function performClose(client, channel, ticket, closer, reason) {
   const channelId = ticket?.channel_id ?? channel?.id ?? null;
 
@@ -811,7 +822,12 @@ async function collectAttachments(channel, client) {
  */
 async function captureFinalTranscript(client, channel, ticket, deleter) {
   const cfg = client.config.closeOption ?? {};
-  if (!cfg.createTranscript) return null;
+  if (!cfg.createTranscript) {
+    // No transcript wanted, but the row must still be closed: an "open" row for a
+    // deleted channel counts against the creator's maxTicketOpened forever.
+    await db.closeTicket(channel.id, deleter?.id ?? client.user.id, ticket.close_reason ?? null, null);
+    return null;
+  }
 
   // Treat the delete as the close moment (the ticket is still open here), so the
   // transcript header shows the closer/time.
@@ -860,6 +876,41 @@ async function captureFinalTranscript(client, channel, ticket, deleter) {
   }
 
   return transcriptUrl;
+}
+
+// Discord API error code for a channel that no longer exists.
+const UNKNOWN_CHANNEL = 10003;
+
+/**
+ * Close the DB row of a ticket whose channel is gone (deleted in Discord, or
+ * while the bot was offline). No-op for unknown or already closed tickets.
+ *
+ * @returns {Promise<boolean>} true if a row was closed
+ */
+async function closeOrphanedTicket(client, channelId) {
+  const ticket = await db.getTicketByChannel(channelId);
+  if (!ticket || ticket.status !== 'open') return false;
+
+  await db.closeTicket(channelId, client.user.id, client.t('messages.orphanedTicketReason'), null);
+  client.autoCloseWarned?.delete(channelId);
+  client.logger.info(`[Tickets] Ticket #${ticket.id} closed: its channel no longer exists.`);
+  return true;
+}
+
+/**
+ * Fetch a ticket's channel for the background loops. If Discord says the channel
+ * does not exist, the ticket is closed as orphaned; any other failure (network,
+ * rate limit) is treated as transient and leaves the ticket alone.
+ *
+ * @returns {Promise<import('discord.js').TextChannel|null>}
+ */
+async function fetchTicketChannel(client, channelId) {
+  try {
+    return await client.channels.fetch(channelId);
+  } catch (err) {
+    if (err?.code === UNKNOWN_CHANNEL) await closeOrphanedTicket(client, channelId);
+    return null;
+  }
 }
 
 function buildRatingRow(ticketId) {
@@ -929,6 +980,9 @@ module.exports = {
   performClaim,
   performUnclaim,
   captureFinalTranscript,
+  waitForPendingCloses,
+  closeOrphanedTicket,
+  fetchTicketChannel,
   buildTicketButtons,
   buildClosedButtons,
   refreshTicketMessage,

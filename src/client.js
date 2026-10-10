@@ -112,6 +112,11 @@ class TicketClient extends Client {
      *  bot is up but the ticket flow is closed — see start() and
      *  events/interactionCreate.js. */
     this.configPending = [];
+
+    // An 'error' event without a listener is thrown by EventEmitter and would
+    // crash the process (e.g. a gateway/WebSocket error). discord.js reconnects
+    // on its own, so logging is enough.
+    this.on('error', (err) => this.logger.error('[Client] Discord client error:', err));
   }
 
   async start() {

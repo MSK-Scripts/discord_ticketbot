@@ -219,9 +219,12 @@ async function getOpenTicketsByUser(userId, guildId) {
 
 async function closeTicket(channelId, closedBy, reason, transcript) {
   const now = Date.now();
+  // COALESCE: a close without a new transcript (transcripts disabled, or the
+  // channel is already gone) keeps the one stored by an earlier close instead of
+  // wiping it — reopenTicket() leaves that column untouched.
   return activeDriver.run(
     `UPDATE tickets
-     SET status = 'closed', closed_by = ?, closed_at = ?, close_reason = ?, transcript = ?
+     SET status = 'closed', closed_by = ?, closed_at = ?, close_reason = ?, transcript = COALESCE(?, transcript)
      WHERE channel_id = ?`,
     [closedBy, now, reason, transcript, channelId],
   );
