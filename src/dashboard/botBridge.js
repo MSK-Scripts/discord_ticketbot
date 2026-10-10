@@ -16,7 +16,7 @@
 
 const { escapeMarkdown } = require('discord.js');
 const db = require('../database');
-const { performClose, performReopen, performMove, performClaim, performUnclaim } = require('../utils/ticketActions');
+const { performClose, performReopen, performMove, performClaim, performUnclaim, editParticipantAccess } = require('../utils/ticketActions');
 
 /** Discord hard-caps a message at 2000 characters (bots do not get the Nitro 4000). */
 const MAX_MESSAGE_LENGTH = 2000;
@@ -239,7 +239,7 @@ function registerBotBridge(client) {
 
       // The DB flag alone locks nothing — the actual effect is the channel
       // permission overwrite. Both must be kept in sync.
-      await channel.permissionOverwrites.edit(ticket.creator_id, { SendMessages: !locked }).catch(() => null);
+      await editParticipantAccess(client, channel, ticket, { SendMessages: !locked });
       if (locked) await db.lockTicket(ticket.channel_id);
       else        await db.unlockTicket(ticket.channel_id);
 

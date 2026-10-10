@@ -5,6 +5,7 @@
 const {
   PermissionFlagsBits,
   ChannelType,
+  OverwriteType,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
@@ -493,10 +494,9 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
     components: [deleteRow],
   }).catch(() => null);
 
-  // 5. Remove creator's view access
-  await channel.permissionOverwrites.edit(ticket.creator_id, {
-    ViewChannel: false, SendMessages: false,
-  }).catch(() => null);
+  // 5. Remove the creator's and every /add-ed user's access, so nobody outside
+  //    the staff keeps reading the channel after the close.
+  await editParticipantAccess(client, channel, ticket, { ViewChannel: false, SendMessages: false });
 
   const duration = updatedTicket.closed_at - updatedTicket.created_at;
 
@@ -601,10 +601,9 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
 async function performReopen(client, channel, ticket, reopener) {
   const cfg = client.config;
 
-  // 1. Restore the creator's view + send access
-  await channel.permissionOverwrites.edit(ticket.creator_id, {
-    ViewChannel: true, SendMessages: true,
-  }).catch(() => null);
+  // 1. Restore the participants' access; a ticket locked before the close stays
+  //    read-only for them.
+  await editParticipantAccess(client, channel, ticket, { ViewChannel: true, SendMessages: !ticket.locked });
 
   // 2. Update DB (clears closed_by/closed_at/close_reason, status → open)
   await db.reopenTicket(channel.id);
@@ -923,6 +922,37 @@ async function captureFinalTranscript(client, channel, ticket, deleter) {
   return transcriptUrl;
 }
 
+/**
+ * Apply a permission change to every non-staff participant of a ticket: the
+ * creator plus anyone given a member overwrite with /add.
+ *
+ * Staff members who were /add-ed are skipped on purpose: a member overwrite
+ * takes precedence over role overwrites, so denying them here would lock them
+ * out of a ticket their staff role should keep showing them.
+ *
+ * @param {object} client
+ * @param {import('discord.js').TextChannel} channel
+ * @param {object} ticket  ticket row (creator_id, type)
+ * @param {object} perms   e.g. { ViewChannel: false, SendMessages: false }
+ */
+async function editParticipantAccess(client, channel, ticket, perms) {
+  const ids = new Set([ticket.creator_id]);
+  for (const overwrite of channel.permissionOverwrites.cache.values()) {
+    if (overwrite.type === OverwriteType.Member && overwrite.id !== client.user.id) ids.add(overwrite.id);
+  }
+
+  const ticketType = client.ticketTypeOf(ticket);
+  for (const id of ids) {
+    if (id !== ticket.creator_id) {
+      const member = await channel.guild.members.fetch(id).catch(() => null);
+      if (member && client.isStaff(member, ticketType)) continue;
+    }
+    await channel.permissionOverwrites.edit(id, perms).catch(err =>
+      client.logger.warn(`[Tickets] Permission edit for ${id} failed: ${err.message}`)
+    );
+  }
+}
+
 function buildRatingRow(ticketId) {
   return new ActionRowBuilder().addComponents(
     [1, 2, 3, 4, 5].map(n =>
@@ -992,6 +1022,7 @@ module.exports = {
   performClaim,
   performUnclaim,
   captureFinalTranscript,
+  editParticipantAccess,
   buildTicketButtons,
   buildClosedButtons,
   refreshTicketMessage,

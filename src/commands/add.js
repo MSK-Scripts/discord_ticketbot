@@ -20,8 +20,9 @@ module.exports = {
 
     const user = interaction.options.getUser('user');
     try {
+      // A locked ticket stays read-only for newly added users as well.
       await interaction.channel.permissionOverwrites.edit(user.id, {
-        ViewChannel: true, SendMessages: true, ReadMessageHistory: true,
+        ViewChannel: true, SendMessages: !ticket.locked, ReadMessageHistory: true,
       });
       await interaction.reply(client.t('messages.userAdded', { user: `<@${user.id}>` }));
     } catch (err) {
