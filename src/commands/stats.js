@@ -13,7 +13,7 @@ module.exports = {
     ),
 
   async execute(client, interaction) {
-    if (!client.isStaff(interaction.member)) {
+    if (!client.isAnyStaff(interaction.member)) {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 

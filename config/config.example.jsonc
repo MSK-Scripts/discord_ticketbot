@@ -86,6 +86,10 @@
   },
 
   // ─── Access Control ──────────────────────────────────────────────────────────
+  // Global staff roles: see and handle every ticket type WITHOUT its own staffRoles.
+  // A type with staffRoles is handled by those roles only (channel access, claim,
+  // close, lock, move, notes, reminders); list a global role there too if it
+  // should keep access. Administrators can always act.
   "rolesWhoHaveAccessToTheTickets": [
     "ROLE_ID_TEAM",
     "ROLE_ID_SUPPORT"

@@ -41,7 +41,7 @@ function canCommentFeedback(client, member) {
     return roles.some(roleId => member.roles.cache.has(roleId));
   }
 
-  return client.isStaff(member);
+  return client.isAnyStaff(member);
 }
 
 /** Field name for one commenter. One field per person, so a re-comment replaces it. */
