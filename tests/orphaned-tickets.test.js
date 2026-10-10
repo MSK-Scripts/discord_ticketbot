@@ -79,3 +79,15 @@ test('captureFinalTranscript closes the row even when transcripts are disabled',
   assert.equal(row.status, 'closed');
   assert.equal(row.closed_by, 'staff1');
 });
+
+test('closing an orphan keeps the transcript of an earlier close', async () => {
+  const channelId = await newOpenTicket();
+  await db.closeTicket(channelId, 'staff1', 'done', '<html>first close</html>');
+  await db.reopenTicket(channelId);
+
+  await closeOrphanedTicket(fakeClient(), channelId);
+
+  const row = await db.getTicketByChannel(channelId);
+  assert.equal(row.status, 'closed');
+  assert.equal(row.transcript, '<html>first close</html>');
+});
