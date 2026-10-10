@@ -215,6 +215,7 @@
     "notInvalidRating": "❌ Érvénytelen értékelés.",
     "ratingRefNotFound": "❌ Ticket hivatkozás nem található.",
     "alreadyRated": "✅ Ezt a ticketet már értékelted.",
+    "onlyCreatorCanRate": "❌ Csak az értékelheti ezt a ticketet, aki megnyitotta.",
     "onlyCreatorNotify": "❌ Csak a ticket létrehozója módosíthatja az értesítéseket.",
     "deletingChannel": "🗑️ A csatorna törlés alatt áll...",
     "deleteCancelled": "✅ Törlés megszakítva.",

@@ -215,6 +215,7 @@
     "notInvalidRating": "❌ Nieprawidłowa ocena.",
     "ratingRefNotFound": "❌ Odniesienie do zgłoszenia nie znalezione.",
     "alreadyRated": "✅ Już oceniłeś to zgłoszenie.",
+    "onlyCreatorCanRate": "❌ Tylko osoba, która otworzyła to zgłoszenie, może je ocenić.",
     "onlyCreatorNotify": "❌ Tylko twórca zgłoszenia może przełączać powiadomienia.",
     "deletingChannel": "🗑️ Kanał jest usuwany...",
     "deleteCancelled": "✅ Usuwanie anulowane.",

@@ -10,6 +10,12 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 
+    // The button only ever appears in ticket channels, but never delete a
+    // channel the bot does not know as a ticket.
+    if (!(await getTicketByChannel(interaction.channelId))) {
+      return interaction.reply({ content: client.t('messages.notATicket'), flags: MessageFlags.Ephemeral });
+    }
+
     await interaction.reply({ content: client.t('messages.deletingChannel'), flags: MessageFlags.Ephemeral }).catch(() => null);
 
     // If the ticket was reopened and is being deleted WITHOUT a second close,

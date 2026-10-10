@@ -215,6 +215,7 @@
     "notInvalidRating": "❌ Évaluation invalide.",
     "ratingRefNotFound": "❌ Référence du ticket introuvable.",
     "alreadyRated": "✅ Vous avez déjà évalué ce ticket.",
+    "onlyCreatorCanRate": "❌ Seule la personne qui a ouvert ce ticket peut l'évaluer.",
     "onlyCreatorNotify": "❌ Seul le créateur du ticket peut activer les notifications.",
     "deletingChannel": "🗑️ Le salon est en cours de suppression...",
     "deleteCancelled": "✅ Suppression annulée.",

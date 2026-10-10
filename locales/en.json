@@ -215,6 +215,7 @@
     "notInvalidRating": "❌ Invalid rating.",
     "ratingRefNotFound": "❌ Ticket reference not found.",
     "alreadyRated": "✅ You have already rated this ticket.",
+    "onlyCreatorCanRate": "❌ Only the person who opened this ticket can rate it.",
     "onlyCreatorNotify": "❌ Only the ticket creator can toggle notifications.",
     "deletingChannel": "🗑️ Channel is being deleted...",
     "deleteCancelled": "✅ Deletion cancelled.",

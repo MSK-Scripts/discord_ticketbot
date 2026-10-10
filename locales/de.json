@@ -215,6 +215,7 @@
     "notInvalidRating": "❌ Ungültige Bewertung.",
     "ratingRefNotFound": "❌ Ticket-Referenz nicht gefunden.",
     "alreadyRated": "✅ Du hast dieses Ticket bereits bewertet.",
+    "onlyCreatorCanRate": "❌ Nur die Person, die dieses Ticket eröffnet hat, kann es bewerten.",
     "onlyCreatorNotify": "❌ Nur der Ticket-Ersteller kann Benachrichtigungen umschalten.",
     "deletingChannel": "🗑️ Kanal wird gelöscht...",
     "deleteCancelled": "✅ Löschen abgebrochen.",
