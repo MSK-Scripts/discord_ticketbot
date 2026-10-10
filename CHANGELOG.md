@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [Unreleased]
+
+### Fixed
+
+- **`rolesWhoCanNotCreateTickets` is enforced.** It was validated but never
+  checked.
+- **`cantAccess` is enforced on every open path**, including the single-type
+  panel button and `openTicket()` itself.
+- **The open-ticket limit can no longer be raced.** A burst of select-menu picks
+  or modal submits could each pass the limit check before the first ticket was
+  written; ticket creation now holds a per-user lock.
+- **Type-specific `staffRoles` now apply to staff actions, not just channel
+  access.** Members holding only a type's staff role could not claim, close,
+  lock, move or annotate those tickets. Staff checks inside a ticket now use the
+  ticket type's `staffRoles` (overriding the global roles, as documented);
+  staff reminders and "staff replied" DMs follow the same rule, and
+  `/broadcast` only posts into tickets the sender is staff for.
+- **Close, lock and reopen apply to every participant.** Users added with
+  `/add` kept reading a closed ticket and could write in a locked one; reopening
+  also unlocked a locked ticket. Staff members who were added keep their access.
+- **Only the ticket creator can rate a ticket.**
+- **Permission re-checks:** the close-reason modal re-checks `STAFFONLY`, the
+  delete confirmation refuses non-ticket channels, and `/blacklist` and `/setup`
+  enforce their permission in code as well as via
+  `setDefaultMemberPermissions`.
+
+### Added
+
+- Locale keys `messages.cannotCreateTickets`, `messages.ticketOpenInProgress`
+  and `messages.onlyCreatorCanRate` in every language.
+
 ## [2.19.2] - 2026-09-15
 
 ### Changed
