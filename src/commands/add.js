@@ -10,7 +10,7 @@ module.exports = {
     ),
 
   async execute(client, interaction) {
-    if (!client.isStaff(interaction.member)) {
+    if (!(await client.isStaffIn(interaction.member, interaction.channelId))) {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
     const ticket = await getTicketByChannel(interaction.channelId);
@@ -20,8 +20,9 @@ module.exports = {
 
     const user = interaction.options.getUser('user');
     try {
+      // A locked ticket stays read-only for newly added users as well.
       await interaction.channel.permissionOverwrites.edit(user.id, {
-        ViewChannel: true, SendMessages: true, ReadMessageHistory: true,
+        ViewChannel: true, SendMessages: !ticket.locked, ReadMessageHistory: true,
       });
       await interaction.reply(client.t('messages.userAdded', { user: `<@${user.id}>` }));
     } catch (err) {

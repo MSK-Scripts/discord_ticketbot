@@ -5,6 +5,7 @@
 const {
   PermissionFlagsBits,
   ChannelType,
+  OverwriteType,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
@@ -188,15 +189,76 @@ function buildClosedButtons(client) {
 
 // ─── Open ─────────────────────────────────────────────────────────────────────
 
-async function openTicket(client, guild, user, ticketType, answers = []) {
-  const cfg = client.config;
+/**
+ * Why `member` may not open a ticket (of `ticketType`, when given), or null if
+ * they may. The single source of truth for every open path: the panel button,
+ * both select menus, the questions modal and openTicket() itself.
+ *
+ * @param {object} client
+ * @param {import('discord.js').GuildMember} member
+ * @param {object|null} ticketType  null = "any type" (before a type is picked)
+ * @returns {Promise<{key: string, vars?: object}|null>} locale key + variables
+ */
+async function getOpenRefusal(client, member, ticketType = null) {
+  const cfg     = client.config;
+  const guildId = member.guild.id;
+  const hasAnyRole = (ids) => (ids ?? []).some(roleId => member.roles.cache.has(roleId));
 
-  if (await db.isBlacklisted(user.id, guild.id)) return null;
+  if (await db.isBlacklisted(member.id, guildId)) return { key: 'messages.blacklisted' };
+
+  if (hasAnyRole(cfg.rolesWhoCanNotCreateTickets)) return { key: 'messages.cannotCreateTickets' };
+
+  if (ticketType && hasAnyRole(ticketType.cantAccess)) return { key: 'messages.noAccessToType' };
 
   if (cfg.maxTicketOpened > 0) {
-    const open = await db.getOpenTicketsByUser(user.id, guild.id);
-    if (open.length >= cfg.maxTicketOpened) return null;
+    const open = await db.getOpenTicketsByUser(member.id, guildId);
+    if (open.length >= cfg.maxTicketOpened) {
+      return { key: 'messages.ticketLimitReached', vars: { limit: String(cfg.maxTicketOpened) } };
+    }
   }
+
+  return null;
+}
+
+/** Locale text for a refusal from getOpenRefusal / openTicket. */
+function refusalText(client, refusal) {
+  return client.t(refusal.key, refusal.vars ?? {});
+}
+
+// Users whose ticket is being created right now. The limit check and the DB
+// insert are separated by the channel creation, so without this a burst of
+// select-menu picks or modal submits would each pass the check.
+const openingUsers = new Set();
+
+/**
+ * Open a ticket: checks eligibility, creates the channel and the DB row.
+ *
+ * @returns {Promise<{channel: import('discord.js').TextChannel|null, refusal: {key: string, vars?: object}|null}>}
+ *          `refusal` is set when the user may not open the ticket; both null
+ *          means creation failed.
+ */
+async function openTicket(client, guild, user, ticketType, answers = []) {
+  if (openingUsers.has(user.id)) {
+    return { channel: null, refusal: { key: 'messages.ticketOpenInProgress' } };
+  }
+
+  openingUsers.add(user.id);
+  try {
+    const member = await guild.members.fetch(user.id).catch(() => null);
+    if (!member) return { channel: null, refusal: null };
+
+    const refusal = await getOpenRefusal(client, member, ticketType);
+    if (refusal) return { channel: null, refusal };
+
+    const channel = await createTicketChannel(client, guild, user, ticketType, answers);
+    return { channel, refusal: null };
+  } finally {
+    openingUsers.delete(user.id);
+  }
+}
+
+async function createTicketChannel(client, guild, user, ticketType, answers) {
+  const cfg = client.config;
 
   const totalCount   = await db.getTotalTicketCount(guild.id);
   const ticketNumber = totalCount + 1;
@@ -432,10 +494,9 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
     components: [deleteRow],
   }).catch(() => null);
 
-  // 5. Remove creator's view access
-  await channel.permissionOverwrites.edit(ticket.creator_id, {
-    ViewChannel: false, SendMessages: false,
-  }).catch(() => null);
+  // 5. Remove the creator's and every /add-ed user's access, so nobody outside
+  //    the staff keeps reading the channel after the close.
+  await editParticipantAccess(client, channel, ticket, { ViewChannel: false, SendMessages: false });
 
   const duration = updatedTicket.closed_at - updatedTicket.created_at;
 
@@ -540,10 +601,9 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
 async function performReopen(client, channel, ticket, reopener) {
   const cfg = client.config;
 
-  // 1. Restore the creator's view + send access
-  await channel.permissionOverwrites.edit(ticket.creator_id, {
-    ViewChannel: true, SendMessages: true,
-  }).catch(() => null);
+  // 1. Restore the participants' access; a ticket locked before the close stays
+  //    read-only for them.
+  await editParticipantAccess(client, channel, ticket, { ViewChannel: true, SendMessages: !ticket.locked });
 
   // 2. Update DB (clears closed_by/closed_at/close_reason, status → open)
   await db.reopenTicket(channel.id);
@@ -862,6 +922,37 @@ async function captureFinalTranscript(client, channel, ticket, deleter) {
   return transcriptUrl;
 }
 
+/**
+ * Apply a permission change to every non-staff participant of a ticket: the
+ * creator plus anyone given a member overwrite with /add.
+ *
+ * Staff members who were /add-ed are skipped on purpose: a member overwrite
+ * takes precedence over role overwrites, so denying them here would lock them
+ * out of a ticket their staff role should keep showing them.
+ *
+ * @param {object} client
+ * @param {import('discord.js').TextChannel} channel
+ * @param {object} ticket  ticket row (creator_id, type)
+ * @param {object} perms   e.g. { ViewChannel: false, SendMessages: false }
+ */
+async function editParticipantAccess(client, channel, ticket, perms) {
+  const ids = new Set([ticket.creator_id]);
+  for (const overwrite of channel.permissionOverwrites.cache.values()) {
+    if (overwrite.type === OverwriteType.Member && overwrite.id !== client.user.id) ids.add(overwrite.id);
+  }
+
+  const ticketType = client.ticketTypeOf(ticket);
+  for (const id of ids) {
+    if (id !== ticket.creator_id) {
+      const member = await channel.guild.members.fetch(id).catch(() => null);
+      if (member && client.isStaff(member, ticketType)) continue;
+    }
+    await channel.permissionOverwrites.edit(id, perms).catch(err =>
+      client.logger.warn(`[Tickets] Permission edit for ${id} failed: ${err.message}`)
+    );
+  }
+}
+
 function buildRatingRow(ticketId) {
   return new ActionRowBuilder().addComponents(
     [1, 2, 3, 4, 5].map(n =>
@@ -923,12 +1014,15 @@ async function performUnclaim(client, channel, ticket) {
 module.exports = {
   resolveAttachmentBudget,
   openTicket,
+  getOpenRefusal,
+  refusalText,
   performClose,
   performReopen,
   performMove,
   performClaim,
   performUnclaim,
   captureFinalTranscript,
+  editParticipantAccess,
   buildTicketButtons,
   buildClosedButtons,
   refreshTicketMessage,

@@ -30,7 +30,7 @@ module.exports = {
       ) {
         try {
           const member = await message.guild.members.fetch(message.author.id).catch(() => null);
-          if (member && client.isStaff(member)) {
+          if (member && client.isStaff(member, client.ticketTypeOf(ticket))) {
             const now = Date.now();
             if (!ticket.last_notify_sent || now - ticket.last_notify_sent > NOTIFY_COOLDOWN_MS) {
               const creator = await message.guild.members.fetch(ticket.creator_id).catch(() => null);

@@ -8,7 +8,7 @@ module.exports = {
     .setDescription('Release the claimed ticket.'),
 
   async execute(client, interaction) {
-    if (!client.isStaff(interaction.member)) {
+    if (!(await client.isStaffIn(interaction.member, interaction.channelId))) {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
     const ticket = await getTicketByChannel(interaction.channelId);

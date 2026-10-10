@@ -1,7 +1,7 @@
 const { ActivityType } = require('discord.js');
 const { getInactiveTickets, getTicketsNeedingStaffReminder, setStaffReminded, getStats, getPanelMessage, deletePanelMessage } = require('../database');
 const { buildTicketPanel } = require('../utils/panel');
-const { performClose } = require('../utils/ticketActions');
+const { performClose, getEffectiveStaffRoles } = require('../utils/ticketActions');
 const { registerBotBridge } = require('../dashboard/botBridge');
 const { checkBotPermissions } = require('../utils/permissionCheck');
 const { startUpdateNotifier } = require('../utils/updateNotice');
@@ -234,14 +234,16 @@ async function runStaffReminder(client, reminderMs) {
   }
 
   const reminderCfg = client.config.staffReminder;
-  const staffRoles  = client.config.rolesWhoHaveAccessToTheTickets ?? [];
-
-  const pingStr = reminderCfg.pingRoles && staffRoles.length > 0
-    ? staffRoles.map(id => `<@&${id}>`).join(' ')
-    : '';
 
   for (const ticket of tickets) {
     try {
+      // Ping the roles that actually staff this ticket: a type's own staffRoles
+      // when it has them (global staff cannot even see those channels).
+      const staffRoles = getEffectiveStaffRoles(client.ticketTypeOf(ticket), client.config);
+      const pingStr = reminderCfg.pingRoles && staffRoles.length > 0
+        ? staffRoles.map(id => `<@&${id}>`).join(' ')
+        : '';
+
       const channel = await client.channels.fetch(ticket.channel_id).catch(() => null);
       if (!channel) continue;
 

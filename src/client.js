@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js'
 const { loadCommands }    = require('./handlers/commandHandler');
 const { loadEvents }      = require('./handlers/eventHandler');
 const { loadComponents }  = require('./handlers/componentHandler');
-const { initDatabase }    = require('./database');
+const { initDatabase, getTicketByChannel } = require('./database');
 const { loadConfig, inspectConfig } = require('./config');
 const { checkApiKey }     = require('./utils/mskApi');
 const { checkVersion }    = require('./utils/versionCheck');
@@ -206,8 +206,22 @@ class TicketClient extends Client {
   }
 
   /**
-   * Check if a member has staff access.
-   * Optionally checks against a ticket type's specific staffRoles.
+   * The ticketTypes entry for a ticket row, or null (unknown or removed type).
+   * @param {object|null} ticket
+   * @returns {object|null}
+   */
+  ticketTypeOf(ticket) {
+    if (!ticket) return null;
+    return (this.config.ticketTypes ?? []).find(t => t.codeName === ticket.type) ?? null;
+  }
+
+  /**
+   * Check if a member is staff for a ticket type.
+   *
+   * The most specific roles win: a type with its own staffRoles is handled by
+   * those roles only (they override rolesWhoHaveAccessToTheTickets), which is
+   * exactly who openTicket() and performMove() give access to the channel.
+   * Without a type, or for a type without staffRoles, the global roles apply.
    *
    * @param {import('discord.js').GuildMember} member
    * @param {object|null} ticketType  Optional ticket type config entry
@@ -217,14 +231,34 @@ class TicketClient extends Client {
     if (!member) return false;
     if (member.permissions.has('Administrator')) return true;
 
-    // If the ticket type has its own staffRoles, check those first
-    if (ticketType?.staffRoles?.length > 0) {
-      if (ticketType.staffRoles.some(roleId => member.roles.cache.has(roleId))) return true;
-    }
+    const roles = (ticketType?.staffRoles?.length > 0)
+      ? ticketType.staffRoles
+      : (this.config.rolesWhoHaveAccessToTheTickets ?? []);
+    return roles.some(roleId => member.roles.cache.has(roleId));
+  }
 
-    // Fall back to global staff roles
-    const globalRoles = this.config.rolesWhoHaveAccessToTheTickets ?? [];
-    return globalRoles.some(roleId => member.roles.cache.has(roleId));
+  /**
+   * Staff of ANY kind: the global staff roles or any ticket type's staffRoles.
+   * For actions not tied to one ticket (stats, broadcast, rating comments).
+   * @param {import('discord.js').GuildMember} member
+   * @returns {boolean}
+   */
+  isAnyStaff(member) {
+    if (this.isStaff(member)) return true;
+    return (this.config.ticketTypes ?? []).some(type => this.isStaff(member, type));
+  }
+
+  /**
+   * Staff check for an interaction in a channel: type-aware inside a ticket
+   * channel, "any staff" elsewhere (the command then rejects non-ticket
+   * channels on its own).
+   * @param {import('discord.js').GuildMember} member
+   * @param {string} channelId
+   * @returns {Promise<boolean>}
+   */
+  async isStaffIn(member, channelId) {
+    const ticket = channelId ? await getTicketByChannel(channelId) : null;
+    return ticket ? this.isStaff(member, this.ticketTypeOf(ticket)) : this.isAnyStaff(member);
   }
 }
 
