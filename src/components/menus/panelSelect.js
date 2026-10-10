@@ -14,8 +14,7 @@ const {
   StringSelectMenuOptionBuilder,
   MessageFlags,
 } = require('discord.js');
-const { isBlacklisted, getOpenTicketsByUser } = require('../../database');
-const { openTicket } = require('../../utils/ticketActions');
+const { openTicket, getOpenRefusal, refusalText } = require('../../utils/ticketActions');
 const { buildQuestionsModal } = require('../buttons/openTicket');
 
 module.exports = {
@@ -33,32 +32,10 @@ module.exports = {
     const user = interaction.user;
 
     // ── Guard checks — reset menu first so the panel is always usable ─────────
-    if (await isBlacklisted(user.id, interaction.guildId)) {
+    const refusal = await getOpenRefusal(client, interaction.member, ticketType);
+    if (refusal) {
       await resetMenu(interaction, client);
-      return interaction.followUp({ content: client.t('messages.blacklisted'), flags: MessageFlags.Ephemeral });
-    }
-
-    const cfg = client.config;
-    if (cfg.maxTicketOpened > 0) {
-      const open = await getOpenTicketsByUser(user.id, interaction.guildId);
-      if (open.length >= cfg.maxTicketOpened) {
-        await resetMenu(interaction, client);
-        return interaction.followUp({
-          content: client.t('messages.ticketLimitReached', { limit: String(cfg.maxTicketOpened) }),
-          flags: MessageFlags.Ephemeral,
-        });
-      }
-    }
-
-    if (ticketType.cantAccess?.length > 0) {
-      const blocked = ticketType.cantAccess.some(roleId => interaction.member.roles.cache.has(roleId));
-      if (blocked) {
-        await resetMenu(interaction, client);
-        return interaction.followUp({
-          content: client.t('messages.noAccessToType'),
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+      return interaction.followUp({ content: refusalText(client, refusal), flags: MessageFlags.Ephemeral });
     }
 
     // ── Has questions → reset menu, then show modal ───────────────────────────
@@ -81,9 +58,12 @@ module.exports = {
     // Use update() to reset the select menu and acknowledge the interaction.
     await resetMenu(interaction, client);
 
-    const channel = await openTicket(client, interaction.guild, user, ticketType, []);
+    const { channel, refusal: openRefusal } = await openTicket(client, interaction.guild, user, ticketType, []);
     if (!channel) {
-      return interaction.followUp({ content: client.t('messages.ticketCreateFailed'), flags: MessageFlags.Ephemeral });
+      return interaction.followUp({
+        content: openRefusal ? refusalText(client, openRefusal) : client.t('messages.ticketCreateFailed'),
+        flags: MessageFlags.Ephemeral,
+      });
     }
 
     await interaction.followUp({
