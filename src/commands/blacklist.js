@@ -23,6 +23,12 @@ module.exports = {
     ),
 
   async execute(client, interaction) {
+    // setDefaultMemberPermissions is only a default: a server admin can widen it
+    // under Integrations. Enforce the same permission here as well.
+    if (!interaction.memberPermissions?.has(PermissionFlagsBits.ManageGuild)) {
+      return interaction.reply({ content: client.t('messages.noPermission'), flags: MessageFlags.Ephemeral });
+    }
+
     const sub  = interaction.options.getSubcommand();
     const user = interaction.options.getUser('user');
 

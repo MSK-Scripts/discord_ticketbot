@@ -23,6 +23,8 @@ const client = (over = {}) => ({
   user: { id: BOT },
   config: { ratingSystem: { ratingsChannelId: RATINGS }, ...over.config },
   isStaff: over.isStaff ?? (() => false),
+  // Rating comments are not tied to one ticket type, so any staff role counts.
+  isAnyStaff: over.isStaff ?? (() => false),
   t: (key, vars = {}) => key.replace('ratings.staffCommentField', `C ${vars.user}`),
 });
 

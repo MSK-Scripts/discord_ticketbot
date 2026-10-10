@@ -24,7 +24,7 @@ module.exports = {
 
     const cfg = client.config.closeOption ?? {};
 
-    if (cfg.whoCanCloseTicket === 'STAFFONLY' && !client.isStaff(interaction.member)) {
+    if (cfg.whoCanCloseTicket === 'STAFFONLY' && !(await client.isStaffIn(interaction.member, interaction.channelId))) {
       return interaction.reply({ content: client.t('messages.onlyStaff'), flags: MessageFlags.Ephemeral });
     }
 

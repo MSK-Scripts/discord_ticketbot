@@ -13,6 +13,12 @@ module.exports = {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
 
   async execute(client, interaction) {
+    // setDefaultMemberPermissions is only a default: a server admin can widen it
+    // under Integrations. Enforce the same permission here as well.
+    if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
+      return interaction.reply({ content: client.t('messages.noPermission'), flags: MessageFlags.Ephemeral });
+    }
+
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     const channelId = client.config.openTicketChannelId;

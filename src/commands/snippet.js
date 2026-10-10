@@ -62,7 +62,7 @@ module.exports = {
     const { options, channel, member } = interaction;
 
     // ── Staff check ────────────────────────────────────────────────────────────
-    if (!client.isStaff(member)) {
+    if (!(await client.isStaffIn(member, interaction.channelId))) {
       return interaction.reply({
         content: client.t('messages.noPermission'),
         flags: MessageFlags.Ephemeral,
