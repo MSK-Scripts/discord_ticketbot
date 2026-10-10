@@ -18,7 +18,16 @@ async function loadEvents(client) {
         continue;
       }
 
-      const handler = (...args) => event.execute(client, ...args);
+      // discord.js does not await listeners, so a rejected execute() would be an
+      // unhandled rejection — which terminates the process on Node 24. A failing
+      // event (e.g. a DB outage during messageCreate) must cost one event, not the bot.
+      const handler = async (...args) => {
+        try {
+          await event.execute(client, ...args);
+        } catch (err) {
+          client.logger.error(`[Events] ${event.name} handler failed:`, err);
+        }
+      };
       if (event.once) {
         client.once(event.name, handler);
       } else {

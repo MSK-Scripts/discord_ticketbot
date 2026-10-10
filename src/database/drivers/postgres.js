@@ -20,7 +20,17 @@ function createPostgresDriver(descriptor) {
     family:  'standard',
 
     async connect() {
-      pool = new Pool({ ...descriptor.options, max: 10 });
+      // connectionTimeoutMillis: without it a connect to an unreachable host can
+      // hang indefinitely instead of failing the query.
+      pool = new Pool({ connectionTimeoutMillis: 10_000, ...descriptor.options, max: 10 });
+
+      // An idle client that loses its connection (Postgres restart, network blip)
+      // emits 'error' on the pool. Unhandled, that event crashes the process; the
+      // pool already discards the broken client and reconnects on the next query.
+      pool.on('error', (err) => {
+        console.error(`[Database] Idle PostgreSQL client error (pool will reconnect): ${err.message}`);
+      });
+
       const client = await pool.connect();   // fail fast on bad credentials/host
       client.release();
     },

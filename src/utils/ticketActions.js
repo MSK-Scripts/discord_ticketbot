@@ -326,6 +326,17 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
 // two rating requests).
 const closingChannels = new Set();
 
+/**
+ * Resolve once no close is in progress, or after timeoutMs. Used on shutdown so
+ * a SIGTERM does not cut a close off between the Discord changes and the DB write.
+ */
+async function waitForPendingCloses(timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  while (closingChannels.size > 0 && Date.now() < deadline) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+}
+
 async function performClose(client, channel, ticket, closer, reason) {
   const channelId = ticket?.channel_id ?? channel?.id ?? null;
 
@@ -929,6 +940,7 @@ module.exports = {
   performClaim,
   performUnclaim,
   captureFinalTranscript,
+  waitForPendingCloses,
   buildTicketButtons,
   buildClosedButtons,
   refreshTicketMessage,
