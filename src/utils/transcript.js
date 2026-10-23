@@ -253,6 +253,9 @@ async function buildAvatarMap(messages) {
   return avatarMap;
 }
 
+const MAX_TRANSCRIPT_EMOJIS   = 200;
+const EMOJI_FETCH_CONCURRENCY = 10;
+
 /**
  * Build a map of { emojiId → base64DataUri } for every unique custom emoji
  * used in the messages (content + embed title/description). Custom emojis are
@@ -263,9 +266,6 @@ async function buildAvatarMap(messages) {
  * @param {import('discord.js').Message[]} messages
  * @returns {Promise<Map<string, string>>}
  */
-const MAX_TRANSCRIPT_EMOJIS   = 200;
-const EMOJI_FETCH_CONCURRENCY = 10;
-
 async function buildEmojiMap(messages) {
   // Collect unique emoji ids → CDN url
   const urls = new Map();
