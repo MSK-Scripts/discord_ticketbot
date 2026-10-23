@@ -16,7 +16,7 @@ const path = require('path');
 const { randomUUID } = require('crypto');
 const db = require('../database');
 const { generateTranscript } = require('./transcript');
-const { uploadTranscript }   = require('./mskApi');
+const { uploadTranscript, isMskConfigured } = require('./mskApi');
 const {
   ticketOpenedEmbed,
   ticketClosedEmbed,
@@ -383,11 +383,16 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
     await Promise.all(withButtons.map(m => m.edit({ components: [] }).catch(() => null)));
   } catch { /* ignore */ }
 
-  // 2. Generate transcript & upload to MSK server
-  let transcriptHtml         = null;
-  let transcriptUrl          = null;
-  let transcriptFallbackFile = null; // attached to DM/log if upload fails
-  let transcriptUploadError  = null;
+  // 2. Generate the transcript. It is uploaded to the MSK service only when a
+  //    real API key is configured; otherwise (or when the upload fails) it is
+  //    attached to the log channel as an HTML file.
+  //    closeOption.transcriptToUser: false keeps it staff-only — the creator's
+  //    close DM then carries neither the link nor the file.
+  const transcriptToUser = cfg.transcriptToUser !== false;
+  let transcriptHtml        = null;
+  let transcriptUrl         = null;
+  let transcriptFile        = null; // attached to the log (and DM, if allowed) when there is no URL
+  let transcriptUploadError = null;
 
   if (cfg.createTranscript) {
     // The transcript is generated before db.closeTicket() runs, so the DB row
@@ -398,12 +403,10 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
     ticket.close_reason = ticket.close_reason ?? (reason || null);
 
     // Collect attachments BEFORE generating the HTML so the transcript can link
-    // the persistent local copies (attachments/<uuid>.<ext>) instead of the
-    // Discord CDN URLs, which are signed and expire after ~24h.
-    const attachments    = await collectAttachments(channel, client);
-    const attachmentUrls = new Map(
-      attachments.map(a => [a.discordId, `attachments/${a.id}.${a.ext}`]),
-    );
+    // persistent copies (stored on the transcript host, or embedded images
+    // without a key) instead of the Discord CDN URLs, which are signed and
+    // expire after ~24h.
+    const { attachments, attachmentUrls } = await transcriptAttachments(channel, client);
 
     try {
       transcriptHtml = await generateTranscript(channel, ticket, channel.guild.name, client.config.transcriptDesign, attachmentUrls, client.config.transcriptLang, client.config.mainColor);
@@ -411,7 +414,7 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
       client.logger.error('[performClose] Transcript generation error:', err);
     }
 
-    if (transcriptHtml) {
+    if (transcriptHtml && isMskConfigured()) {
       const result = await uploadTranscript({
         ticketId:       ticket.id,
         transcriptHtml,
@@ -424,22 +427,11 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
       } else {
         transcriptUploadError = result.error;
         client.logger.error(`[performClose] Transcript upload failed: ${result.error}`);
-
-        // Fallback: ship the transcript as an .html file attachment so it isn't lost.
-        // Discord's per-file limit for bot uploads to non-boosted destinations is 10 MB; keep a safety margin.
-        const MAX_DM_BYTES = 9 * 1024 * 1024;
-        const htmlBytes    = Buffer.byteLength(transcriptHtml, 'utf-8');
-
-        if (htmlBytes <= MAX_DM_BYTES) {
-          transcriptFallbackFile = new AttachmentBuilder(
-            Buffer.from(transcriptHtml, 'utf-8'),
-            { name: `transcript-${ticket.id}.html` },
-          );
-          client.logger.info(`[performClose] Prepared transcript fallback file (${htmlBytes} bytes).`);
-        } else {
-          client.logger.warn(`[performClose] Transcript too large for DM fallback (${htmlBytes} bytes) — no file attached.`);
-        }
       }
+    }
+
+    if (transcriptHtml && !transcriptUrl) {
+      transcriptFile = buildTranscriptFile(client, ticket, transcriptHtml);
     }
   }
 
@@ -469,10 +461,13 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
       const logPayload = {
         embeds: [ticketLogEmbed(client, { ticket: updatedTicket, closer, reason, duration, transcriptUrl })],
       };
-      // If the upload failed, also attach the raw transcript file so staff still has it.
-      if (transcriptFallbackFile) {
-        logPayload.files   = [transcriptFallbackFile];
-        logPayload.content = `⚠️ Transcript upload failed (\`${transcriptUploadError ?? 'unknown error'}\`) — attached as fallback file.`;
+      // No hosted link (no MSK key, or the upload failed): attach the file so
+      // staff still has the transcript.
+      if (transcriptFile) {
+        logPayload.files = [transcriptFile];
+        if (transcriptUploadError) {
+          logPayload.content = `⚠️ Transcript upload failed (\`${transcriptUploadError}\`) — attached as a file instead.`;
+        }
       }
       await logChannel.send(logPayload).catch(err => client.logger.error('[performClose] Failed to send log:', err));
     } else {
@@ -480,27 +475,25 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
     }
   }
 
-  // 7. DM the ticket creator
-  // Always attempt a DM when we have a fallback file, so the transcript isn't lost
-  // even if `dmUser` is disabled in the config.
-  if (cfg.dmUser || transcriptFallbackFile) {
+  // 7. DM the ticket creator — only when dmUser is on. The transcript (link or
+  //    file) is included only when transcriptToUser allows it.
+  if (cfg.dmUser) {
     try {
       const creator = await channel.guild.members.fetch(ticket.creator_id);
 
       const dmPayload = {
         embeds: [ticketClosedDMEmbed(client, {
-          count: ticket.id, type: ticket.type, closer, reason, transcriptUrl,
+          count: ticket.id, type: ticket.type, closer, reason,
+          transcriptUrl: transcriptToUser ? transcriptUrl : null,
         })],
       };
 
-      if (transcriptFallbackFile) {
-        dmPayload.files   = [transcriptFallbackFile];
-        dmPayload.content = '⚠️ Our transcript service was temporarily unavailable, so your transcript is attached here as an HTML file.';
-      }
+      const sendFile = transcriptToUser && transcriptFile;
+      if (sendFile) dmPayload.files = [transcriptFile];
 
       await creator.user.send(dmPayload);
       client.logger.info(
-        `[performClose] DM sent to ${creator.user.tag}${transcriptFallbackFile ? ' (with fallback transcript file)' : ''}`
+        `[performClose] DM sent to ${creator.user.tag}${sendFile ? ' (with transcript file)' : ''}`
       );
     } catch (err) {
       client.logger.warn(`[performClose] Could not DM creator (${ticket.creator_id}): ${err.message}`);
@@ -753,7 +746,7 @@ function resolveAttachmentBudget(client) {
  * @returns {Promise<Array<{id: string, discordId: string, ext: string, name: string, data: Buffer, mimeType: string}>>}
  */
 async function collectAttachments(channel, client) {
-  if (!process.env.MSK_API_KEY) return [];
+  if (!isMskConfigured()) return [];
 
   const budget = resolveAttachmentBudget(client);
   // Basic allows no attachments. Sending them anyway made the server answer 413
@@ -817,6 +810,78 @@ async function collectAttachments(channel, client) {
   }
 }
 
+// Without an API key the transcript is a standalone HTML file, so its images
+// have to live inside it: the Discord CDN links are signed and expire after
+// ~24 h, and with deleteOnClose they die with the channel seconds later.
+// Raw budget, base64 adds a third: 5 MB of images stays under the 9 MB file cap.
+const INLINE_IMAGE_BUDGET_BYTES = 5 * 1024 * 1024;
+const INLINE_IMAGE_TYPES = new Set([
+  'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/avif', 'image/bmp',
+]);
+
+/**
+ * Discord attachment id → data URI for the images of a channel, oldest first,
+ * until the budget is used up. Images past the budget keep their CDN link.
+ * @returns {Promise<Map<string, string>>}
+ */
+async function collectInlineImages(channel, client) {
+  const images = new Map();
+  try {
+    const messages = [];
+    let lastId;
+    while (true) {
+      const options = { limit: 100 };
+      if (lastId) options.before = lastId;
+      const batch = await channel.messages.fetch(options);
+      if (batch.size === 0) break;
+      messages.push(...batch.values());
+      lastId = batch.last().id;
+      if (batch.size < 100) break;
+    }
+    messages.reverse();
+
+    let totalBytes = 0;
+    for (const msg of messages) {
+      for (const att of msg.attachments.values()) {
+        const type = (att.contentType ?? '').split(';')[0].trim().toLowerCase();
+        if (!INLINE_IMAGE_TYPES.has(type)) continue;
+        if (totalBytes + (att.size ?? 0) > INLINE_IMAGE_BUDGET_BYTES) {
+          client.logger?.warn(`[Transcript] ${att.name} not embedded — image budget reached.`);
+          continue;
+        }
+        try {
+          const res = await fetch(att.url, { signal: AbortSignal.timeout(8_000) });
+          if (!res.ok) continue;
+          const buffer = Buffer.from(await res.arrayBuffer());
+          if (totalBytes + buffer.length > INLINE_IMAGE_BUDGET_BYTES) continue;
+          totalBytes += buffer.length;
+          images.set(att.id, `data:${type};base64,${buffer.toString('base64')}`);
+        } catch (err) {
+          client.logger?.warn(`[Transcript] Could not embed ${att.name}: ${err.message}`);
+        }
+      }
+    }
+  } catch (err) {
+    client.logger?.warn(`[Transcript] Image embedding failed: ${err.message}`);
+  }
+  return images;
+}
+
+/**
+ * Attachments for a transcript and the URL each one is shown with: the stored
+ * copy on the transcript host with an API key, an embedded image without one.
+ */
+async function transcriptAttachments(channel, client) {
+  if (!isMskConfigured()) {
+    return { attachments: [], attachmentUrls: await collectInlineImages(channel, client) };
+  }
+  const attachments = await collectAttachments(channel, client);
+  return {
+    attachments,
+    attachmentUrls: new Map(attachments.map(a => [a.discordId, `attachments/${a.id}.${a.ext}`])),
+  };
+}
+
 /**
  * Capture a FINAL transcript right before a ticket channel is deleted.
  *
@@ -849,17 +914,15 @@ async function captureFinalTranscript(client, channel, ticket, deleter) {
 
   let transcriptHtml = null;
   let transcriptUrl  = null;
+  let transcriptFile = null;
   try {
-    const attachments    = await collectAttachments(channel, client);
-    const attachmentUrls = new Map(
-      attachments.map(a => [a.discordId, `attachments/${a.id}.${a.ext}`]),
-    );
+    const { attachments, attachmentUrls } = await transcriptAttachments(channel, client);
     transcriptHtml = await generateTranscript(
       channel, ticket, channel.guild.name,
       client.config.transcriptDesign, attachmentUrls, client.config.transcriptLang,
       client.config.mainColor,
     );
-    if (transcriptHtml) {
+    if (transcriptHtml && isMskConfigured()) {
       const result = await uploadTranscript({ ticketId: ticket.id, transcriptHtml, attachments });
       if (result.success) {
         transcriptUrl = result.url;
@@ -868,6 +931,7 @@ async function captureFinalTranscript(client, channel, ticket, deleter) {
         client.logger.error(`[Delete] Final transcript upload failed: ${result.error}`);
       }
     }
+    if (transcriptHtml && !transcriptUrl) transcriptFile = buildTranscriptFile(client, ticket, transcriptHtml);
   } catch (err) {
     client.logger.error('[Delete] Final transcript error:', err);
   }
@@ -875,14 +939,15 @@ async function captureFinalTranscript(client, channel, ticket, deleter) {
   // Record the close so the (about-to-be-deleted) ticket isn't left as "open".
   await db.closeTicket(channel.id, deleter?.id ?? client.user.id, ticket.close_reason, transcriptHtml);
 
-  // Post to the log channel with the (replaced) transcript link.
-  if (transcriptUrl && client.config.logs && client.config.logsChannelId) {
+  // Post to the log channel with the (replaced) transcript link, or the file.
+  if ((transcriptUrl || transcriptFile) && client.config.logs && client.config.logsChannelId) {
     const logChannel = await channel.guild.channels.fetch(client.config.logsChannelId).catch(() => null);
     if (logChannel) {
       const updated  = await db.getTicketByChannel(channel.id) ?? ticket;
       const duration = (updated.closed_at ?? Date.now()) - updated.created_at;
       await logChannel.send({
         embeds: [ticketLogEmbed(client, { ticket: updated, closer: deleter, reason: ticket.close_reason, duration, transcriptUrl })],
+        ...(transcriptFile ? { files: [transcriptFile] } : {}),
       }).catch(() => null);
     }
   }
@@ -923,6 +988,19 @@ async function fetchTicketChannel(client, channelId) {
     if (err?.code === UNKNOWN_CHANNEL) await closeOrphanedTicket(client, channelId);
     return null;
   }
+}
+
+// Discord's per-file limit for bot uploads to non-boosted destinations is 10 MB.
+const MAX_TRANSCRIPT_FILE_BYTES = 9 * 1024 * 1024;
+
+/** The transcript as an .html attachment, or null if it is too large for Discord. */
+function buildTranscriptFile(client, ticket, transcriptHtml) {
+  const htmlBytes = Buffer.byteLength(transcriptHtml, 'utf-8');
+  if (htmlBytes > MAX_TRANSCRIPT_FILE_BYTES) {
+    client.logger.warn(`[Transcript] Ticket #${ticket.id}: transcript too large to attach (${htmlBytes} bytes) — kept in the database only.`);
+    return null;
+  }
+  return new AttachmentBuilder(Buffer.from(transcriptHtml, 'utf-8'), { name: `transcript-${ticket.id}.html` });
 }
 
 function buildRatingRow(ticketId) {
@@ -984,6 +1062,7 @@ async function performUnclaim(client, channel, ticket) {
 }
 
 module.exports = {
+  collectInlineImages,
   resolveAttachmentBudget,
   openTicket,
   performClose,

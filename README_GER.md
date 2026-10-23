@@ -63,6 +63,8 @@ Es ist ein **reiner Discord-Bot**: kein Gameserver, kein FiveM, kein ESX oder QB
 
 Anstatt Transkripte als Dateianhang per DM zu versenden, kann der Bot sie auf **[www.msk-scripts.de](https://www.msk-scripts.de)** hochladen und einen öffentlichen Link generieren. Der öffnet sich in jedem Browser, kein Download nötig.
 
+Ohne API-Key wird nichts hochgeladen: Das Transkript wird als HTML-Datei an die Log-Nachricht angehängt und, wenn `closeOption.dmUser` aktiv ist, auch an die Schließ-DM des Users. Mit `closeOption.transcriptToUser: false` bleiben Transkripte nur für das Team sichtbar (kein Link und keine Datei in der DM).
+
 ### Abo-Modelle
 
 | Feature | Basic (kostenlos) | Premium (3,99 €/Monat) | Premium+ (6,99 €/Monat) | Business (9,99 €/Monat) |
