@@ -403,12 +403,10 @@ async function performCloseInner(client, channel, ticket, closer, reason) {
     ticket.close_reason = ticket.close_reason ?? (reason || null);
 
     // Collect attachments BEFORE generating the HTML so the transcript can link
-    // the persistent local copies (attachments/<uuid>.<ext>) instead of the
-    // Discord CDN URLs, which are signed and expire after ~24h.
-    const attachments    = await collectAttachments(channel, client);
-    const attachmentUrls = new Map(
-      attachments.map(a => [a.discordId, `attachments/${a.id}.${a.ext}`]),
-    );
+    // persistent copies (stored on the transcript host, or embedded images
+    // without a key) instead of the Discord CDN URLs, which are signed and
+    // expire after ~24h.
+    const { attachments, attachmentUrls } = await transcriptAttachments(channel, client);
 
     try {
       transcriptHtml = await generateTranscript(channel, ticket, channel.guild.name, client.config.transcriptDesign, attachmentUrls, client.config.transcriptLang, client.config.mainColor);
@@ -812,6 +810,78 @@ async function collectAttachments(channel, client) {
   }
 }
 
+// Without an API key the transcript is a standalone HTML file, so its images
+// have to live inside it: the Discord CDN links are signed and expire after
+// ~24 h, and with deleteOnClose they die with the channel seconds later.
+// Raw budget, base64 adds a third: 5 MB of images stays under the 9 MB file cap.
+const INLINE_IMAGE_BUDGET_BYTES = 5 * 1024 * 1024;
+const INLINE_IMAGE_TYPES = new Set([
+  'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/avif', 'image/bmp',
+]);
+
+/**
+ * Discord attachment id → data URI for the images of a channel, oldest first,
+ * until the budget is used up. Images past the budget keep their CDN link.
+ * @returns {Promise<Map<string, string>>}
+ */
+async function collectInlineImages(channel, client) {
+  const images = new Map();
+  try {
+    const messages = [];
+    let lastId;
+    while (true) {
+      const options = { limit: 100 };
+      if (lastId) options.before = lastId;
+      const batch = await channel.messages.fetch(options);
+      if (batch.size === 0) break;
+      messages.push(...batch.values());
+      lastId = batch.last().id;
+      if (batch.size < 100) break;
+    }
+    messages.reverse();
+
+    let totalBytes = 0;
+    for (const msg of messages) {
+      for (const att of msg.attachments.values()) {
+        const type = (att.contentType ?? '').split(';')[0].trim().toLowerCase();
+        if (!INLINE_IMAGE_TYPES.has(type)) continue;
+        if (totalBytes + (att.size ?? 0) > INLINE_IMAGE_BUDGET_BYTES) {
+          client.logger?.warn(`[Transcript] ${att.name} not embedded — image budget reached.`);
+          continue;
+        }
+        try {
+          const res = await fetch(att.url, { signal: AbortSignal.timeout(8_000) });
+          if (!res.ok) continue;
+          const buffer = Buffer.from(await res.arrayBuffer());
+          if (totalBytes + buffer.length > INLINE_IMAGE_BUDGET_BYTES) continue;
+          totalBytes += buffer.length;
+          images.set(att.id, `data:${type};base64,${buffer.toString('base64')}`);
+        } catch (err) {
+          client.logger?.warn(`[Transcript] Could not embed ${att.name}: ${err.message}`);
+        }
+      }
+    }
+  } catch (err) {
+    client.logger?.warn(`[Transcript] Image embedding failed: ${err.message}`);
+  }
+  return images;
+}
+
+/**
+ * Attachments for a transcript and the URL each one is shown with: the stored
+ * copy on the transcript host with an API key, an embedded image without one.
+ */
+async function transcriptAttachments(channel, client) {
+  if (!isMskConfigured()) {
+    return { attachments: [], attachmentUrls: await collectInlineImages(channel, client) };
+  }
+  const attachments = await collectAttachments(channel, client);
+  return {
+    attachments,
+    attachmentUrls: new Map(attachments.map(a => [a.discordId, `attachments/${a.id}.${a.ext}`])),
+  };
+}
+
 /**
  * Capture a FINAL transcript right before a ticket channel is deleted.
  *
@@ -846,10 +916,7 @@ async function captureFinalTranscript(client, channel, ticket, deleter) {
   let transcriptUrl  = null;
   let transcriptFile = null;
   try {
-    const attachments    = await collectAttachments(channel, client);
-    const attachmentUrls = new Map(
-      attachments.map(a => [a.discordId, `attachments/${a.id}.${a.ext}`]),
-    );
+    const { attachments, attachmentUrls } = await transcriptAttachments(channel, client);
     transcriptHtml = await generateTranscript(
       channel, ticket, channel.guild.name,
       client.config.transcriptDesign, attachmentUrls, client.config.transcriptLang,
@@ -995,6 +1062,7 @@ async function performUnclaim(client, channel, ticket) {
 }
 
 module.exports = {
+  collectInlineImages,
   resolveAttachmentBudget,
   openTicket,
   performClose,
