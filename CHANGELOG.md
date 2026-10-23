@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- **A ticket type with its own `staffRoles` is now handled by those roles
+  only.** The global `rolesWhoHaveAccessToTheTickets` no longer act on these
+  tickets (they already could not see the channels), and staff reminders no
+  longer ping them. If the global staff role should keep access to a type,
+  **add it to that type's `staffRoles`**. Types without `staffRoles` are
+  unchanged and keep using the global roles.
+
 ### Fixed
 
 - **A PostgreSQL restart no longer crashes the bot.** The pool now handles the
