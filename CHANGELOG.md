@@ -45,7 +45,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   msk-scripts.de with it.
 - **Without an API key nothing is uploaded.** The transcript is attached to the
   log channel as an HTML file, without an "upload failed" warning. A real upload
-  failure still falls back to the file, with the warning.
+  failure still falls back to the file, with the warning. Images are embedded in
+  that file (up to 5 MB, oldest first), because the Discord CDN links expire
+  after about a day and die with the channel when it is deleted.
 - **The close DM respects `closeOption.dmUser`.** It used to be forced whenever
   a fallback file existed, with a misleading "service unavailable" note.
 - **Transcripts include the answers to the ticket questions.** Embed fields were
