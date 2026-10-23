@@ -11,7 +11,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze (javascript)
+    name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
 
     permissions:
@@ -19,31 +19,43 @@ jobs:
       security-events: write
       actions: read
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: javascript-typescript
+          # The workflow files themselves (injection via untrusted inputs,
+          # over-broad permissions, unpinned actions).
+          - language: actions
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
 
       - name: Set up Node.js
+        if: matrix.language == 'javascript-typescript'
         uses: actions/setup-node@v7
         with:
           node-version: '24'
           cache: 'npm'
 
       - name: Install dependencies
+        if: matrix.language == 'javascript-typescript'
         run: npm ci
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
-          languages: javascript-typescript
+          languages: ${{ matrix.language }}
           # security-extended: deeper XSS, injection, path-traversal checks
           # security-and-quality: code quality on top
           queries: security-extended, security-and-quality
 
       - name: Autobuild
+        if: matrix.language == 'javascript-typescript'
         uses: github/codeql-action/autobuild@v4
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
-          category: '/language:javascript-typescript'
+          category: '/language:${{ matrix.language }}'
