@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [Unreleased]
+
+### Security
+
+- **Dashboard build tooling: Vite 8.3.0 → 8.3.5.** Closes three advisories in
+  its bundled `launch-editor` (one high, two medium), all Windows-specific
+  command handling in the dev server's "open in editor" feature. The shipped
+  `web/dist` was never affected, it is rebuilt anyway.
+- **`ip-address` 10.7.3 → 10.7.4** (transitive via `express-rate-limit`), fixes
+  a quadratic-time parse of long IPv6 zone identifiers (GHSA-rxp7-6hxx-x8q5).
+
+### Changed
+
+- `dotenv` 17 → 18. The `config()`/`parse()` API and the `quiet` option the bot
+  uses are unchanged, duplicate keys still resolve to the last value and
+  variables already set in the environment still win. No code change needed.
+- `mysql2` 3.24.6, `express` 5.3.0, `express-rate-limit` 8.7.1, `helmet` 8.3.0.
+- Dashboard: React 19.3.1, lucide-react 1.61, all Radix primitives to their
+  latest minor, `@vitejs/plugin-react` 6.1.2. `web/dist` rebuilt.
+
 ## [2.19.2] - 2026-09-15
 
 ### Changed
