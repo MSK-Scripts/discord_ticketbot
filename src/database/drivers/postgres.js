@@ -7,8 +7,19 @@
  * @param {{ options: object }} descriptor
  */
 function createPostgresDriver(descriptor) {
-  const { Pool } = require('pg');
+  const { Pool, types } = require('pg');
   let pool;
+
+  // pg returns BIGINT (int8, OID 20) as a string, SQLite and mysql2 return a
+  // number. Every BIGINT column here is a millisecond timestamp or a row id,
+  // well inside Number.MAX_SAFE_INTEGER (Discord ids are VARCHAR), so parse
+  // them as numbers for this pool only. As strings, new Date(created_at) was
+  // an Invalid Date and every transcript failed to build.
+  const INT8_OID = 20;
+  const typeParsers = {
+    getTypeParser: (oid, format) =>
+      (oid === INT8_OID && format !== 'binary') ? Number : types.getTypeParser(oid, format),
+  };
 
   const norm = (params) => (params || []).map(p => (p === undefined ? null : p));
 
@@ -22,7 +33,7 @@ function createPostgresDriver(descriptor) {
     async connect() {
       // connectionTimeoutMillis: without it a connect to an unreachable host can
       // hang indefinitely instead of failing the query.
-      pool = new Pool({ connectionTimeoutMillis: 10_000, ...descriptor.options, max: 10 });
+      pool = new Pool({ connectionTimeoutMillis: 10_000, ...descriptor.options, max: 10, types: typeParsers });
 
       // An idle client that loses its connection (Postgres restart, network blip)
       // emits 'error' on the pool. Unhandled, that event crashes the process; the
