@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Locale key `messages.orphanedTicketReason` in every language.
 - **`closeOption.transcriptToUser`** (default `true`). Set it to `false` to keep
   transcripts staff-only: the close DM then carries neither the transcript link
-  nor the file.
+  nor the file. Also in the dashboard's config form under Close Options.
 
 ## [2.19.3] - 2026-10-23
 

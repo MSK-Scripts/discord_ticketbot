@@ -113,6 +113,8 @@ export const CONFIG_SCHEMA = [
     fields: [
       { path: ['closeOption', 'closeButton'], kind: 'toggle', label: 'Show close button' },
       { path: ['closeOption', 'dmUser'], kind: 'toggle', label: 'DM user on close' },
+      { path: ['closeOption', 'transcriptToUser'], kind: 'toggle', label: 'Include transcript in the close DM',
+        help: 'Attach the transcript (link or file) to the close DM. Off = staff only, the transcript goes to the log channel. A missing key counts as on.' },
       { path: ['closeOption', 'createTranscript'], kind: 'toggle', label: 'Create transcript' },
       { path: ['closeOption', 'askReason'], kind: 'toggle', label: 'Ask for close reason' },
       { path: ['closeOption', 'whoCanCloseTicket'], kind: 'select', label: 'Who can close', options: WHO_OPTIONS },
