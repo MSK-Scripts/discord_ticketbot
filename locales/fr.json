@@ -253,7 +253,8 @@
     "feedbackCommentEmpty": "❌ Votre commentaire ne peut pas etre vide.",
     "feedbackCommentFull": "❌ Cet avis a déjà atteint le nombre maximal de commentaires.",
     "feedbackCommentFailed": "❌ Le message d'avis n'a pas pu être mis à jour.",
-    "feedbackCommentSaved": "✅ Votre commentaire a été ajouté."
+    "feedbackCommentSaved": "✅ Votre commentaire a été ajouté.",
+    "orphanedTicketReason": "Le salon du ticket n'existe plus"
   },
   "priorities": {
     "low": "🟢 Basse",
