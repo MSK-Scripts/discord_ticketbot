@@ -4,6 +4,16 @@ const path = require('path');
 const DEFAULT_SQLITE_PATH = path.resolve(__dirname, '../../data/tickets.db');
 
 /**
+ * The URL with its password masked, for error messages and logs: a malformed
+ * DATABASE_URL must not end up in the journal with the credentials in it.
+ */
+function redactUrl(urlStr) {
+  // Greedy up to the LAST "@": an unencoded "@" inside the password must not
+  // leave its tail visible. Over-masking a stray "@" later in the URL is fine.
+  return String(urlStr ?? '').replace(/(\/\/[^:/@]*:).*@/, '$1***@');
+}
+
+/**
  * Parse the DATABASE_URL environment variable into a normalized connection
  * descriptor. The bot supports three engines:
  *
@@ -23,16 +33,6 @@ const DEFAULT_SQLITE_PATH = path.resolve(__dirname, '../../data/tickets.db');
  *           | { client: 'postgres', options: object }}
  * @throws {Error} on an unsupported scheme or an unparseable URL
  */
-/**
- * The URL with its password masked, for error messages and logs: a malformed
- * DATABASE_URL must not end up in the journal with the credentials in it.
- */
-function redactUrl(urlStr) {
-  // Greedy up to the LAST "@": an unencoded "@" inside the password must not
-  // leave its tail visible. Over-masking a stray "@" later in the URL is fine.
-  return String(urlStr ?? '').replace(/(\/\/[^:/@]*:).*@/, '$1***@');
-}
-
 function parseDatabaseUrl(urlStr) {
   const raw = (urlStr ?? '').trim();
 
