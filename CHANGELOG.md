@@ -76,10 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `/add` kept reading a closed ticket and could write in a locked one; reopening
   also unlocked a locked ticket. Staff members who were added keep their access.
 - **Only the ticket creator can rate a ticket.**
-- **Permission re-checks:** the close-reason modal re-checks `STAFFONLY`, the
-  delete confirmation refuses non-ticket channels, and `/blacklist` and `/setup`
-  enforce their permission in code as well as via
-  `setDefaultMemberPermissions`.
+- **Permission re-checks:** the close-reason modal re-checks `STAFFONLY` and the
+  delete confirmation refuses non-ticket channels.
 
 ### Added
 
