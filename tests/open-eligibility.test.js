@@ -74,7 +74,7 @@ test('concurrent opens by one user create only one ticket', async () => {
       },
     },
   };
-  const client = { ...fakeClient({ maxTicketOpened: 1, ticketTypes: [] }), locale: {}, t: (k) => k };
+  const client = { ...fakeClient({ maxTicketOpened: 1, ticketTypes: [] }), locale: {}, t: (k) => k, user: { id: 'bot' } };
   const type = { codeName: 'support', cantAccess: [], staffRoles: [] };
   const user = { id: 'racer', username: 'racer' };
 
