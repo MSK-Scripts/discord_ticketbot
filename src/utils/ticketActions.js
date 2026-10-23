@@ -10,6 +10,7 @@ const {
   ButtonStyle,
   EmbedBuilder,
   AttachmentBuilder,
+  OverwriteType,
 } = require('discord.js');
 const path = require('path');
 const { randomUUID } = require('crypto');
@@ -214,6 +215,17 @@ async function openTicket(client, guild, user, ticketType, answers = []) {
 
   const overwrites = [
     { id: guild.roles.everyone, deny: [PermissionFlagsBits.ViewChannel] },
+    // The bot itself: the @everyone deny above applies to it too, so without
+    // Administrator it would lock itself out of the channel it just created.
+    {
+      id:    client.user.id,
+      type:  OverwriteType.Member,
+      allow: [
+        PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.AttachFiles,
+        PermissionFlagsBits.EmbedLinks,
+      ],
+    },
     {
       id:    user.id,
       allow: [

@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   overwriting it with nothing.
 - **Database passwords are masked** in malformed-URL errors and in the
   `db:migrate` output.
+- **A bot without Administrator can open tickets again.** New ticket channels
+  deny `ViewChannel` to `@everyone`, which includes the bot, and nothing allowed
+  it back in. With the permissions the startup check and invite URL ask for,
+  every new ticket failed with *Missing Access* and the user got "an internal
+  error has occurred". The bot now adds an overwrite for itself.
 
 ### Added
 
