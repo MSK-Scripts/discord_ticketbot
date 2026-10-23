@@ -33,7 +33,7 @@ module.exports = {
     ),
 
   async execute(client, interaction) {
-    if (!client.isStaff(interaction.member)) {
+    if (!client.isAnyStaff(interaction.member)) {
       return interaction.reply({
         content: client.t('messages.noPermission'),
         flags: MessageFlags.Ephemeral,
@@ -46,7 +46,10 @@ module.exports = {
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const tickets = await getAllOpenTickets(interaction.guildId, typeFilter);
+    // Only tickets the sender is staff for: type-specific staff must not be able
+    // to post into another type's tickets (which they cannot even see).
+    const tickets = (await getAllOpenTickets(interaction.guildId, typeFilter))
+      .filter(ticket => client.isStaff(interaction.member, client.ticketTypeOf(ticket)));
 
     if (tickets.length === 0) {
       return interaction.editReply(client.t('messages.broadcastNoTickets'));

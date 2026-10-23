@@ -11,8 +11,7 @@ const {
   ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder,
   StringSelectMenuBuilder, StringSelectMenuOptionBuilder, MessageFlags,
 } = require('discord.js');
-const { isBlacklisted, getOpenTicketsByUser } = require('../../database');
-const { openTicket } = require('../../utils/ticketActions');
+const { openTicket, getOpenRefusal, refusalText } = require('../../utils/ticketActions');
 
 // How long (ms) the "ticket created" confirmation stays visible before auto-delete
 const SUCCESS_DELETE_DELAY = 10_000;
@@ -25,18 +24,12 @@ module.exports = {
     const user = interaction.user;
 
     // ── Guard checks ──────────────────────────────────────────────────────────
-    if (await isBlacklisted(user.id, interaction.guildId)) {
-      return interaction.reply({ content: client.t('messages.blacklisted'), flags: MessageFlags.Ephemeral });
-    }
-
-    if (cfg.maxTicketOpened > 0) {
-      const open = await getOpenTicketsByUser(user.id, interaction.guildId);
-      if (open.length >= cfg.maxTicketOpened) {
-        return interaction.reply({
-          content: client.t('messages.ticketLimitReached', { limit: String(cfg.maxTicketOpened) }),
-          flags: MessageFlags.Ephemeral,
-        });
-      }
+    // With one type, check it right away; with several, the type-specific
+    // checks run once a type is picked.
+    const singleType = cfg.ticketTypes.length === 1 ? cfg.ticketTypes[0] : null;
+    const refusal    = await getOpenRefusal(client, interaction.member, singleType);
+    if (refusal) {
+      return interaction.reply({ content: refusalText(client, refusal), flags: MessageFlags.Ephemeral });
     }
 
     // ── Multiple types → ephemeral select menu ────────────────────────────────
@@ -72,9 +65,9 @@ module.exports = {
     // No questions → open directly, show success for 10s then delete
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    const channel = await openTicket(client, interaction.guild, user, ticketType, []);
+    const { channel, refusal: openRefusal } = await openTicket(client, interaction.guild, user, ticketType, []);
     if (!channel) {
-      return interaction.editReply(client.t('messages.ticketCreateFailed'));
+      return interaction.editReply(openRefusal ? refusalText(client, openRefusal) : client.t('messages.ticketCreateFailed'));
     }
 
     await interaction.editReply(client.t('messages.ticketCreated', { channel: `<#${channel.id}>` }));

@@ -1,10 +1,11 @@
 /**
  * Command: /lock & /unlock (subcommands)
- * Locks or unlocks a ticket — prevents the creator from sending messages.
+ * Locks or unlocks a ticket — prevents the creator and added users from sending messages.
  * Staff-only.
  */
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 const { getTicketByChannel, lockTicket, unlockTicket } = require('../database');
+const { editParticipantAccess } = require('../utils/ticketActions');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,7 +30,7 @@ module.exports = {
     ),
 
   async execute(client, interaction) {
-    if (!client.isStaff(interaction.member)) {
+    if (!(await client.isStaffIn(interaction.member, interaction.channelId))) {
       return interaction.reply({
         content: client.t('messages.noPermission'),
         flags: MessageFlags.Ephemeral,
@@ -76,14 +77,16 @@ module.exports = {
 
       const reason = interaction.options.getString('reason') ?? null;
 
-      // Remove SendMessages from the ticket creator
-      await channel.permissionOverwrites.edit(ticket.creator_id, {
-        SendMessages: false,
-      }).catch(err => client.logger.warn(`[Lock] Permission edit failed: ${err.message}`));
+      // One permission edit per participant can outlast Discord's 3 s reply
+      // window, so acknowledge first.
+      await interaction.deferReply();
+
+      // Remove SendMessages from the creator and every /add-ed user
+      await editParticipantAccess(client, channel, ticket, { SendMessages: false });
 
       await lockTicket(interaction.channelId);
 
-      return interaction.reply({
+      return interaction.editReply({
         embeds: [{
           description: reason
             ? client.t('embeds.locked.withReason', { user: `<@${interaction.user.id}>`, reason })
@@ -102,14 +105,14 @@ module.exports = {
         });
       }
 
-      // Restore SendMessages for the ticket creator
-      await channel.permissionOverwrites.edit(ticket.creator_id, {
-        SendMessages: true,
-      }).catch(err => client.logger.warn(`[Unlock] Permission edit failed: ${err.message}`));
+      await interaction.deferReply();
+
+      // Restore SendMessages for the creator and every /add-ed user
+      await editParticipantAccess(client, channel, ticket, { SendMessages: true });
 
       await unlockTicket(interaction.channelId);
 
-      return interaction.reply({
+      return interaction.editReply({
         embeds: [{
           description: client.t('embeds.unlocked.description', { user: `<@${interaction.user.id}>` }),
           color: 0x57f287,

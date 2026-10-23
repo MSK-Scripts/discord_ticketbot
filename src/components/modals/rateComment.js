@@ -17,6 +17,13 @@ module.exports = {
       return interaction.reply({ content: client.t('messages.notInvalidRating'), flags: MessageFlags.Ephemeral });
     }
 
+    // Same rule as the rating buttons: re-checked here because a modal submit
+    // is its own interaction.
+    const ticket = await getTicketById(ticketId);
+    if (!ticket || ticket.creator_id !== interaction.user.id) {
+      return interaction.reply({ content: client.t('messages.onlyCreatorCanRate'), flags: MessageFlags.Ephemeral });
+    }
+
     if (await getRating(ticketId)) {
       return interaction.reply({ content: client.t('messages.alreadyRated'), flags: MessageFlags.Ephemeral });
     }

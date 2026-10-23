@@ -20,6 +20,8 @@ test('the bot gives itself access to a new ticket channel', async () => {
   const guild = {
     id: 'g1',
     roles: { everyone: 'everyone', cache: new Set() },
+    // openTicket looks the member up for the eligibility check.
+    members: { fetch: async (id) => ({ id, guild: { id: 'g1' }, roles: { cache: new Set() } }) },
     channels: {
       create: async (opts) => {
         overwrites = opts.permissionOverwrites;

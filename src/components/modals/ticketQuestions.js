@@ -6,8 +6,7 @@
  * 10 seconds and then automatically deleted.
  */
 const { MessageFlags } = require('discord.js');
-const { isBlacklisted, getOpenTicketsByUser } = require('../../database');
-const { openTicket } = require('../../utils/ticketActions');
+const { openTicket, refusalText } = require('../../utils/ticketActions');
 
 const SUCCESS_DELETE_DELAY = 10_000;
 
@@ -29,24 +28,12 @@ module.exports = {
 
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-    // Re-check limits in case user opened another ticket while filling the form
-    if (await isBlacklisted(interaction.user.id, interaction.guildId)) {
-      return interaction.editReply(client.t('messages.blacklisted'));
-    }
-
-    const cfg = client.config;
-    if (cfg.maxTicketOpened > 0) {
-      const open = await getOpenTicketsByUser(interaction.user.id, interaction.guildId);
-      if (open.length >= cfg.maxTicketOpened) {
-        return interaction.editReply(
-          client.t('messages.ticketLimitReached', { limit: String(cfg.maxTicketOpened) })
-        );
-      }
-    }
-
-    const channel = await openTicket(client, interaction.guild, interaction.user, ticketType, answers);
+    // openTicket re-runs every eligibility check (blacklist, blocked roles, type
+    // access, open-ticket limit), since things may have changed while the user
+    // was filling in the form.
+    const { channel, refusal } = await openTicket(client, interaction.guild, interaction.user, ticketType, answers);
     if (!channel) {
-      return interaction.editReply(client.t('messages.ticketCreateFailed'));
+      return interaction.editReply(refusal ? refusalText(client, refusal) : client.t('messages.ticketCreateFailed'));
     }
 
     // Show success for 10 seconds, then auto-delete

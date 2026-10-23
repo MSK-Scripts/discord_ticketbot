@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- **A ticket type with its own `staffRoles` is now handled by those roles
+  only.** The global `rolesWhoHaveAccessToTheTickets` no longer act on these
+  tickets (they already could not see the channels), and staff reminders no
+  longer ping them. If the global staff role should keep access to a type,
+  **add it to that type's `staffRoles`**. Types without `staffRoles` are
+  unchanged and keep using the global roles.
+
 ### Fixed
 
 - **A PostgreSQL restart no longer crashes the bot.** The pool now handles the
@@ -59,6 +68,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   truncated to Discord's limits (name 256, value 1024 characters).
 - MSK requests have timeouts (60 s upload, 10 s otherwise), so a hung server
   cannot block a close or the startup key check.
+- **`rolesWhoCanNotCreateTickets` is enforced.** It was validated but never
+  checked.
+- **`cantAccess` is enforced on every open path**, including the single-type
+  panel button and `openTicket()` itself.
+- **The open-ticket limit can no longer be raced.** A burst of select-menu picks
+  or modal submits could each pass the limit check before the first ticket was
+  written; ticket creation now holds a per-user lock.
+- **Type-specific `staffRoles` now apply to staff actions, not just channel
+  access.** Members holding only a type's staff role could not claim, close,
+  lock, move or annotate those tickets. Staff checks inside a ticket now use the
+  ticket type's `staffRoles` (overriding the global roles, as documented);
+  staff reminders and "staff replied" DMs follow the same rule, and
+  `/broadcast` only posts into tickets the sender is staff for.
+- **Close, lock and reopen apply to every participant.** Users added with
+  `/add` kept reading a closed ticket and could write in a locked one; reopening
+  also unlocked a locked ticket. Staff members who were added keep their access.
+- **Only the ticket creator can rate a ticket.**
+- **Permission re-checks:** the close-reason modal re-checks `STAFFONLY` and the
+  delete confirmation refuses non-ticket channels.
 
 ### Added
 
@@ -66,6 +94,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`closeOption.transcriptToUser`** (default `true`). Set it to `false` to keep
   transcripts staff-only: the close DM then carries neither the transcript link
   nor the file. Also in the dashboard's config form under Close Options.
+- Locale keys `messages.cannotCreateTickets`, `messages.ticketOpenInProgress`
+  and `messages.onlyCreatorCanRate` in every language.
 
 ## [2.19.3] - 2026-10-23
 
