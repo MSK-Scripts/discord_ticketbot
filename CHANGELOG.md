@@ -34,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   it back in. With the permissions the startup check and invite URL ask for,
   every new ticket failed with *Missing Access* and the user got "an internal
   error has occurred". The bot now adds an overwrite for itself.
+- **Transcripts work on PostgreSQL.** pg returns `BIGINT` columns as strings,
+  so the ticket timestamps reached the transcript as text and every transcript
+  failed with `RangeError: Invalid time value` (no file in the log channel,
+  nothing stored). The PostgreSQL pool now returns `BIGINT` as a number, like
+  SQLite and MySQL do.
 
 ### Added
 
