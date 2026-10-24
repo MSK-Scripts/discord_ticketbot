@@ -126,7 +126,7 @@ and exits. Edit `config.jsonc` to match your test server, then start again.
 
 ## Project Structure
 
-A short orientation — see [`README.md`](README.md) for the full, always-current map.
+A short orientation — see [`docs/development-en.md`](docs/development-en.md) for the full map and the database schema.
 
 ```
 index.js                ← entry point (dotenv + TicketClient.start())
@@ -136,10 +136,10 @@ src/
 ├── database/           ← engine-agnostic async DB layer (SQLite/MySQL/PostgreSQL)
 ├── commands/           ← slash commands ({ data, execute })
 ├── components/         ← buttons / menus / modals (convention-based loader)
-├── events/             ← interactionCreate, messageCreate, ready
+├── events/             ← interactionCreate, messageCreate, ready, channelDelete
 ├── handlers/           ← command/component/event loaders
 └── utils/              ← embeds, logger, mskApi, snippets, ticketActions, transcript
-locales/                ← de.json, en.json, main.json
+locales/                ← main.json (source), en, de, fr, es, pt, pl, hu
 config/                 ← *.example.jsonc templates + active (gitignored) configs
 ```
 
@@ -233,7 +233,7 @@ completely rather than deleting it.
 1. Branch off `main` (e.g. `feat/ticket-tags` or `fix/autoclose-flag`).
 2. Make sure the bot **starts cleanly** (`npm start`) and your change works on a
    real test server.
-3. Keep the relevant docs in sync — update `README.md` / `README_GER.md`,
+3. Keep the relevant docs in sync — update the pages in [`docs/`](docs/) (both languages),
    `config.example.jsonc`, and `CLAUDE.md` when you change behavior, config keys,
    commands, or the schema.
 4. Add a `CHANGELOG.md` entry describing your change.

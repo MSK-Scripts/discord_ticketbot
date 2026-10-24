@@ -43,7 +43,7 @@ Describe the flows you exercised (e.g. open, claim, close, reopen, transcript).
 - [ ] Any DB schema change uses an inline migration in `initDatabase()` (`ALTER TABLE` / `CREATE TABLE IF NOT EXISTS`)
 - [ ] The bot still works **without** `MSK_API_KEY` (premium features degrade gracefully)
 - [ ] The bot starts cleanly (`npm start`) and I verified my change on a test server
-- [ ] I updated the relevant docs (`README.md` / `README_GER.md`, `config.example.jsonc`, `CLAUDE.md`) where behavior, config keys, commands or the schema changed
+- [ ] I updated the relevant docs (`docs/` in both languages, `config.example.jsonc`, `CLAUDE.md`) where behavior, config keys, commands or the schema changed
 - [ ] I added a `CHANGELOG.md` entry under `[Unreleased]`
 - [ ] My commit messages are in English and follow Conventional Commits (`feat:`, `fix:`, `docs:`, …)
 

@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   an unhandled error on excessive content encodings.
 - `qs` 6.16.0 → 6.16.1 (transitive via `body-parser`).
 
+### Changed
+
+- **README rewritten and the details moved to `docs/`.** The README now covers what the bot
+  is, a quick start and where to read on. Features and commands, installation, configuration
+  and the project layout have their own pages in English and German. Tiers, prices and the
+  hosting boundary (Premium+ and up) in `docs/setup-*.md` match the current plans again.
+
 ## [2.20.0] - 2026-10-23
 
 ### Breaking
