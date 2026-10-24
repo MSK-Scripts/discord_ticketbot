@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [Unreleased]
+
+### Security
+
+- **`body-parser` 2.3.0 → 2.4.0** (transitive via `express`, GHSA-27r3-jxmh-p828,
+  high). A single unauthenticated request with a compressed body followed by
+  trailing bytes threw an uncaught exception and ended the process. With the
+  dashboard enabled that is the supervisor, so the bot went down with it.
+- **`undici` 6.29.0 → 6.29.1** (transitive via `discord.js`, GHSA-4qv8-2p9j-2685
+  and GHSA-xjj6-f33q-929c, high): unbounded memory in the EventSource parser and
+  an unhandled error on excessive content encodings.
+- `qs` 6.16.0 → 6.16.1 (transitive via `body-parser`).
+
 ## [2.20.0] - 2026-10-23
 
 ### Breaking
