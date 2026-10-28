@@ -281,6 +281,13 @@
     "faviconUploadLabel": "Enviar um novo Favicon",
     "faviconUpload": "Enviar",
     "faviconUpdated": "Favicon atualizado.",
-    "faviconReset": "Favicon restaurado para o padrão."
+    "faviconReset": "Favicon restaurado para o padrão.",
+    "previewTitle": "Prévia nos dois temas",
+    "previewButton": "Botão",
+    "previewLink": "Link",
+    "previewActive": "Item de menu ativo",
+    "variantFill": "Os botões usam {hex} aqui para que o texto continue legível.",
+    "variantText": "Textos e bordas usam {hex} aqui para continuarem legíveis.",
+    "variantNone": "Sua cor é usada como está."
   }
 }

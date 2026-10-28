@@ -281,6 +281,13 @@
     "faviconUploadLabel": "Upload a new favicon",
     "faviconUpload": "Upload",
     "faviconUpdated": "Favicon updated.",
-    "faviconReset": "Favicon reset to the default."
+    "faviconReset": "Favicon reset to the default.",
+    "previewTitle": "Preview in both themes",
+    "previewButton": "Button",
+    "previewLink": "Link",
+    "previewActive": "Active menu item",
+    "variantFill": "Buttons use {hex} here, so their label stays readable.",
+    "variantText": "Text and borders use {hex} here, so they stay readable.",
+    "variantNone": "Your colour is used as it is."
   }
 }

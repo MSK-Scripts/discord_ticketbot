@@ -143,7 +143,7 @@ export default function Access({ me }) {
                       )}>
                       <span aria-hidden="true" className={cn(
                         'flex size-5 shrink-0 items-center justify-center rounded-sm border-[1.5px]',
-                        on ? 'border-primary bg-primary text-primary-foreground' : 'border-input',
+                        on ? 'border-primary-text bg-primary text-primary-foreground' : 'border-input',
                       )}>
                         {on && <Check className="size-3.5" weight="bold" />}
                       </span>

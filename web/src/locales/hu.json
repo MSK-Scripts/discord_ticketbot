@@ -281,6 +281,13 @@
     "faviconUploadLabel": "Új favicon feltöltése",
     "faviconUpload": "Feltöltés",
     "faviconUpdated": "A favicon frissítve.",
-    "faviconReset": "A favicon visszaállt az alapértelmezettre."
+    "faviconReset": "A favicon visszaállt az alapértelmezettre.",
+    "previewTitle": "Előnézet mindkét témában",
+    "previewButton": "Gomb",
+    "previewLink": "Hivatkozás",
+    "previewActive": "Aktív menüpont",
+    "variantFill": "A gombok itt a(z) {hex} színt használják, hogy a feliratuk olvasható maradjon.",
+    "variantText": "A szöveg és a keretek itt a(z) {hex} színt használják, hogy olvashatók maradjanak.",
+    "variantNone": "A színed változtatás nélkül kerül felhasználásra."
   }
 }

@@ -1,8 +1,10 @@
 import { useEffect, useId, useRef, useState } from 'react';
-import { ArrowCounterClockwise, UploadSimple, WarningCircle } from '@/components/icons.jsx';
+import { ArrowCounterClockwise, Moon, Sun, UploadSimple, WarningCircle } from '@/components/icons.jsx';
 import { api } from '../api.js';
 import { Banner, Empty, PageHeader, SectionCard } from '../ui.jsx';
 import { applyAccent, applyFavicon, hexToRgb } from '../settings.js';
+import { deriveAccent } from '../accent.js';
+import { cn } from '@/lib/utils.js';
 import { useT } from '../i18n.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Input } from '@/components/ui/input.jsx';
@@ -11,6 +13,45 @@ import { Label } from '@/components/ui/label.jsx';
 // The built-in MSK green (index.css --primary, light theme). Shown as the picker
 // value when no custom accent is set, and what "Reset" returns to.
 const DEFAULT_ACCENT = '#27762e';
+
+/**
+ * The accent in both themes side by side, whatever theme is active: a button,
+ * a link and the active menu item, drawn with the variants accent.js derived
+ * (index.css .accent-preview-*). Says in words when a role had to leave the
+ * chosen colour to stay readable, so a darker link is not a surprise.
+ */
+function AccentPreview({ accent }) {
+  const t = useT();
+  return (
+    <div className="grid gap-2">
+      <p className="kicker text-muted-foreground">{t('settings.previewTitle')}</p>
+      <div className="grid gap-3 @lg:grid-cols-2">
+        {[['light', Sun], ['dark', Moon]].map(([theme, Icon]) => {
+          const roles = deriveAccent(accent, theme);
+          return (
+            <div key={theme} className={cn(`accent-preview-${theme}`, 'grid content-start gap-3 rounded-md border bg-background p-3 text-foreground')}>
+              <p className="flex items-center gap-1.5 text-small font-semibold"><Icon className="size-4" /> {t(`theme.${theme}`)}</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex min-h-9 items-center rounded-md bg-primary px-3.5 text-small font-semibold text-primary-foreground">{t('settings.previewButton')}</span>
+                <span className="text-small font-semibold text-primary-text underline underline-offset-4">{t('settings.previewLink')}</span>
+              </div>
+              <span className="flex min-h-10 items-center rounded-md bg-accent-soft px-3 text-small font-semibold text-primary-text shadow-[inset_3px_0_0_var(--primary-text)]">
+                {t('settings.previewActive')}
+              </span>
+              {roles && (
+                <ul className="grid gap-1 text-small text-muted-foreground">
+                  {roles.adjusted.fill && <li>{t('settings.variantFill', { hex: roles.primary })}</li>}
+                  {roles.adjusted.text && <li>{t('settings.variantText', { hex: roles.primaryText })}</li>}
+                  {!roles.adjusted.fill && !roles.adjusted.text && <li>{t('settings.variantNone')}</li>}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /**
  * Dashboard appearance: accent colour + favicon. Gated by settings.view (read) and
@@ -148,6 +189,8 @@ export default function Settings({ me }) {
               {savedAccent == null && <p className="text-small text-muted-foreground">{t('settings.accentDefault', { hex: DEFAULT_ACCENT })}</p>}
             </div>
           </div>
+
+          <AccentPreview accent={validHex ? accent : (savedAccent || DEFAULT_ACCENT)} />
 
           <div className="flex flex-wrap gap-3">
             <Button disabled={busy || !accentDirty || !canEdit} onClick={saveAccent}>{t('settings.accentSave')}</Button>

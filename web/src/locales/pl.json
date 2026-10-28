@@ -281,6 +281,13 @@
     "faviconUploadLabel": "Wgraj nowy favicon",
     "faviconUpload": "Wgraj",
     "faviconUpdated": "Favicon zaktualizowany.",
-    "faviconReset": "Przywrócono domyślny favicon."
+    "faviconReset": "Przywrócono domyślny favicon.",
+    "previewTitle": "Podgląd w obu motywach",
+    "previewButton": "Przycisk",
+    "previewLink": "Link",
+    "previewActive": "Aktywna pozycja menu",
+    "variantFill": "Przyciski używają tu {hex}, aby ich etykieta pozostała czytelna.",
+    "variantText": "Tekst i obramowania używają tu {hex}, aby pozostały czytelne.",
+    "variantNone": "Twój kolor jest używany bez zmian."
   }
 }
