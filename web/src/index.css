@@ -141,7 +141,9 @@
   --primary-text: var(--accent-light-primary-text);
   --ring: var(--accent-light-primary-text);
   --accent-soft: var(--accent-light-accent-soft);
-  --brand: var(--accent-light-primary);
+  /* The stripe takes the readable variant too: a yellow or navy fill as it
+     is would all but vanish against the top bar of one of the themes. */
+  --brand: var(--accent-light-primary-text);
 }
 .dark[data-accent] {
   --primary: var(--accent-dark-primary);
@@ -150,7 +152,7 @@
   --primary-text: var(--accent-dark-primary-text);
   --ring: var(--accent-dark-primary-text);
   --accent-soft: var(--accent-dark-accent-soft);
-  --brand: var(--accent-dark-primary);
+  --brand: var(--accent-dark-primary-text);
 }
 
 /* Scopes that show one theme's accent variant regardless of the active
