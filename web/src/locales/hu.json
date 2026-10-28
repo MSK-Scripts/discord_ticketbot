@@ -40,7 +40,13 @@
     "config": "Konfiguráció",
     "bot": "Bot vezérlése",
     "access": "Jogosultságok",
-    "settings": "Dashboard beállítások"
+    "settings": "Dashboard beállítások",
+    "groupSupport": "Támogatás",
+    "groupBot": "Bot",
+    "groupAdmin": "Adminisztráció",
+    "menuOpen": "Menü megnyitása",
+    "menuClose": "Menü bezárása",
+    "quickNav": "Gyors navigáció"
   },
 
   "app": {
@@ -49,7 +55,16 @@
     "permissionCount": "{count} jogosultság",
     "signOut": "Kijelentkezés",
     "signIn": "Bejelentkezés Discorddal",
-    "askAdmin": "Kérd meg a szerver egyik adminisztrátorát, hogy adjon neked hozzáférést."
+    "askAdmin": "Kérd meg a szerver egyik adminisztrátorát, hogy adjon neked hozzáférést.",
+    "skipToContent": "Ugrás a tartalomra",
+    "account": "Fiók"
+  },
+
+  "theme": {
+    "label": "Megjelenés",
+    "system": "Rendszer",
+    "light": "Világos",
+    "dark": "Sötét"
   },
 
   "user": {

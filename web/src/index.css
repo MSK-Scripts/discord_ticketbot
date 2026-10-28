@@ -330,6 +330,14 @@
   dialog::backdrop {
     background: rgb(0 0 0 / 0.5);
   }
+
+  /* Set by theme.jsx for one frame while the theme switches, so controls do
+     not fade between the two palettes. */
+  [data-theme-switching] *,
+  [data-theme-switching] *::before,
+  [data-theme-switching] *::after {
+    transition: none !important;
+  }
 }
 
 /* ----------------------------------------------------------------------------

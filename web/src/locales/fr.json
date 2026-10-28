@@ -40,7 +40,13 @@
     "config": "Configuration",
     "bot": "Contrôle du bot",
     "access": "Permissions",
-    "settings": "Paramètres du Dashboard"
+    "settings": "Paramètres du Dashboard",
+    "groupSupport": "Support",
+    "groupBot": "Bot",
+    "groupAdmin": "Administration",
+    "menuOpen": "Ouvrir le menu",
+    "menuClose": "Fermer le menu",
+    "quickNav": "Navigation rapide"
   },
 
   "app": {
@@ -49,7 +55,16 @@
     "permissionCount": "{count} permission(s)",
     "signOut": "Se déconnecter",
     "signIn": "Se connecter avec Discord",
-    "askAdmin": "Demandez à un administrateur du serveur de vous donner accès."
+    "askAdmin": "Demandez à un administrateur du serveur de vous donner accès.",
+    "skipToContent": "Aller au contenu",
+    "account": "Compte"
+  },
+
+  "theme": {
+    "label": "Apparence",
+    "system": "Système",
+    "light": "Clair",
+    "dark": "Sombre"
   },
 
   "user": {

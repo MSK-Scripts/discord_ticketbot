@@ -40,7 +40,13 @@
     "config": "Konfiguracja",
     "bot": "Sterowanie botem",
     "access": "Uprawnienia",
-    "settings": "Ustawienia dashboardu"
+    "settings": "Ustawienia dashboardu",
+    "groupSupport": "Wsparcie",
+    "groupBot": "Bot",
+    "groupAdmin": "Administracja",
+    "menuOpen": "Otwórz menu",
+    "menuClose": "Zamknij menu",
+    "quickNav": "Szybka nawigacja"
   },
 
   "app": {
@@ -49,7 +55,16 @@
     "permissionCount": "Uprawnienia: {count}",
     "signOut": "Wyloguj się",
     "signIn": "Zaloguj się przez Discord",
-    "askAdmin": "Poproś administratora serwera o nadanie Ci dostępu."
+    "askAdmin": "Poproś administratora serwera o nadanie Ci dostępu.",
+    "skipToContent": "Przejdź do treści",
+    "account": "Konto"
+  },
+
+  "theme": {
+    "label": "Wygląd",
+    "system": "Systemowy",
+    "light": "Jasny",
+    "dark": "Ciemny"
   },
 
   "user": {

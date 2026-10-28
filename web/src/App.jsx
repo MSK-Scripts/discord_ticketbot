@@ -1,12 +1,12 @@
-import { useEffect, useId, useState } from 'react';
-import { ChartBar, GearSix, List, Palette, Robot, ShieldCheck, SignOut, Ticket, Tray } from '@/components/icons.jsx';
+import { useEffect, useState } from 'react';
+import { ChartBar, GearSix, Info, Palette, Robot, ShieldCheck, SignIn, SignOut, Ticket, Tray, WarningCircle } from '@/components/icons.jsx';
 import { api, logout } from './api.js';
 import { useRouter, parseRoute, viewPath } from './router.js';
 import { useI18n } from './i18n.jsx';
-import { cn } from '@/lib/utils.js';
 import { Button } from '@/components/ui/button.jsx';
-import { Drawer } from '@/components/ui/dialog.jsx';
-import { fieldClassName } from '@/components/ui/input.jsx';
+import { Alert, AlertDescription } from '@/components/ui/alert.jsx';
+import { AppShell, SignedOutShell } from '@/components/shell/AppShell.jsx';
+import { LanguagePicker } from '@/components/shell/AccountMenu.jsx';
 
 import Tickets from './views/Tickets.jsx';
 import MyTickets from './views/MyTickets.jsx';
@@ -18,17 +18,27 @@ import Settings from './views/Settings.jsx';
 
 /**
  * Navigation is derived from the permissions the SERVER reported. This is only
- * cosmetic — every route is enforced server-side as well. Hiding a nav item the
+ * cosmetic: every route is enforced server-side as well. Hiding a nav item the
  * user cannot use is a UX decision, never the security boundary.
+ *
+ * The order is the order of the sidebar and decides the landing view (the
+ * first one allowed). `group` places an item under a labelled group, `mobile`
+ * also puts it in the bar at the bottom of a phone (at most four are shown).
  */
 const NAV = [
-  { id: 'mine',     icon: Ticket,      permission: null },
-  { id: 'tickets',  icon: Tray,       permission: 'tickets.view' },
-  { id: 'stats',    icon: ChartBar,   permission: 'stats.view' },
-  { id: 'config',   icon: GearSix,    permission: ['config.view', 'config.edit'] },
-  { id: 'bot',      icon: Robot,    permission: 'bot.control' },
-  { id: 'access',   icon: ShieldCheck, permission: 'access.manage' },
-  { id: 'settings', icon: Palette,     permission: ['settings.view', 'settings.edit'] },
+  { id: 'mine',     icon: Ticket,      permission: null,                               group: 'support', mobile: true },
+  { id: 'tickets',  icon: Tray,        permission: 'tickets.view',                     group: 'support', mobile: true },
+  { id: 'stats',    icon: ChartBar,    permission: 'stats.view',                       group: 'support', mobile: true },
+  { id: 'config',   icon: GearSix,     permission: ['config.view', 'config.edit'],     group: 'bot' },
+  { id: 'bot',      icon: Robot,       permission: 'bot.control',                      group: 'bot',     mobile: true },
+  { id: 'access',   icon: ShieldCheck, permission: 'access.manage',                    group: 'admin' },
+  { id: 'settings', icon: Palette,     permission: ['settings.view', 'settings.edit'], group: 'admin' },
+];
+
+const GROUPS = [
+  { id: 'support', labelKey: 'nav.groupSupport' },
+  { id: 'bot',     labelKey: 'nav.groupBot' },
+  { id: 'admin',   labelKey: 'nav.groupAdmin' },
 ];
 
 const allowed = (me, item) => {
@@ -38,91 +48,16 @@ const allowed = (me, item) => {
   return list.some(p => me.permissions.includes(p));
 };
 
-function Brand() {
-  const { t } = useI18n();
-  return (
-    <div className="flex items-center gap-2 px-2 font-display text-[15px] font-bold">
-      <span className="size-2 rounded-full bg-primary" />
-      {t('nav.brand')}
-    </div>
-  );
-}
-
-/**
- * Per-user language picker. The list is whatever locale files exist (see i18n.jsx),
- * so a new translation appears here on its own. The choice is personal and lives in
- * localStorage, so it changes nothing for anyone else and needs no permission.
- */
-function LanguagePicker() {
-  const { lang, languages, setLang, t } = useI18n();
-  const id = useId();
-  if (languages.length < 2) return null;
-  return (
-    <div className="mb-2.5 grid gap-1 px-1">
-      <label htmlFor={id} className="kicker text-muted-foreground">{t('common.language')}</label>
-      {/* Native, because a Radix list would open in a portal below the
-          modal drawer this picker also sits in. */}
-      <select id={id} value={lang} onChange={e => setLang(e.target.value)} className={cn(fieldClassName, 'min-h-11 cursor-pointer')}>
-        {languages.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
-      </select>
-    </div>
-  );
-}
-
-function NavContent({ me, view, onSelect }) {
-  const { t } = useI18n();
-  const items = NAV.filter(n => allowed(me, n));
-  return (
-    <div className="flex h-full flex-col gap-1 p-3">
-      <div className="px-1 pb-3 pt-1"><Brand /></div>
-
-      <nav className="flex flex-col gap-1">
-        {items.map(item => {
-          const Icon = item.icon;
-          const active = view === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onSelect(item.id)}
-              className={cn(
-                'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors cursor-pointer',
-                active
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-semibold'
-                  : 'text-sidebar-foreground hover:bg-white/5 hover:text-foreground',
-              )}
-            >
-              <Icon className="size-4 shrink-0" />
-              {t(`nav.${item.id}`)}
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className="mt-auto border-t border-sidebar-border pt-3">
-        <div className="mb-2.5 flex items-center gap-2.5 px-1">
-          {me.user.avatar
-            ? <img src={me.user.avatar} alt="" className="size-8 rounded-full" />
-            : <div className="size-8 rounded-full bg-white/8" />}
-          <div className="min-w-0">
-            <div className="truncate text-sm font-semibold">{me.user.name}</div>
-            <div className="text-muted-foreground text-xs">
-              {me.isOwner ? t('app.serverOwner') : t('app.permissionCount', { count: me.permissions.length })}
-            </div>
-          </div>
-        </div>
-        <LanguagePicker />
-        <Button variant="outline" size="sm" className="w-full" onClick={logout}>
-          <SignOut /> {t('app.signOut')}
-        </Button>
-      </div>
-    </div>
-  );
+function navGroups(me, t) {
+  const items = NAV.filter(n => allowed(me, n)).map(n => ({ ...n, href: viewPath(n.id) }));
+  return GROUPS
+    .map(g => ({ id: g.id, label: t(g.labelKey), items: items.filter(i => i.group === g.id) }))
+    .filter(g => g.items.length > 0);
 }
 
 export default function App() {
   const [me, setMe] = useState(null);
   const [error, setError] = useState(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const { path, navigate } = useRouter();
   const { t } = useI18n();
 
@@ -150,70 +85,70 @@ export default function App() {
     if (window.location.pathname !== want) navigate(want, { replace: true });
   }, [me, view, param, navigate]);
 
+  // The tab title names the page, so several open tabs and the history list
+  // can be told apart (WCAG 2.4.2).
+  useEffect(() => {
+    document.title = view ? `${t(`nav.${view}`)} · ${t('app.title')}` : t('app.title');
+  }, [view, t]);
+
   if (error) {
     // Staff-only dashboard + this member has no access: offer a way OUT (sign out),
     // not a sign-in button that would just bounce them straight back here.
-    if (error.portalClosed) {
-      return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-5 p-6 text-center">
-          <h1 className="font-display text-2xl font-bold">{t('app.title')}</h1>
-          <div className="text-muted-foreground bg-muted/40 border-border max-w-sm rounded-lg border px-4 py-3 text-sm">
-            {error.message} {t('app.askAdmin')}
-          </div>
-          <Button variant="outline" onClick={logout}><SignOut /> {t('app.signOut')}</Button>
-          <div className="w-44"><LanguagePicker /></div>
-        </div>
-      );
-    }
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-5 p-6 text-center">
-        <h1 className="font-display text-2xl font-bold">{t('app.title')}</h1>
-        <div className="text-destructive bg-destructive/10 border-destructive/30 max-w-sm rounded-lg border px-4 py-3 text-sm">{error.message}</div>
-        <Button asChild><a href="/auth/login">{t('app.signIn')}</a></Button>
-        <div className="w-44"><LanguagePicker /></div>
-      </div>
+      <SignedOutShell>
+        <div className="grid w-full max-w-[34rem] gap-5">
+          <h1 className="font-display text-h1 font-bold">{t('app.title')}</h1>
+          {error.portalClosed ? (
+            <Alert variant="info">
+              <Info />
+              <AlertDescription><p>{error.message} {t('app.askAdmin')}</p></AlertDescription>
+            </Alert>
+          ) : (
+            <Alert variant="danger" role="alert">
+              <WarningCircle />
+              <AlertDescription><p>{error.message}</p></AlertDescription>
+            </Alert>
+          )}
+          <div className="flex flex-wrap gap-3">
+            {error.portalClosed
+              ? <Button variant="outline" onClick={logout}><SignOut /> {t('app.signOut')}</Button>
+              : <Button asChild><a href="/auth/login"><SignIn /> {t('app.signIn')}</a></Button>}
+          </div>
+          <LanguagePicker className="max-w-[16rem]" />
+        </div>
+      </SignedOutShell>
     );
   }
 
   if (!me) {
-    return <div className="flex min-h-screen items-center justify-center text-muted-foreground">{t('common.loading')}</div>;
+    return (
+      <SignedOutShell>
+        <p role="status" className="text-muted-foreground">{t('common.loading')}</p>
+      </SignedOutShell>
+    );
   }
 
-  const select = (id) => { navigate(viewPath(id)); setMobileOpen(false); };
+  const select = (id) => navigate(viewPath(id));
 
   return (
-    <div className="flex min-h-screen">
-      {/* Desktop sidebar */}
-      <aside className="bg-sidebar hidden w-60 shrink-0 border-r border-sidebar-border md:block">
-        <div className="sticky top-0 h-screen">
-          <NavContent me={me} view={view} onSelect={select} />
-        </div>
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Mobile top bar */}
-        <header className="bg-sidebar sticky top-0 z-30 flex items-center gap-2 border-b border-sidebar-border px-3 py-2.5 md:hidden">
-          <Button variant="ghost" size="icon" aria-haspopup="dialog" aria-label={t('nav.navigation')} onClick={() => setMobileOpen(true)}>
-            <List className="size-6" />
-          </Button>
-          <Drawer open={mobileOpen} onClose={() => setMobileOpen(false)} label={t('nav.navigation')}>
-            <NavContent me={me} view={view} onSelect={select} />
-          </Drawer>
-          <Brand />
-        </header>
-
-        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
-          {view === 'mine'    && <MyTickets me={me} ticketId={param}
-            onOpen={id => navigate(viewPath('mine', id))} onClose={() => navigate(viewPath('mine'))} />}
-          {view === 'tickets' && <Tickets me={me} ticketId={param}
-            onOpen={id => navigate(viewPath('tickets', id))} onClose={() => navigate(viewPath('tickets'))} />}
-          {view === 'stats'   && <Stats />}
-          {view === 'config'  && <Config me={me} />}
-          {view === 'bot'     && <BotControl />}
-          {view === 'access'  && <Access me={me} />}
-          {view === 'settings' && <Settings me={me} />}
-        </main>
-      </div>
-    </div>
+    <AppShell
+      me={me}
+      groups={navGroups(me, t)}
+      current={view}
+      pageTitle={t(`nav.${view}`)}
+      homeHref={viewPath(allowedViews[0] ?? 'mine')}
+      onNavigate={select}
+      onSignOut={logout}
+    >
+      {view === 'mine'    && <MyTickets me={me} ticketId={param}
+        onOpen={id => navigate(viewPath('mine', id))} onClose={() => navigate(viewPath('mine'))} />}
+      {view === 'tickets' && <Tickets me={me} ticketId={param}
+        onOpen={id => navigate(viewPath('tickets', id))} onClose={() => navigate(viewPath('tickets'))} />}
+      {view === 'stats'   && <Stats />}
+      {view === 'config'  && <Config me={me} />}
+      {view === 'bot'     && <BotControl />}
+      {view === 'access'  && <Access me={me} />}
+      {view === 'settings' && <Settings me={me} />}
+    </AppShell>
   );
 }
