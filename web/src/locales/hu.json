@@ -112,7 +112,9 @@
     "colCreator": "Létrehozó",
     "colClaimedBy": "Felvette",
     "colCreated": "Létrehozva",
-    "colMessages": "Üz."
+    "colMessages": "Üz.",
+    "prevPage": "Előző oldal",
+    "nextPage": "Következő oldal"
   },
 
   "ticket": {
@@ -163,7 +165,9 @@
     "replyAsBot": "Válasz a bot nevében…",
     "send": "Küldés",
     "lockedHint": "Ez a ticket zárolva van, nem lehet rá válaszolni.",
-    "closedHint": "Ez a ticket le van zárva. Nyisd meg újra, ha válaszolni szeretnél."
+    "closedHint": "Ez a ticket le van zárva. Nyisd meg újra, ha válaszolni szeretnél.",
+    "ratingValue": "5-ből {rating} csillag",
+    "replyLabel": "Válaszod"
   },
 
   "bot": {
@@ -206,7 +210,9 @@
     "copied": "másolva!",
     "copyHint": "Kattints az ID másolásához",
     "modeForm": "Űrlap",
-    "modeFile": "Fájl"
+    "modeFile": "Fájl",
+    "files": "Fájlok",
+    "viewMode": "Nézet"
   },
 
   "access": {

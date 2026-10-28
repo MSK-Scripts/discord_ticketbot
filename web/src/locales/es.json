@@ -112,7 +112,9 @@
     "colCreator": "Creador",
     "colClaimedBy": "Atendido por",
     "colCreated": "Creado",
-    "colMessages": "Msjs"
+    "colMessages": "Msjs",
+    "prevPage": "Página anterior",
+    "nextPage": "Página siguiente"
   },
 
   "ticket": {
@@ -163,7 +165,9 @@
     "replyAsBot": "Responder como el Bot…",
     "send": "Enviar",
     "lockedHint": "Este ticket está bloqueado, no se puede responder.",
-    "closedHint": "Este ticket está cerrado. Reábrelo para responder."
+    "closedHint": "Este ticket está cerrado. Reábrelo para responder.",
+    "ratingValue": "{rating} de 5 estrellas",
+    "replyLabel": "Tu respuesta"
   },
 
   "bot": {
@@ -206,7 +210,9 @@
     "copied": "¡copiado!",
     "copyHint": "Haz clic para copiar la ID",
     "modeForm": "Formulario",
-    "modeFile": "Archivo"
+    "modeFile": "Archivo",
+    "files": "Archivos",
+    "viewMode": "Vista"
   },
 
   "access": {

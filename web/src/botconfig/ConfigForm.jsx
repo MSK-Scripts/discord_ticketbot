@@ -8,6 +8,8 @@ import { safeParse, editValue, appendArrayItem, removeArrayItem } from './jsoncE
 import FormRenderer from './FormRenderer.jsx';
 import TicketTypesEditor from './TicketTypesEditor.jsx';
 import SnippetsEditor from './SnippetsEditor.jsx';
+import { CaretRight } from '@/components/icons.jsx';
+import { Note } from '../ui.jsx';
 
 export default function ConfigForm({ file, content, onContentChange, issues, localeOptions }) {
   const model = safeParse(content);
@@ -19,9 +21,9 @@ export default function ConfigForm({ file, content, onContentChange, issues, loc
 
   if (model === undefined || typeof model !== 'object' || model === null) {
     return (
-      <div className="text-destructive bg-destructive/10 border-destructive/30 rounded-lg border px-4 py-3 text-sm">
-        This file has syntax errors and cannot be shown as a form. Please fix it in file mode.
-      </div>
+      <Note tone="danger">
+        <p>This file has syntax errors and cannot be shown as a form. Please fix it in file mode.</p>
+      </Note>
     );
   }
 
@@ -32,12 +34,12 @@ export default function ConfigForm({ file, content, onContentChange, issues, loc
   return (
     <div className="flex flex-col gap-3">
       {CONFIG_SCHEMA.map((section, idx) => (
-        <details key={section.id} className="group bg-card rounded-lg border" open={idx === 0}>
-          <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 font-semibold [&::-webkit-details-marker]:hidden">
-            <span className="text-muted-foreground transition-transform group-open:rotate-90">▸</span>
+        <details key={section.id} className="group rounded-lg border bg-card shadow-card" open={idx === 0}>
+          <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2.5 rounded-lg px-4 py-2.5 font-semibold hover:bg-muted/60 [&::-webkit-details-marker]:hidden font-display text-lead">
+            <CaretRight className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-open:rotate-90" />
             {section.title}
           </summary>
-          <div className="flex flex-col gap-4 border-t px-4 pt-4 pb-4">
+          <div className="flex flex-col gap-5 border-t px-4 pt-4 pb-5">
             {section.composite === 'ticketTypes' && (
               <TicketTypesEditor model={model} edit={edit} append={append} remove={remove} issues={issues} />
             )}

@@ -144,8 +144,11 @@ export function AppShell({ me, groups, current, pageTitle, homeHref, onNavigate,
       </TopBar>
 
       <div className="flex flex-1">
-        <aside className="sticky top-[calc(var(--app-topbar)+5px)] hidden h-[calc(100dvh-var(--app-topbar)-5px)] w-[var(--app-sidebar)] shrink-0 flex-col overflow-y-auto border-r bg-card p-3 lg:flex">
-          <NavList groups={groups} current={current} onNavigate={onNavigate} label={t('nav.navigation')} />
+        {/* The aside runs the full height of the page; its content sticks below the top bar. */}
+        <aside className="hidden w-[var(--app-sidebar)] shrink-0 border-r bg-card lg:block">
+          <div className="sticky top-[calc(var(--app-topbar)+5px)] max-h-[calc(100dvh-var(--app-topbar)-5px)] overflow-y-auto p-3">
+            <NavList groups={groups} current={current} onNavigate={onNavigate} label={t('nav.navigation')} />
+          </div>
         </aside>
 
         <Drawer

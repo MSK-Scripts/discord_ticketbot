@@ -11,6 +11,7 @@
  * import goes.
  */
 import {
+  Archive as ArchiveBase,
   ArrowClockwise as ArrowClockwiseBase,
   ArrowCounterClockwise as ArrowCounterClockwiseBase,
   ArrowDown as ArrowDownBase,
@@ -22,6 +23,7 @@ import {
   CaretRight as CaretRightBase,
   CaretUp as CaretUpBase,
   ChartBar as ChartBarBase,
+  ChatCircle as ChatCircleBase,
   Check as CheckBase,
   CheckCircle as CheckCircleBase,
   CircleNotch as CircleNotchBase,
@@ -70,6 +72,7 @@ function decorative(Base) {
   return Decorative;
 }
 
+export const Archive = decorative(ArchiveBase);
 export const ArrowClockwise = decorative(ArrowClockwiseBase);
 export const ArrowCounterClockwise = decorative(ArrowCounterClockwiseBase);
 export const ArrowDown = decorative(ArrowDownBase);
@@ -81,6 +84,7 @@ export const CaretLeft = decorative(CaretLeftBase);
 export const CaretRight = decorative(CaretRightBase);
 export const CaretUp = decorative(CaretUpBase);
 export const ChartBar = decorative(ChartBarBase);
+export const ChatCircle = decorative(ChatCircleBase);
 export const Check = decorative(CheckBase);
 export const CheckCircle = decorative(CheckCircleBase);
 export const CircleNotch = decorative(CircleNotchBase);

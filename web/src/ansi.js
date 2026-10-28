@@ -18,13 +18,15 @@
 // eslint-disable-next-line no-control-regex
 const SGR = /\x1b\[([0-9;]*)m/g;
 
-// 30–37 standard, 90–97 bright. Tuned to the MSK palette so the console does not
-// clash with the rest of the dashboard.
+// 30–37 standard, 90–97 bright, mapped onto the console tokens of index.css.
+// The console is dark in both themes and every token is checked against it
+// (tests/dashboard-contrast.test.js), so a line stays readable whatever
+// colour the bot asks for; black and bright black become the dimmed grey.
 const COLORS = {
-  30: '#1a1a1e', 31: '#ed4245', 32: '#5eb131', 33: '#fee75c',
-  34: '#5865f2', 35: '#eb459e', 36: '#00b0f4', 37: '#dcddde',
-  90: '#6b6b72', 91: '#ff8a8c', 92: '#7ee85a', 93: '#fff287',
-  94: '#8b9bff', 95: '#ff8ad0', 96: '#5ad6ff', 97: '#ffffff',
+  30: 'var(--log-dim)', 31: 'var(--log-error)', 32: 'var(--log-ok)', 33: 'var(--log-warn)',
+  34: 'var(--log-blue)', 35: 'var(--log-magenta)', 36: 'var(--log-info)', 37: 'var(--log-text)',
+  90: 'var(--log-dim)', 91: 'var(--log-error)', 92: 'var(--log-ok)', 93: 'var(--log-warn)',
+  94: 'var(--log-blue)', 95: 'var(--log-magenta)', 96: 'var(--log-info)', 97: 'var(--log-text)',
 };
 
 /**

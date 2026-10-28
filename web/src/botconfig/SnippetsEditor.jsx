@@ -1,7 +1,7 @@
 // Composite editor for snippets.jsonc → snippets[]. Each snippet has
 // name/description/content plus an optional embed (title + color, or null).
 
-import { Plus, Trash } from '@/components/icons.jsx';
+import { CaretRight, Plus, Trash } from '@/components/icons.jsx';
 import { DEFAULT_SNIPPET } from './schema.js';
 import { getAtPath } from './jsoncEdit.js';
 import FormRenderer from './FormRenderer.jsx';
@@ -35,33 +35,35 @@ export default function SnippetsEditor({ model, edit, append, remove }) {
         const name = ss.name || `#${i + 1}`;
         const hasEmbed = ss.embed != null;
         return (
-          <details key={i} className="group bg-background rounded-lg border" open={i === 0}>
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 [&::-webkit-details-marker]:hidden">
-              <span className="flex items-center gap-2 text-sm font-medium">
-                <span className="text-muted-foreground transition-transform group-open:rotate-90">▸</span>
-                {name}
+          <div key={i} className="relative">
+          <details className="group rounded-lg border bg-card shadow-card" open={i === 0}>
+            <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2.5 rounded-lg px-4 py-2.5 font-semibold hover:bg-muted/60 [&::-webkit-details-marker]:hidden pr-14">
+              <span className="flex min-w-0 items-center gap-2.5">
+                <CaretRight className="size-4 shrink-0 text-muted-foreground transition-transform duration-150 group-open:rotate-90" />
+                <span className="truncate">{name}</span>
               </span>
-              <button type="button" className="text-muted-foreground hover:text-destructive cursor-pointer"
-                onClick={e => { e.preventDefault(); remove(['snippets'], i); }} title="Remove snippet">
-                <Trash className="size-4" />
-              </button>
             </summary>
-            <div className="flex flex-col gap-4 border-t px-4 pt-4 pb-4">
+            <div className="flex flex-col gap-5 border-t px-4 pt-4 pb-5">
               <FormRenderer model={model} fields={snippetFields(i)} onEdit={edit} issues={[]} />
-              <div className="border-t pt-3">
+              <div className="grid gap-4 border-t pt-4">
                 <Toggle
                   checked={hasEmbed}
                   onChange={on => edit(['snippets', i, 'embed'], on ? { title: '', color: '#5865F2' } : null)}
                   label="Send as embed"
                 />
                 {hasEmbed && (
-                  <div className="mt-3">
+                  <div>
                     <FormRenderer model={model} fields={embedFields(i)} onEdit={edit} issues={[]} />
                   </div>
                 )}
               </div>
             </div>
           </details>
+          <button type="button" className="tap-target absolute top-1.5 right-2 inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-danger"
+            onClick={() => remove(['snippets'], i)} aria-label={`Remove snippet: ${name}`} title="Remove snippet">
+            <Trash className="size-5" />
+          </button>
+        </div>
         );
       })}
 

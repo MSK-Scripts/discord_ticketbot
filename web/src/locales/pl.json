@@ -112,7 +112,9 @@
     "colCreator": "Autor",
     "colClaimedBy": "Przypisany do",
     "colCreated": "Utworzono",
-    "colMessages": "Wiad."
+    "colMessages": "Wiad.",
+    "prevPage": "Poprzednia strona",
+    "nextPage": "Następna strona"
   },
 
   "ticket": {
@@ -163,7 +165,9 @@
     "replyAsBot": "Odpowiedz jako bot…",
     "send": "Wyślij",
     "lockedHint": "Ten ticket jest zablokowany, nie można w nim odpowiadać.",
-    "closedHint": "Ten ticket jest zamknięty. Otwórz go ponownie, aby odpowiedzieć."
+    "closedHint": "Ten ticket jest zamknięty. Otwórz go ponownie, aby odpowiedzieć.",
+    "ratingValue": "{rating} z 5 gwiazdek",
+    "replyLabel": "Twoja odpowiedź"
   },
 
   "bot": {
@@ -206,7 +210,9 @@
     "copied": "skopiowano!",
     "copyHint": "Kliknij, aby skopiować ID",
     "modeForm": "Formularz",
-    "modeFile": "Plik"
+    "modeFile": "Plik",
+    "files": "Pliki",
+    "viewMode": "Widok"
   },
 
   "access": {

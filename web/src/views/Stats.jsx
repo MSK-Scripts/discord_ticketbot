@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Star } from '@/components/icons.jsx';
 import { api } from '../api.js';
-import { Banner, Stat, Empty, fmtDuration } from '../ui.jsx';
+import { Banner, Empty, PageHeader, SectionCard, StatGrid, StatTile, fmtDuration } from '../ui.jsx';
 import { UserName } from '../users.jsx';
 import { useT } from '../i18n.jsx';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card.jsx';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table.jsx';
 
 export default function Stats() {
@@ -15,54 +15,45 @@ export default function Stats() {
     api.stats().then(setData).catch(e => setError(e.message));
   }, []);
 
-  if (error) return <Banner type="error">{error}</Banner>;
-  if (!data) return <Empty>{t('common.loading')}</Empty>;
+  if (error) return <><PageHeader title={t('stats.title')} /><Banner type="error">{error}</Banner></>;
+  if (!data) return <Empty loading>{t('common.loading')}</Empty>;
 
   const avg = data.avgRating != null ? Number(data.avgRating).toFixed(2) : null;
 
   return (
     <>
-      <div className="mb-5"><h1 className="font-display text-xl font-bold">{t('stats.title')}</h1></div>
+      <PageHeader title={t('stats.title')} />
 
-      <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat value={data.total}  label={t('stats.total')} />
-        <Stat value={data.open}   label={t('stats.open')} />
-        <Stat value={data.closed} label={t('stats.closed')} />
-        <Stat value={avg ? `${avg} ★` : '—'} label={t('stats.avgRating')} />
-      </div>
+      <StatGrid className="mb-[var(--app-gutter-y)]">
+        <StatTile value={data.total} label={t('stats.total')} />
+        <StatTile value={data.open} label={t('stats.open')} />
+        <StatTile value={data.closed} label={t('stats.closed')} />
+        <StatTile value={avg} icon={avg ? Star : undefined} label={t('stats.avgRating')} />
+        <StatTile value={fmtDuration(data.avgDuration)} label={t('stats.avgHandlingTime')} hint={t('stats.avgHandlingTimeHint')} />
+      </StatGrid>
 
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>{t('stats.avgHandlingTime')}</CardTitle>
-          <CardDescription>{t('stats.avgHandlingTimeHint')}</CardDescription>
-        </CardHeader>
-        <CardContent><div className="text-3xl font-bold tracking-tight">{fmtDuration(data.avgDuration)}</div></CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('stats.teamTitle')}</CardTitle>
-          <CardDescription>{t('stats.teamHint')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!data.topStaff?.length ? <Empty>{t('stats.noClosed')}</Empty> : (
-            <Table>
-              <TableHeader>
-                <TableRow><TableHead>{t('stats.rank')}</TableHead><TableHead>{t('stats.staff')}</TableHead><TableHead>{t('stats.ticketsClosed')}</TableHead></TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.topStaff.map((s, i) => (
-                  <TableRow key={s.closed_by ?? i}>
-                    <TableCell className="text-muted-foreground">{i + 1}</TableCell>
-                    <TableCell><UserName id={s.closed_by} /></TableCell>
-                    <TableCell><strong>{s.count ?? s.closed ?? 0}</strong></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <SectionCard title={t('stats.teamTitle')} description={t('stats.teamHint')}>
+        {!data.topStaff?.length ? <Empty>{t('stats.noClosed')}</Empty> : (
+          <Table caption={t('stats.teamTitle')}>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-16">{t('stats.rank')}</TableHead>
+                <TableHead>{t('stats.staff')}</TableHead>
+                <TableHead className="text-right">{t('stats.ticketsClosed')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.topStaff.map((s, i) => (
+                <TableRow key={s.closed_by ?? i}>
+                  <TableCell className="text-muted-foreground tabular-nums">{i + 1}</TableCell>
+                  <TableCell><UserName id={s.closed_by} /></TableCell>
+                  <TableCell className="text-right font-semibold tabular-nums">{s.count ?? s.closed ?? 0}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </SectionCard>
     </>
   );
 }
