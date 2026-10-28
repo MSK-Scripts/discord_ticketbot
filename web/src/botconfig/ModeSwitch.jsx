@@ -1,12 +1,12 @@
 // Form/File toggle for the config editor, styled as a small segmented control.
 
-import { LayoutListIcon, FileCodeIcon } from 'lucide-react';
+import { FileCode, ListBullets } from '@/components/icons.jsx';
 import { cn } from '@/lib/utils.js';
 import { useT } from '../i18n.jsx';
 
 const ITEMS = [
-  { id: 'form', labelKey: 'config.modeForm', Icon: LayoutListIcon },
-  { id: 'file', labelKey: 'config.modeFile', Icon: FileCodeIcon },
+  { id: 'form', labelKey: 'config.modeForm', Icon: ListBullets },
+  { id: 'file', labelKey: 'config.modeFile', Icon: FileCode },
 ];
 
 export default function ModeSwitch({ value, onChange }) {

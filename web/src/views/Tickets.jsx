@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { RefreshCwIcon } from 'lucide-react';
+import { ArrowsClockwise } from '@/components/icons.jsx';
 import { api } from '../api.js';
 import { Banner, Status, Priority, Empty, fmtDate } from '../ui.jsx';
 import { UserName } from '../users.jsx';
@@ -86,7 +86,7 @@ export default function Tickets({ me, ticketId, onOpen, onClose }) {
 
             <Input className="h-8 w-44" placeholder={t('tickets.typeFilter')} value={typeInput} onChange={e => setTypeInput(e.target.value)} />
 
-            <Button variant="outline" size="sm" onClick={load}><RefreshCwIcon /> {t('common.refresh')}</Button>
+            <Button variant="outline" size="sm" onClick={load}><ArrowsClockwise /> {t('common.refresh')}</Button>
           </div>
 
           {loading ? <Empty>{t('common.loading')}</Empty> : items.length === 0 ? <Empty>{t('tickets.noMatch')}</Empty> : (

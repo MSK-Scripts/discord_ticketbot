@@ -8,7 +8,7 @@
 //   • toggle  — a boolean written as the string "true"/"false".
 
 import { useState } from 'react';
-import { TriangleAlertIcon } from 'lucide-react';
+import { Warning } from '@/components/icons.jsx';
 import { ENV_SCHEMA } from './schema.js';
 import { parseEnv, setEnvValue } from './envEdit.js';
 import { validateBotEnv } from './validateConfig.js';
@@ -88,7 +88,7 @@ export default function EnvEditor({ content, onChange }) {
 
       {warnings.length > 0 && (
         <Alert variant="warning">
-          <TriangleAlertIcon />
+          <Warning />
           <AlertDescription>
             {warnings.map((w, i) => <p key={i}>{w.message}</p>)}
           </AlertDescription>

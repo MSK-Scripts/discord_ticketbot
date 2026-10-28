@@ -1,7 +1,7 @@
 // Composite editor for snippets.jsonc → snippets[]. Each snippet has
 // name/description/content plus an optional embed (title + color, or null).
 
-import { PlusIcon, Trash2Icon } from 'lucide-react';
+import { Plus, Trash } from '@/components/icons.jsx';
 import { DEFAULT_SNIPPET } from './schema.js';
 import { getAtPath } from './jsoncEdit.js';
 import FormRenderer from './FormRenderer.jsx';
@@ -43,7 +43,7 @@ export default function SnippetsEditor({ model, edit, append, remove }) {
               </span>
               <button type="button" className="text-muted-foreground hover:text-destructive cursor-pointer"
                 onClick={e => { e.preventDefault(); remove(['snippets'], i); }} title="Remove snippet">
-                <Trash2Icon className="size-4" />
+                <Trash className="size-4" />
               </button>
             </summary>
             <div className="flex flex-col gap-4 border-t px-4 pt-4 pb-4">
@@ -66,7 +66,7 @@ export default function SnippetsEditor({ model, edit, append, remove }) {
       })}
 
       <Button type="button" variant="outline" className="justify-center"
-        onClick={() => append(['snippets'], DEFAULT_SNIPPET)}><PlusIcon /> Add snippet</Button>
+        onClick={() => append(['snippets'], DEFAULT_SNIPPET)}><Plus /> Add snippet</Button>
     </div>
   );
 }

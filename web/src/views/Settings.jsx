@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { UploadIcon, RotateCcwIcon } from 'lucide-react';
+import { ArrowCounterClockwise, UploadSimple } from '@/components/icons.jsx';
 import { api } from '../api.js';
 import { Banner, Empty } from '../ui.jsx';
 import { applyAccent, applyFavicon, hexToRgb } from '../settings.js';
@@ -149,7 +149,7 @@ export default function Settings({ me }) {
             <div className="flex flex-wrap gap-2">
               <Button size="sm" disabled={busy || !accentDirty || !canEdit} onClick={saveAccent}>{t('settings.accentSave')}</Button>
               <Button size="sm" variant="outline" disabled={busy || savedAccent == null || !canEdit} onClick={resetAccent}>
-                <RotateCcwIcon /> {t('common.resetToDefault')}
+                <ArrowCounterClockwise /> {t('common.resetToDefault')}
               </Button>
             </div>
           </CardContent>
@@ -187,9 +187,9 @@ export default function Settings({ me }) {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" disabled={busy || !file || !canEdit} onClick={uploadFavicon}><UploadIcon /> {t('settings.faviconUpload')}</Button>
+              <Button size="sm" disabled={busy || !file || !canEdit} onClick={uploadFavicon}><UploadSimple /> {t('settings.faviconUpload')}</Button>
               <Button size="sm" variant="outline" disabled={busy || !faviconVersion || !canEdit} onClick={resetFavicon}>
-                <RotateCcwIcon /> {t('common.resetToDefault')}
+                <ArrowCounterClockwise /> {t('common.resetToDefault')}
               </Button>
             </div>
           </CardContent>

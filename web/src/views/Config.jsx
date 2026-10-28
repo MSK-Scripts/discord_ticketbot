@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button.jsx';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card.jsx';
 import { CodeEditor } from '@/components/CodeEditor.jsx';
 import { Alert, AlertDescription } from '@/components/ui/alert.jsx';
-import { InfoIcon } from 'lucide-react';
+import { Info } from '@/components/icons.jsx';
 import ModeSwitch from '../botconfig/ModeSwitch.jsx';
 import ConfigForm from '../botconfig/ConfigForm.jsx';
 import EnvEditor from '../botconfig/EnvEditor.jsx';
@@ -178,11 +178,11 @@ export default function Config({ me }) {
 
       {pendingSwitch && (
         <Alert className="mb-3">
-          <InfoIcon />
+          <Info />
           <AlertDescription className="flex items-center justify-between gap-2">
             <span>{t('config.unsavedFile')}</span>
             <span className="flex gap-2">
-              <Button size="sm" variant="destructive" onClick={confirmSwitch}>{t('config.discardAndSwitch')}</Button>
+              <Button size="sm" variant="danger" onClick={confirmSwitch}>{t('config.discardAndSwitch')}</Button>
               <Button size="sm" variant="outline" onClick={() => setPendingSwitch(null)}>{t('common.cancel')}</Button>
             </span>
           </AlertDescription>
@@ -190,11 +190,11 @@ export default function Config({ me }) {
       )}
       {pendingMode && (
         <Alert className="mb-3">
-          <InfoIcon />
+          <Info />
           <AlertDescription className="flex items-center justify-between gap-2">
             <span>{t('config.unsavedView')}</span>
             <span className="flex gap-2">
-              <Button size="sm" variant="destructive" onClick={confirmMode}>{t('config.discardAndSwitch')}</Button>
+              <Button size="sm" variant="danger" onClick={confirmMode}>{t('config.discardAndSwitch')}</Button>
               <Button size="sm" variant="outline" onClick={() => setPendingMode(null)}>{t('common.cancel')}</Button>
             </span>
           </AlertDescription>
@@ -204,7 +204,7 @@ export default function Config({ me }) {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           {FILES.map(f => (
-            <Button key={f.id} size="sm" variant={file === f.id ? 'default' : 'outline'} onClick={() => switchFile(f.id)}>
+            <Button key={f.id} size="sm" variant={file === f.id ? 'primary' : 'outline'} onClick={() => switchFile(f.id)}>
               {f.label}
             </Button>
           ))}
@@ -214,7 +214,7 @@ export default function Config({ me }) {
       </div>
 
       {hasBlockingErrors && (
-        <Alert variant="destructive" className="mb-4">
+        <Alert variant="danger" className="mb-4">
           <AlertDescription>
             {t('config.blockingErrors', { count: blockingErrors.length })}
             <ul className="mt-1.5 list-disc pl-4 text-xs">
@@ -226,7 +226,7 @@ export default function Config({ me }) {
 
       {current.kind === 'env' && (
         <Alert className="mb-4">
-          <InfoIcon />
+          <Info />
           <AlertDescription>{t('config.envNotice')}</AlertDescription>
         </Alert>
       )}

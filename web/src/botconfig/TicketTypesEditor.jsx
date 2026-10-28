@@ -2,7 +2,7 @@
 // nested questions[] builder (up to 5). Scalar fields reuse FormRenderer by
 // building a field list for the given array index.
 
-import { PlusIcon, Trash2Icon } from 'lucide-react';
+import { Plus, Trash } from '@/components/icons.jsx';
 import { PRIORITY_OPTIONS, QUESTION_STYLE_OPTIONS, DEFAULT_TICKET_TYPE, DEFAULT_QUESTION } from './schema.js';
 import { getAtPath } from './jsoncEdit.js';
 import FormRenderer from './FormRenderer.jsx';
@@ -58,7 +58,7 @@ export default function TicketTypesEditor({ model, edit, append, remove, issues 
               </span>
               <button type="button" className="text-muted-foreground hover:text-destructive cursor-pointer"
                 onClick={e => { e.preventDefault(); remove(['ticketTypes'], i); }} title="Remove type">
-                <Trash2Icon className="size-4" />
+                <Trash className="size-4" />
               </button>
             </summary>
             <div className="flex flex-col gap-4 border-t px-4 pt-4 pb-4">
@@ -69,7 +69,7 @@ export default function TicketTypesEditor({ model, edit, append, remove, issues 
                   <div className="mb-2 flex items-center justify-between">
                     <strong className="text-sm">Questions ({questions.length}/{MAX_QUESTIONS})</strong>
                     <Button type="button" variant="outline" size="sm" disabled={questions.length >= MAX_QUESTIONS}
-                      onClick={() => append(['ticketTypes', i, 'questions'], DEFAULT_QUESTION)}><PlusIcon /> Question</Button>
+                      onClick={() => append(['ticketTypes', i, 'questions'], DEFAULT_QUESTION)}><Plus /> Question</Button>
                   </div>
                   <div className="flex flex-col gap-3">
                     {questions.map((_, qi) => (
@@ -78,7 +78,7 @@ export default function TicketTypesEditor({ model, edit, append, remove, issues 
                           <span className="text-muted-foreground font-mono text-xs">#{qi + 1}</span>
                           <button type="button" className="text-muted-foreground hover:text-destructive cursor-pointer"
                             onClick={() => remove(['ticketTypes', i, 'questions'], qi)} title="Remove question">
-                            <Trash2Icon className="size-3.5" />
+                            <Trash className="size-3.5" />
                           </button>
                         </div>
                         <FormRenderer model={model} fields={questionFields(i, qi)} onEdit={edit} issues={issues} />
@@ -94,7 +94,7 @@ export default function TicketTypesEditor({ model, edit, append, remove, issues 
 
       <Button type="button" variant="outline" className="justify-center" disabled={types.length >= MAX_TYPES}
         onClick={() => append(['ticketTypes'], DEFAULT_TICKET_TYPE)}>
-        <PlusIcon /> Add ticket type ({types.length}/{MAX_TYPES})
+        <Plus /> Add ticket type ({types.length}/{MAX_TYPES})
       </Button>
     </div>
   );

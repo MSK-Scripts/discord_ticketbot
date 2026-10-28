@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { InfoIcon } from 'lucide-react';
+import { Info } from '@/components/icons.jsx';
 import { api } from '../api.js';
 import { Banner, Empty, fmtDate } from '../ui.jsx';
 import { UserName } from '../users.jsx';
@@ -102,7 +102,7 @@ export default function Access({ me }) {
       <Banner type="success" onClose={() => setNotice(null)}>{notice}</Banner>
 
       <Alert className="mb-4">
-        <InfoIcon />
+        <Info />
         <AlertDescription>{t('access.overrideNotice')}</AlertDescription>
       </Alert>
 
@@ -183,7 +183,7 @@ export default function Access({ me }) {
               <TableBody>
                 {data.entries.map(e => (
                   <TableRow key={`${e.subjectType}:${e.subjectId}`}>
-                    <TableCell><Badge variant={e.subjectType === 'user' ? 'success' : 'muted'}>{t(`access.${e.subjectType}`)}</Badge></TableCell>
+                    <TableCell><Badge variant={e.subjectType === 'user' ? 'accent' : 'neutral'}>{t(`access.${e.subjectType}`)}</Badge></TableCell>
                     <TableCell>
                       {e.subjectType === 'role'
                         ? (roleName(e.subjectId) ?? <span className="font-mono">{e.subjectId}</span>)
@@ -199,11 +199,11 @@ export default function Access({ me }) {
                         <Button variant="outline" size="sm" onClick={() => edit(e)}>{t('common.edit')}</Button>
                         {confirmKey === `${e.subjectType}:${e.subjectId}` ? (
                           <>
-                            <Button variant="destructive" size="sm" onClick={() => remove(e)}>{t('common.confirm')}</Button>
+                            <Button variant="danger" size="sm" onClick={() => remove(e)}>{t('common.confirm')}</Button>
                             <Button variant="outline" size="sm" onClick={() => setConfirmKey(null)}>{t('common.cancel')}</Button>
                           </>
                         ) : (
-                          <Button variant="destructive" size="sm" onClick={() => remove(e)}>{t('common.remove')}</Button>
+                          <Button variant="danger" size="sm" onClick={() => remove(e)}>{t('common.remove')}</Button>
                         )}
                       </div>
                     </TableCell>

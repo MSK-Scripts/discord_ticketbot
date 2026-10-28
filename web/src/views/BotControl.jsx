@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useState, useRef } from 'react';
-import { PlayIcon, SquareIcon, RotateCwIcon, RefreshCwIcon, ArrowDownIcon } from 'lucide-react';
+import { ArrowClockwise, ArrowDown, ArrowsClockwise, Play, Stop } from '@/components/icons.jsx';
 import { api } from '../api.js';
 import { Banner } from '../ui.jsx';
 import { parseAnsi } from '../ansi.js';
@@ -118,15 +118,15 @@ export default function BotControl() {
               <strong>{t(`bot.${status}`)}</strong>
               {state?.pid ? <span className="text-muted-foreground text-sm">{t('bot.pid', { pid: state.pid })}</span> : null}
             </div>
-            <Button variant="outline" size="sm" onClick={refresh}><RefreshCwIcon /> {t('common.refresh')}</Button>
+            <Button variant="outline" size="sm" onClick={refresh}><ArrowsClockwise /> {t('common.refresh')}</Button>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" disabled={busy || running} onClick={() => act('start')}><PlayIcon /> {t('bot.start')}</Button>
-            <Button disabled={busy} onClick={() => act('restart')}><RotateCwIcon /> {t('bot.restart')}</Button>
-            <Button variant="destructive" disabled={busy || !running} onClick={() => act('stop')}><SquareIcon /> {t('bot.stop')}</Button>
+            <Button variant="outline" disabled={busy || running} onClick={() => act('start')}><Play /> {t('bot.start')}</Button>
+            <Button disabled={busy} onClick={() => act('restart')}><ArrowClockwise /> {t('bot.restart')}</Button>
+            <Button variant="danger" disabled={busy || !running} onClick={() => act('stop')}><Stop /> {t('bot.stop')}</Button>
             <Button variant="secondary" disabled={busy} onClick={() => act('update')}>
-              <RefreshCwIcon /> {busy === 'update' ? t('bot.updating') : t('bot.update')}
+              <ArrowsClockwise /> {busy === 'update' ? t('bot.updating') : t('bot.update')}
             </Button>
           </div>
           {busy === 'update' && (
@@ -158,7 +158,7 @@ export default function BotControl() {
                 className="absolute right-5 bottom-3 shadow-md"
                 onClick={jumpToLatest}
               >
-                <ArrowDownIcon /> {t('bot.jumpToLatest')}
+                <ArrowDown /> {t('bot.jumpToLatest')}
               </Button>
             )}
           </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeftIcon, SendIcon, DownloadIcon, ExternalLinkIcon, LockIcon, UnlockIcon } from 'lucide-react';
+import { ArrowLeft, ArrowSquareOut, DownloadSimple, Lock, LockOpen, PaperPlaneRight } from '@/components/icons.jsx';
 import { api } from '../api.js';
 import { Banner, Status, Priority, Empty, fmtDate } from '../ui.jsx';
 import { UserName } from '../users.jsx';
@@ -131,7 +131,7 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
   };
 
   if (error && !data) {
-    return <><Button variant="outline" size="sm" onClick={onBack}><ArrowLeftIcon /> {t('common.back')}</Button><Banner type="error">{error}</Banner></>;
+    return <><Button variant="outline" size="sm" onClick={onBack}><ArrowLeft /> {t('common.back')}</Button><Banner type="error">{error}</Banner></>;
   }
   if (!data) return <Empty>{t('common.loading')}</Empty>;
 
@@ -144,10 +144,10 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
     <>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <Button variant="outline" size="sm" onClick={onBack}><ArrowLeftIcon /> {t('common.back')}</Button>
+          <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft /> {t('common.back')}</Button>
           <h1 className="font-display text-xl font-bold">{t('ticket.heading', { id: ticket.id })}</h1>
           <Status status={ticket.status} />
-          {!!ticket.locked && <Badge variant="muted">{t('ticket.locked')}</Badge>}
+          {!!ticket.locked && <Badge variant="neutral">{t('ticket.locked')}</Badge>}
         </div>
         {canAct && (
           <div className="flex flex-wrap gap-2">
@@ -157,9 +157,9 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
                   ? <Button variant="outline" size="sm" disabled={busy} onClick={() => act('unclaim')}>{t('ticket.unclaim')}</Button>
                   : <Button variant="outline" size="sm" disabled={busy} onClick={() => act('claim')}>{t('ticket.claim')}</Button>}
                 <Button variant="outline" size="sm" disabled={busy} onClick={() => act('lock', { locked: !ticket.locked })}>
-                  {ticket.locked ? <><UnlockIcon /> {t('ticket.unlock')}</> : <><LockIcon /> {t('ticket.lock')}</>}
+                  {ticket.locked ? <><LockOpen /> {t('ticket.unlock')}</> : <><Lock /> {t('ticket.lock')}</>}
                 </Button>
-                <Button variant="destructive" size="sm" disabled={busy} onClick={() => setClosing(true)}>{t('ticket.close')}</Button>
+                <Button variant="danger" size="sm" disabled={busy} onClick={() => setClosing(true)}>{t('ticket.close')}</Button>
               </>
             ) : (
               <Button size="sm" disabled={busy} onClick={() => act('reopen')}>{t('ticket.reopen')}</Button>
@@ -187,7 +187,7 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
           </div>
           <DialogFooter>
             <Button variant="outline" disabled={busy} onClick={() => { setClosing(false); setCloseReason(''); }}>{t('common.cancel')}</Button>
-            <Button variant="destructive" disabled={busy} onClick={() => act('close', { reason: closeReason || null })}>
+            <Button variant="danger" disabled={busy} onClick={() => act('close', { reason: closeReason || null })}>
               {busy ? t('ticket.closing') : t('ticket.closeConfirm')}
             </Button>
           </DialogFooter>
@@ -259,11 +259,11 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
                   {convo.transcriptUrl && (
                     <Button size="sm" asChild>
                       <a href={convo.transcriptUrl} target="_blank" rel="noopener noreferrer">
-                        <ExternalLinkIcon /> {t('ticket.openTranscript')}
+                        <ArrowSquareOut /> {t('ticket.openTranscript')}
                       </a>
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" onClick={downloadTranscript}><DownloadIcon /> {t('ticket.downloadTranscript')}</Button>
+                  <Button size="sm" variant="outline" onClick={downloadTranscript}><DownloadSimple /> {t('ticket.downloadTranscript')}</Button>
                 </div>
               </div>
             )}
@@ -281,7 +281,7 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline gap-2">
                         <span className="text-[13px] font-semibold">{m.author.name}</span>
-                        {(m.author.bot || m.webhookId) && <Badge variant="secondary" className="px-1 py-0 text-[9px]">{t('ticket.appBadge')}</Badge>}
+                        {(m.author.bot || m.webhookId) && <Badge variant="neutral" className="px-1 py-0 text-[9px]">{t('ticket.appBadge')}</Badge>}
                         <span className="text-muted-foreground text-[11px]">{fmtDate(Date.parse(m.timestamp))}</span>
                       </div>
                       <div className="text-[13.5px] break-words whitespace-pre-wrap">
@@ -311,7 +311,7 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
                 />
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-muted-foreground text-xs">{reply.length}/2000</span>
-                  <Button size="sm" disabled={busy || !reply.trim()} onClick={send}><SendIcon /> {t('ticket.send')}</Button>
+                  <Button size="sm" disabled={busy || !reply.trim()} onClick={send}><PaperPlaneRight /> {t('ticket.send')}</Button>
                 </div>
               </div>
             )}

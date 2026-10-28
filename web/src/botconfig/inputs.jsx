@@ -3,7 +3,7 @@
 // not need to know which control it is rendering.
 
 import { useState, useEffect, useRef } from 'react';
-import { XIcon } from 'lucide-react';
+import { X } from '@/components/icons.jsx';
 import { cn } from '@/lib/utils.js';
 import { Input } from '@/components/ui/input.jsx';
 import { Textarea } from '@/components/ui/textarea.jsx';
@@ -136,7 +136,7 @@ export function TagInput({ value, onChange, idKind }) {
             title={bad ? 'Not a valid Discord ID (17–20 digits)' : idKind}>
             {id}
             <button type="button" onClick={() => remove(id)} aria-label="Remove" className="cursor-pointer opacity-70 hover:opacity-100">
-              <XIcon className="size-3" />
+              <X className="size-3" />
             </button>
           </span>
         );

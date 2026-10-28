@@ -1,24 +1,24 @@
 /** Small shared presentational bits, built on the shadcn primitives. */
 
-import { XIcon } from 'lucide-react';
+import { X } from '@/components/icons.jsx';
 import { Alert, AlertDescription } from '@/components/ui/alert.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
 import { Card, CardContent } from '@/components/ui/card.jsx';
 import { cn } from '@/lib/utils.js';
 import { useT, getLocale } from './i18n.jsx';
 
-const BANNER_VARIANT = { error: 'destructive', success: 'success', info: 'warning' };
+const BANNER_VARIANT = { error: 'danger', success: 'success', info: 'warning' };
 
 export function Banner({ type = 'info', children, onClose }) {
   const t = useT();
   if (!children) return null;
   return (
-    <Alert variant={BANNER_VARIANT[type] ?? 'default'} className="mb-3">
+    <Alert variant={BANNER_VARIANT[type] ?? 'info'} className="mb-3">
       <AlertDescription className="flex items-center justify-between gap-2">
         <span className="whitespace-pre-wrap">{children}</span>
         {onClose && (
           <button onClick={onClose} className="shrink-0 opacity-70 hover:opacity-100 cursor-pointer" aria-label={t('common.dismiss')}>
-            <XIcon className="size-3.5" />
+            <X className="size-3.5" />
           </button>
         )}
       </AlertDescription>
@@ -29,7 +29,7 @@ export function Banner({ type = 'info', children, onClose }) {
 export const Status = ({ status }) => {
   const t = useT();
   return (
-    <Badge variant={status === 'open' ? 'success' : 'muted'} className="uppercase tracking-wide">
+    <Badge variant={status === 'open' ? 'accent' : 'neutral'} className="uppercase tracking-wide">
       {t(`status.${status}`)}
     </Badge>
   );

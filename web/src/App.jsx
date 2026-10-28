@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  TicketIcon, InboxIcon, BarChart3Icon, SettingsIcon, TerminalIcon, ShieldCheckIcon,
-  PaletteIcon, LogOutIcon, MenuIcon, LanguagesIcon,
-} from 'lucide-react';
+import { ChartBar, GearSix, List, Palette, Robot, ShieldCheck, SignOut, Ticket, Translate, Tray } from '@/components/icons.jsx';
 import { api, logout } from './api.js';
 import { useRouter, parseRoute, viewPath } from './router.js';
 import { useI18n } from './i18n.jsx';
@@ -27,13 +24,13 @@ import Settings from './views/Settings.jsx';
  * user cannot use is a UX decision, never the security boundary.
  */
 const NAV = [
-  { id: 'mine',     icon: TicketIcon,      permission: null },
-  { id: 'tickets',  icon: InboxIcon,       permission: 'tickets.view' },
-  { id: 'stats',    icon: BarChart3Icon,   permission: 'stats.view' },
-  { id: 'config',   icon: SettingsIcon,    permission: ['config.view', 'config.edit'] },
-  { id: 'bot',      icon: TerminalIcon,    permission: 'bot.control' },
-  { id: 'access',   icon: ShieldCheckIcon, permission: 'access.manage' },
-  { id: 'settings', icon: PaletteIcon,     permission: ['settings.view', 'settings.edit'] },
+  { id: 'mine',     icon: Ticket,      permission: null },
+  { id: 'tickets',  icon: Tray,       permission: 'tickets.view' },
+  { id: 'stats',    icon: ChartBar,   permission: 'stats.view' },
+  { id: 'config',   icon: GearSix,    permission: ['config.view', 'config.edit'] },
+  { id: 'bot',      icon: Robot,    permission: 'bot.control' },
+  { id: 'access',   icon: ShieldCheck, permission: 'access.manage' },
+  { id: 'settings', icon: Palette,     permission: ['settings.view', 'settings.edit'] },
 ];
 
 const allowed = (me, item) => {
@@ -66,7 +63,7 @@ function LanguagePicker() {
       <Select value={lang} onValueChange={setLang}>
         <SelectTrigger size="sm" className="w-full" aria-label={t('common.language')}>
           <span className="flex min-w-0 items-center gap-2">
-            <LanguagesIcon className="size-3.5 shrink-0 opacity-70" />
+            <Translate className="size-3.5 shrink-0 opacity-70" />
             <SelectValue />
           </span>
         </SelectTrigger>
@@ -121,7 +118,7 @@ function NavContent({ me, view, onSelect }) {
         </div>
         <LanguagePicker />
         <Button variant="outline" size="sm" className="w-full" onClick={logout}>
-          <LogOutIcon /> {t('app.signOut')}
+          <SignOut /> {t('app.signOut')}
         </Button>
       </div>
     </div>
@@ -169,7 +166,7 @@ export default function App() {
           <div className="text-muted-foreground bg-muted/40 border-border max-w-sm rounded-lg border px-4 py-3 text-sm">
             {error.message} {t('app.askAdmin')}
           </div>
-          <Button variant="outline" onClick={logout}><LogOutIcon /> {t('app.signOut')}</Button>
+          <Button variant="outline" onClick={logout}><SignOut /> {t('app.signOut')}</Button>
           <div className="w-44"><LanguagePicker /></div>
         </div>
       );
@@ -204,7 +201,7 @@ export default function App() {
         <header className="bg-sidebar sticky top-0 z-30 flex items-center gap-2 border-b border-sidebar-border px-3 py-2.5 md:hidden">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon"><MenuIcon /></Button>
+              <Button variant="ghost" size="icon"><List /></Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
               <SheetTitle className="sr-only">{t('nav.navigation')}</SheetTitle>
