@@ -21,8 +21,11 @@ const CSS = fs.readFileSync(path.join(__dirname, '../web/src/index.css'), 'utf8'
 
 /** The declarations of the first rule whose selector is exactly `selector`. */
 function block(selector) {
-  const start = CSS.search(new RegExp(`^${selector.replace(/[.[\]]/g, '\\$&')} \\{`, 'm'));
-  assert.ok(start > -1, `rule ${selector} not found in index.css`);
+  // A plain line search: the selector is matched as text, so nothing in it
+  // needs escaping for a regular expression.
+  const head = `${selector} {`;
+  const start = CSS.startsWith(head) ? 0 : CSS.indexOf(`\n${head}`) + 1;
+  assert.ok(start > 0 || CSS.startsWith(head), `rule ${selector} not found in index.css`);
   return CSS.slice(start, CSS.indexOf('\n}', start));
 }
 
