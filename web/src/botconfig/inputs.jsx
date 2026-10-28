@@ -157,7 +157,7 @@ export function TagInput({ value, onChange, idKind }) {
   const remove = (id) => onChange(items.filter(x => x !== id));
 
   return (
-    <div className="flex min-h-11 w-full flex-wrap items-center gap-2 rounded-md border-[1.5px] border-input bg-card px-2 py-1.5 focus-within:border-foreground">
+    <div className="flex min-h-11 w-full flex-wrap items-center gap-x-2 rounded-md border-[1.5px] border-input bg-card px-2 focus-within:border-foreground">
       {items.map(id => {
         const bad = !SNOWFLAKE_RE.test(id);
         return (
@@ -185,7 +185,7 @@ export function TagInput({ value, onChange, idKind }) {
         }}
         onBlur={() => commit(draft)}
         placeholder={items.length ? '' : 'ID + Enter'}
-        className="min-h-8 min-w-24 flex-1 bg-transparent text-control text-foreground outline-none placeholder:text-muted-foreground"
+        className="min-h-11 min-w-24 flex-1 bg-transparent text-control text-foreground outline-none placeholder:text-muted-foreground"
       />
     </div>
   );

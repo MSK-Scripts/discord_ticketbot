@@ -90,7 +90,7 @@ function Brand({ href, onNavigate, compact = false }) {
   );
   if (!href) return <span className="flex min-h-11 shrink-0 items-center gap-2.5">{content}</span>;
   return (
-    <NavLink href={href} onNavigate={onNavigate} className="flex min-h-11 shrink-0 items-center gap-2.5 rounded-md text-foreground">
+    <NavLink href={href} onNavigate={onNavigate} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2.5 rounded-md text-foreground">
       {content}
     </NavLink>
   );

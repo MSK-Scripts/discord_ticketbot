@@ -52,7 +52,6 @@ import {
   Stop as StopBase,
   Sun as SunBase,
   Ticket as TicketBase,
-  Translate as TranslateBase,
   Trash as TrashBase,
   Tray as TrayBase,
   UploadSimple as UploadSimpleBase,
@@ -113,7 +112,6 @@ export const Star = decorative(StarBase);
 export const Stop = decorative(StopBase);
 export const Sun = decorative(SunBase);
 export const Ticket = decorative(TicketBase);
-export const Translate = decorative(TranslateBase);
 export const Trash = decorative(TrashBase);
 export const Tray = decorative(TrayBase);
 export const UploadSimple = decorative(UploadSimpleBase);
