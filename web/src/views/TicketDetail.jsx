@@ -13,9 +13,7 @@ import { Label } from '@/components/ui/label.jsx';
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from '@/components/ui/select.jsx';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
-} from '@/components/ui/dialog.jsx';
+import { Dialog } from '@/components/ui/dialog.jsx';
 
 const PRIORITIES = ['low', 'medium', 'high', 'urgent'];
 
@@ -173,25 +171,24 @@ export default function TicketDetail({ id, me, onBack, onChanged }) {
 
       {/* Close confirmation as a real modal — no window.prompt(), which a browser
           can suppress, leaving the click silently doing nothing. */}
-      <Dialog open={closing} onOpenChange={o => { if (!o) { setClosing(false); setCloseReason(''); } }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('ticket.closeDialogTitle')}</DialogTitle>
-            <DialogDescription>{t('ticket.closeDialogHint')}</DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-1.5">
+      <Dialog
+        open={closing}
+        onClose={() => { setClosing(false); setCloseReason(''); }}
+        title={t('ticket.closeDialogTitle')}
+        description={t('ticket.closeDialogHint')}
+        body={(
+          <div className="grid gap-1.5">
             <Label htmlFor="close-reason">{t('ticket.closeReasonLabel')}</Label>
-            <Input id="close-reason" autoFocus value={closeReason} placeholder={t('ticket.closeReasonPlaceholder')}
+            <Input id="close-reason" value={closeReason} placeholder={t('ticket.closeReasonPlaceholder')}
               onChange={e => setCloseReason(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') act('close', { reason: closeReason || null }); }} />
           </div>
-          <DialogFooter>
-            <Button variant="outline" disabled={busy} onClick={() => { setClosing(false); setCloseReason(''); }}>{t('common.cancel')}</Button>
-            <Button variant="danger" disabled={busy} onClick={() => act('close', { reason: closeReason || null })}>
-              {busy ? t('ticket.closing') : t('ticket.closeConfirm')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
+        )}
+      >
+        <Button variant="outline" disabled={busy} onClick={() => { setClosing(false); setCloseReason(''); }}>{t('common.cancel')}</Button>
+        <Button variant="danger" disabled={busy} onClick={() => act('close', { reason: closeReason || null })}>
+          {busy ? t('ticket.closing') : t('ticket.closeConfirm')}
+        </Button>
       </Dialog>
 
       <div className="grid gap-4 lg:grid-cols-2">

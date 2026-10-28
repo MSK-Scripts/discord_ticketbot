@@ -1,14 +1,12 @@
-import { useEffect, useState } from 'react';
-import { ChartBar, GearSix, List, Palette, Robot, ShieldCheck, SignOut, Ticket, Translate, Tray } from '@/components/icons.jsx';
+import { useEffect, useId, useState } from 'react';
+import { ChartBar, GearSix, List, Palette, Robot, ShieldCheck, SignOut, Ticket, Tray } from '@/components/icons.jsx';
 import { api, logout } from './api.js';
 import { useRouter, parseRoute, viewPath } from './router.js';
 import { useI18n } from './i18n.jsx';
 import { cn } from '@/lib/utils.js';
 import { Button } from '@/components/ui/button.jsx';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet.jsx';
-import {
-  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
-} from '@/components/ui/select.jsx';
+import { Drawer } from '@/components/ui/dialog.jsx';
+import { fieldClassName } from '@/components/ui/input.jsx';
 
 import Tickets from './views/Tickets.jsx';
 import MyTickets from './views/MyTickets.jsx';
@@ -57,20 +55,16 @@ function Brand() {
  */
 function LanguagePicker() {
   const { lang, languages, setLang, t } = useI18n();
+  const id = useId();
   if (languages.length < 2) return null;
   return (
-    <div className="mb-2.5 px-1">
-      <Select value={lang} onValueChange={setLang}>
-        <SelectTrigger size="sm" className="w-full" aria-label={t('common.language')}>
-          <span className="flex min-w-0 items-center gap-2">
-            <Translate className="size-3.5 shrink-0 opacity-70" />
-            <SelectValue />
-          </span>
-        </SelectTrigger>
-        <SelectContent>
-          {languages.map(l => <SelectItem key={l.code} value={l.code}>{l.name}</SelectItem>)}
-        </SelectContent>
-      </Select>
+    <div className="mb-2.5 grid gap-1 px-1">
+      <label htmlFor={id} className="kicker text-muted-foreground">{t('common.language')}</label>
+      {/* Native, because a Radix list would open in a portal below the
+          modal drawer this picker also sits in. */}
+      <select id={id} value={lang} onChange={e => setLang(e.target.value)} className={cn(fieldClassName, 'min-h-11 cursor-pointer')}>
+        {languages.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
+      </select>
     </div>
   );
 }
@@ -199,15 +193,12 @@ export default function App() {
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile top bar */}
         <header className="bg-sidebar sticky top-0 z-30 flex items-center gap-2 border-b border-sidebar-border px-3 py-2.5 md:hidden">
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon"><List /></Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0">
-              <SheetTitle className="sr-only">{t('nav.navigation')}</SheetTitle>
-              <NavContent me={me} view={view} onSelect={select} />
-            </SheetContent>
-          </Sheet>
+          <Button variant="ghost" size="icon" aria-haspopup="dialog" aria-label={t('nav.navigation')} onClick={() => setMobileOpen(true)}>
+            <List className="size-6" />
+          </Button>
+          <Drawer open={mobileOpen} onClose={() => setMobileOpen(false)} label={t('nav.navigation')}>
+            <NavContent me={me} view={view} onSelect={select} />
+          </Drawer>
           <Brand />
         </header>
 
