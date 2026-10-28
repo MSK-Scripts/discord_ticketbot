@@ -40,7 +40,13 @@
     "config": "Configuration",
     "bot": "Bot control",
     "access": "Permissions",
-    "settings": "Dashboard settings"
+    "settings": "Dashboard settings",
+    "groupSupport": "Support",
+    "groupBot": "Bot",
+    "groupAdmin": "Administration",
+    "menuOpen": "Open menu",
+    "menuClose": "Close menu",
+    "quickNav": "Quick navigation"
   },
 
   "app": {
@@ -49,7 +55,16 @@
     "permissionCount": "{count} permission(s)",
     "signOut": "Sign out",
     "signIn": "Sign in with Discord",
-    "askAdmin": "Ask a server administrator to grant you access."
+    "askAdmin": "Ask a server administrator to grant you access.",
+    "skipToContent": "Skip to content",
+    "account": "Account"
+  },
+
+  "theme": {
+    "label": "Appearance",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
   },
 
   "user": {
@@ -97,7 +112,9 @@
     "colCreator": "Creator",
     "colClaimedBy": "Claimed by",
     "colCreated": "Created",
-    "colMessages": "Msgs"
+    "colMessages": "Msgs",
+    "prevPage": "Previous page",
+    "nextPage": "Next page"
   },
 
   "ticket": {
@@ -148,7 +165,9 @@
     "replyAsBot": "Reply as the bot…",
     "send": "Send",
     "lockedHint": "This ticket is locked, no replies possible.",
-    "closedHint": "This ticket is closed. Reopen it to reply."
+    "closedHint": "This ticket is closed. Reopen it to reply.",
+    "ratingValue": "{rating} of 5 stars",
+    "replyLabel": "Your reply"
   },
 
   "bot": {
@@ -191,7 +210,9 @@
     "copied": "copied!",
     "copyHint": "Click to copy the ID",
     "modeForm": "Form",
-    "modeFile": "File"
+    "modeFile": "File",
+    "files": "Files",
+    "viewMode": "View"
   },
 
   "access": {
@@ -260,6 +281,13 @@
     "faviconUploadLabel": "Upload a new favicon",
     "faviconUpload": "Upload",
     "faviconUpdated": "Favicon updated.",
-    "faviconReset": "Favicon reset to the default."
+    "faviconReset": "Favicon reset to the default.",
+    "previewTitle": "Preview in both themes",
+    "previewButton": "Button",
+    "previewLink": "Link",
+    "previewActive": "Active menu item",
+    "variantFill": "Buttons use {hex} here, so their label stays readable.",
+    "variantText": "Text and borders use {hex} here, so they stay readable.",
+    "variantNone": "Your colour is used as it is."
   }
 }

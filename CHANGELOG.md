@@ -22,8 +22,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   an unhandled error on excessive content encodings.
 - `qs` 6.16.0 → 6.16.1 (transitive via `body-parser`).
 
+### Added
+
+- **Light and dark theme in the dashboard.** A first visit follows the system
+  setting; a switch at the top right offers System, Light and Dark and is
+  remembered per browser, like the language. A small script sets the theme
+  before the first paint, so there is no flash of the wrong one. It is a file
+  on the dashboard's own origin, so the CSP stays as strict as before.
+- **The accent colour works in both themes.** Buttons keep the chosen colour,
+  their label is black or white by WCAG contrast (no longer YIQ brightness),
+  and where the colour would be unreadable as text, links, borders and the
+  focus ring use a darker variant in the light theme and a lighter one in the
+  dark theme. The settings page previews both themes side by side.
+
 ### Changed
 
+- **The dashboard now looks like msk-scripts.de.** Archivo and Source Sans 3
+  instead of DM Sans, Syne and Space Mono (still bundled, no external
+  requests), Phosphor instead of Lucide icons, the shop's anthracite palette,
+  and its dashboard frame: a top bar with the theme switch and an account menu
+  (language and sign out moved there), a sidebar with groups, a drawer and a
+  bar at the bottom on phones. Every view was restyled; routes, API calls and
+  permissions are unchanged. The layout is fluid from 320 px to ultrawide and
+  meets WCAG 2.2 AA in both themes: tested contrast, visible focus, 44 px
+  targets, labelled fields, a skip link, and support for reduced motion, more
+  contrast and forced colours.
+- **Dialogs and menus are native.** The close-ticket confirmation and the
+  mobile navigation use `<dialog>`, the top bar menus use the popover
+  attribute; `@radix-ui/react-dialog` and `@radix-ui/react-dropdown-menu`
+  were removed.
 - **README rewritten and the details moved to `docs/`.** The README now covers what the bot
   is, a quick start and where to read on. Features and commands, installation, configuration
   and the project layout have their own pages in English and German. Tiers, prices and the

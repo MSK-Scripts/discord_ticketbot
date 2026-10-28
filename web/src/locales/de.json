@@ -40,7 +40,13 @@
     "config": "Konfiguration",
     "bot": "Bot-Steuerung",
     "access": "Berechtigungen",
-    "settings": "Dashboard-Einstellungen"
+    "settings": "Dashboard-Einstellungen",
+    "groupSupport": "Support",
+    "groupBot": "Bot",
+    "groupAdmin": "Verwaltung",
+    "menuOpen": "Menü öffnen",
+    "menuClose": "Menü schließen",
+    "quickNav": "Schnellnavigation"
   },
 
   "app": {
@@ -49,7 +55,16 @@
     "permissionCount": "{count} Berechtigung(en)",
     "signOut": "Abmelden",
     "signIn": "Mit Discord anmelden",
-    "askAdmin": "Bitte einen Server-Administrator, dir Zugriff zu geben."
+    "askAdmin": "Bitte einen Server-Administrator, dir Zugriff zu geben.",
+    "skipToContent": "Zum Inhalt springen",
+    "account": "Konto"
+  },
+
+  "theme": {
+    "label": "Darstellung",
+    "system": "System",
+    "light": "Hell",
+    "dark": "Dunkel"
   },
 
   "user": {
@@ -97,7 +112,9 @@
     "colCreator": "Ersteller",
     "colClaimedBy": "Beansprucht von",
     "colCreated": "Erstellt",
-    "colMessages": "Nachr."
+    "colMessages": "Nachr.",
+    "prevPage": "Vorherige Seite",
+    "nextPage": "Nächste Seite"
   },
 
   "ticket": {
@@ -148,7 +165,9 @@
     "replyAsBot": "Als Bot antworten…",
     "send": "Senden",
     "lockedHint": "Dieses Ticket ist gesperrt, Antworten sind nicht möglich.",
-    "closedHint": "Dieses Ticket ist geschlossen. Öffne es wieder, um zu antworten."
+    "closedHint": "Dieses Ticket ist geschlossen. Öffne es wieder, um zu antworten.",
+    "ratingValue": "{rating} von 5 Sternen",
+    "replyLabel": "Deine Antwort"
   },
 
   "bot": {
@@ -191,7 +210,9 @@
     "copied": "kopiert!",
     "copyHint": "Klicken, um die ID zu kopieren",
     "modeForm": "Formular",
-    "modeFile": "Datei"
+    "modeFile": "Datei",
+    "files": "Dateien",
+    "viewMode": "Ansicht"
   },
 
   "access": {
@@ -260,6 +281,13 @@
     "faviconUploadLabel": "Neues Favicon hochladen",
     "faviconUpload": "Hochladen",
     "faviconUpdated": "Favicon aktualisiert.",
-    "faviconReset": "Favicon auf den Standard zurückgesetzt."
+    "faviconReset": "Favicon auf den Standard zurückgesetzt.",
+    "previewTitle": "Vorschau in beiden Darstellungen",
+    "previewButton": "Schaltfläche",
+    "previewLink": "Link",
+    "previewActive": "Aktiver Menüpunkt",
+    "variantFill": "Schaltflächen nutzen hier {hex}, damit ihre Beschriftung lesbar bleibt.",
+    "variantText": "Text und Rahmen nutzen hier {hex}, damit sie lesbar bleiben.",
+    "variantNone": "Deine Farbe wird unverändert genutzt."
   }
 }

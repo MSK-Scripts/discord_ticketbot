@@ -20,16 +20,18 @@ nothing about your bot changes.
 | **Configuration** | Edit `config.jsonc`, `snippets.jsonc`, `.env` and the locale files in either a structured **form** view or a raw **file** view (with line numbers and syntax highlighting). Form edits preserve the `//` comments, and a side panel resolves Discord role/channel/category **names** so you never have to hunt for raw IDs. |
 | **Bot control** | Start, stop, restart and update the bot, plus a live console. |
 | **Permissions** | Decide which roles and users may use the dashboard, and what they may do. |
-| **Dashboard settings** | Accent colour and favicon, gated by their own view / edit permissions. |
+| **Dashboard settings** | Accent colour and favicon, gated by their own view / edit permissions. The accent is fitted to the light and the dark theme. |
 | **Language** | Each user picks their own interface language from seven translations. |
+| **Appearance** | Light, dark or the system setting, chosen by each user. Same look as msk-scripts.de. |
 
 ---
 
 ## Language
 
 The dashboard is available in **English, German, French, Spanish, Portuguese,
-Polish and Hungarian**. The selector sits at the bottom of the sidebar, above
-"Sign out".
+Polish and Hungarian**. The selector is in the account menu at the top right
+(your avatar and name), above "Sign out". Before signing in it sits below the
+sign-in button.
 
 Each person picks their own language: the choice is stored in their browser, so
 switching the panel to German changes nothing for anyone else, and it needs no
@@ -46,6 +48,34 @@ leave out falls back to English rather than breaking the page.
 
 The structured `config.jsonc` form (its field labels and help texts) is still
 English only; the rest of the dashboard is translated.
+
+---
+
+## Appearance
+
+The dashboard has a **light and a dark theme**, with the fonts, colours and
+layout of msk-scripts.de. On a first visit it follows the system setting. The
+switch at the top right offers **System**, **Light** and **Dark**; like the
+language, the choice is stored in the browser and is personal. The theme is set
+before the page is drawn, so a dark choice never flashes white.
+
+The **accent colour** from *Dashboard settings* replaces the MSK green in both
+themes: buttons, links, the active menu item, the focus ring and the stripe
+above the top bar. Any colour can be chosen, and the dashboard keeps every use
+of it readable (WCAG 2.2 AA):
+
+- The text on an accent button is black or white, whichever has more contrast.
+- Where the colour itself is too light or too dark to read as text on a
+  surface, links, borders and the focus ring use a darker variant in the light
+  theme and a lighter one in the dark theme. A yellow accent keeps its yellow
+  buttons and gets dark links on white; a navy accent gets light blue links on
+  the dark background.
+- A colour that already works is used as it is.
+
+The settings page shows the accent in both themes side by side and says when a
+variant is used. The layout adapts from a 320 px phone to an ultrawide monitor,
+and the dashboard follows the system settings for reduced motion, more contrast
+and the Windows contrast themes.
 
 ---
 

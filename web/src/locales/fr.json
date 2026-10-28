@@ -40,7 +40,13 @@
     "config": "Configuration",
     "bot": "Contrôle du bot",
     "access": "Permissions",
-    "settings": "Paramètres du Dashboard"
+    "settings": "Paramètres du Dashboard",
+    "groupSupport": "Support",
+    "groupBot": "Bot",
+    "groupAdmin": "Administration",
+    "menuOpen": "Ouvrir le menu",
+    "menuClose": "Fermer le menu",
+    "quickNav": "Navigation rapide"
   },
 
   "app": {
@@ -49,7 +55,16 @@
     "permissionCount": "{count} permission(s)",
     "signOut": "Se déconnecter",
     "signIn": "Se connecter avec Discord",
-    "askAdmin": "Demandez à un administrateur du serveur de vous donner accès."
+    "askAdmin": "Demandez à un administrateur du serveur de vous donner accès.",
+    "skipToContent": "Aller au contenu",
+    "account": "Compte"
+  },
+
+  "theme": {
+    "label": "Apparence",
+    "system": "Système",
+    "light": "Clair",
+    "dark": "Sombre"
   },
 
   "user": {
@@ -97,7 +112,9 @@
     "colCreator": "Créateur",
     "colClaimedBy": "Pris par",
     "colCreated": "Créé le",
-    "colMessages": "Msgs"
+    "colMessages": "Msgs",
+    "prevPage": "Page précédente",
+    "nextPage": "Page suivante"
   },
 
   "ticket": {
@@ -148,7 +165,9 @@
     "replyAsBot": "Répondre en tant que bot…",
     "send": "Envoyer",
     "lockedHint": "Ce ticket est verrouillé, aucune réponse n'est possible.",
-    "closedHint": "Ce ticket est fermé. Rouvrez-le pour pouvoir répondre."
+    "closedHint": "Ce ticket est fermé. Rouvrez-le pour pouvoir répondre.",
+    "ratingValue": "{rating} étoiles sur 5",
+    "replyLabel": "Votre réponse"
   },
 
   "bot": {
@@ -191,7 +210,9 @@
     "copied": "copié !",
     "copyHint": "Cliquez pour copier l'ID",
     "modeForm": "Formulaire",
-    "modeFile": "Fichier"
+    "modeFile": "Fichier",
+    "files": "Fichiers",
+    "viewMode": "Affichage"
   },
 
   "access": {
@@ -260,6 +281,13 @@
     "faviconUploadLabel": "Envoyer un nouveau Favicon",
     "faviconUpload": "Envoyer",
     "faviconUpdated": "Favicon mis à jour.",
-    "faviconReset": "Favicon remis par défaut."
+    "faviconReset": "Favicon remis par défaut.",
+    "previewTitle": "Aperçu dans les deux thèmes",
+    "previewButton": "Bouton",
+    "previewLink": "Lien",
+    "previewActive": "Élément de menu actif",
+    "variantFill": "Les boutons utilisent ici {hex} pour que leur libellé reste lisible.",
+    "variantText": "Le texte et les bordures utilisent ici {hex} pour rester lisibles.",
+    "variantNone": "Votre couleur est utilisée telle quelle."
   }
 }

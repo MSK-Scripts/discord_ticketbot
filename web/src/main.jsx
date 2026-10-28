@@ -1,30 +1,26 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
-// Fonts bundled locally (no external CDN — the dashboard's CSP forbids it). Same
-// @fontsource families the MSK brand uses elsewhere. Only the weights actually
-// used are imported, so the payload stays small.
-import '@fontsource/dm-sans/400.css';
-import '@fontsource/dm-sans/500.css';
-import '@fontsource/dm-sans/600.css';
-import '@fontsource/dm-sans/700.css';
-import '@fontsource/space-mono/400.css';
-import '@fontsource/space-mono/700.css';
-import '@fontsource/syne/600.css';
-import '@fontsource/syne/700.css';
-import '@fontsource/syne/800.css';
+// Fonts bundled locally (no external CDN, the dashboard's CSP forbids it), the
+// same @fontsource-variable families as msk-scripts.de: Archivo for headings,
+// Source Sans 3 for everything else. Monospace is the system stack.
+import '@fontsource-variable/archivo/standard.css';
+import '@fontsource-variable/source-sans-3';
 
 import App from './App.jsx';
 import './index.css';
 import { loadAndApplyDashboardSettings } from './settings.js';
 import { I18nProvider } from './i18n.jsx';
+import { ThemeProvider } from './theme.jsx';
 
 function render() {
   createRoot(document.getElementById('root')).render(
     <StrictMode>
-      <I18nProvider>
-        <App />
-      </I18nProvider>
+      <ThemeProvider>
+        <I18nProvider>
+          <App />
+        </I18nProvider>
+      </ThemeProvider>
     </StrictMode>,
   );
 }

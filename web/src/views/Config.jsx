@@ -1,13 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
-import { Banner, Empty } from '../ui.jsx';
+import { Banner, Empty, Note, PageHeader, SectionCard } from '../ui.jsx';
 import { useT } from '../i18n.jsx';
 import { cn } from '@/lib/utils.js';
 import { Button } from '@/components/ui/button.jsx';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card.jsx';
 import { CodeEditor } from '@/components/CodeEditor.jsx';
-import { Alert, AlertDescription } from '@/components/ui/alert.jsx';
-import { InfoIcon } from 'lucide-react';
+import { Copy, Check } from '@/components/icons.jsx';
 import ModeSwitch from '../botconfig/ModeSwitch.jsx';
 import ConfigForm from '../botconfig/ConfigForm.jsx';
 import EnvEditor from '../botconfig/EnvEditor.jsx';
@@ -145,127 +143,121 @@ export default function Config({ me }) {
   };
 
   const LookupList = ({ title, entries }) => (
-    <div className="mb-4">
-      <h3 className="mb-1.5 text-sm font-semibold">{title}</h3>
-      {!entries?.length ? <p className="text-muted-foreground text-xs">{t('common.none')}</p> : (
-        <div className="max-h-60 overflow-y-auto pr-1">
+    <div className="grid gap-1.5">
+      <h3 className="kicker text-muted-foreground">{title}</h3>
+      {!entries?.length ? <p className="text-small text-muted-foreground">{t('common.none')}</p> : (
+        <ul className="-mx-1 grid max-h-64 gap-0.5 overflow-y-auto px-1">
           {entries.map(e => (
-            <button key={e.id} onClick={() => copy(e.id)} title={t('config.copyHint')}
-              className="hover:bg-accent flex w-full items-center justify-between gap-2 rounded px-1.5 py-1 text-left cursor-pointer">
-              <span className="truncate text-sm">{e.name}</span>
-              <span className="text-muted-foreground shrink-0 font-mono text-[11px]">{copied === e.id ? t('config.copied') : e.id}</span>
-            </button>
+            <li key={e.id}>
+              <button type="button" onClick={() => copy(e.id)} title={t('config.copyHint')}
+                className="grid min-h-11 w-full cursor-pointer gap-0.5 rounded-md px-2 py-1.5 text-left hover:bg-muted">
+                <span className="min-w-0 truncate text-small font-semibold">{e.name}</span>
+                <span className={cn('inline-flex min-w-0 items-center gap-1 font-mono text-label', copied === e.id ? 'font-semibold text-success' : 'text-muted-foreground')}>
+                  {copied === e.id ? <><Check className="size-3.5" weight="bold" />{t('config.copied')}</> : <><Copy className="size-3.5" />{e.id}</>}
+                </span>
+              </button>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );
 
   return (
     <>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-xl font-bold">{t('config.title')}</h1>
-        {canEdit && (
-          <div className="flex items-center gap-2">
-            {dirty && <Button variant="outline" size="sm" onClick={() => setContent(saved)}>{t('common.discard')}</Button>}
-            <Button size="sm" disabled={busy || !dirty || hasBlockingErrors} onClick={save}>{busy ? t('common.saving') : t('common.save')}</Button>
-          </div>
+      <PageHeader
+        title={t('config.title')}
+        badge={dirty && <span className="text-small font-semibold text-warning">{t('config.unsavedMarker')}</span>}
+        actions={canEdit && (
+          <>
+            {dirty && <Button variant="outline" onClick={() => setContent(saved)}>{t('common.discard')}</Button>}
+            <Button disabled={busy || !dirty || hasBlockingErrors} onClick={save}>{busy ? t('common.saving') : t('common.save')}</Button>
+          </>
         )}
-      </div>
+      />
+
+      {/* The result of the last save is announced; a copied id too. */}
+      <p className="sr-only" aria-live="polite">{copied ? t('config.copied') : ''}</p>
 
       {error && <Banner type="error" onClose={() => setError(null)}>{error}</Banner>}
       <Banner type="success" onClose={() => setNotice(null)}>{notice}</Banner>
 
       {pendingSwitch && (
-        <Alert className="mb-3">
-          <InfoIcon />
-          <AlertDescription className="flex items-center justify-between gap-2">
-            <span>{t('config.unsavedFile')}</span>
-            <span className="flex gap-2">
-              <Button size="sm" variant="destructive" onClick={confirmSwitch}>{t('config.discardAndSwitch')}</Button>
+        <Note tone="warning" className="mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p>{t('config.unsavedFile')}</p>
+            <span className="flex flex-wrap gap-2">
+              <Button size="sm" variant="danger" onClick={confirmSwitch}>{t('config.discardAndSwitch')}</Button>
               <Button size="sm" variant="outline" onClick={() => setPendingSwitch(null)}>{t('common.cancel')}</Button>
             </span>
-          </AlertDescription>
-        </Alert>
+          </div>
+        </Note>
       )}
       {pendingMode && (
-        <Alert className="mb-3">
-          <InfoIcon />
-          <AlertDescription className="flex items-center justify-between gap-2">
-            <span>{t('config.unsavedView')}</span>
-            <span className="flex gap-2">
-              <Button size="sm" variant="destructive" onClick={confirmMode}>{t('config.discardAndSwitch')}</Button>
+        <Note tone="warning" className="mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p>{t('config.unsavedView')}</p>
+            <span className="flex flex-wrap gap-2">
+              <Button size="sm" variant="danger" onClick={confirmMode}>{t('config.discardAndSwitch')}</Button>
               <Button size="sm" variant="outline" onClick={() => setPendingMode(null)}>{t('common.cancel')}</Button>
             </span>
-          </AlertDescription>
-        </Alert>
+          </div>
+        </Note>
       )}
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
+        <div role="group" aria-label={t('config.files')} className="flex flex-wrap gap-2">
           {FILES.map(f => (
-            <Button key={f.id} size="sm" variant={file === f.id ? 'default' : 'outline'} onClick={() => switchFile(f.id)}>
+            <Button key={f.id} variant={file === f.id ? 'primary' : 'outline'} aria-pressed={file === f.id}
+              className="font-mono" onClick={() => switchFile(f.id)}>
               {f.label}
             </Button>
           ))}
-          {dirty && <span className="text-muted-foreground text-xs">{t('config.unsavedMarker')}</span>}
         </div>
         {canEdit && current.form && <ModeSwitch value={viewMode} onChange={switchMode} />}
       </div>
 
       {hasBlockingErrors && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>
-            {t('config.blockingErrors', { count: blockingErrors.length })}
-            <ul className="mt-1.5 list-disc pl-4 text-xs">
-              {blockingErrors.slice(0, 6).map((e, i) => <li key={i}>{e.message}</li>)}
-            </ul>
-          </AlertDescription>
-        </Alert>
+        <Note tone="danger" className="mb-4">
+          <p>{t('config.blockingErrors', { count: blockingErrors.length })}</p>
+          <ul className="mt-1.5 list-disc pl-5">
+            {blockingErrors.slice(0, 6).map((e, i) => <li key={i}>{e.message}</li>)}
+          </ul>
+        </Note>
       )}
 
       {current.kind === 'env' && (
-        <Alert className="mb-4">
-          <InfoIcon />
-          <AlertDescription>{t('config.envNotice')}</AlertDescription>
-        </Alert>
+        <Note className="mb-4"><p>{t('config.envNotice')}</p></Note>
       )}
 
-      <div className={cn('grid gap-4', current.form && 'xl:grid-cols-[minmax(0,1fr)_280px]')}>
-        <Card className="min-w-0">
-          <CardContent className="min-w-0">
-            {loading ? <Empty>{t('common.loading')}</Empty> : effectiveMode === 'file' ? (
-              <CodeEditor
-                className="h-[calc(100vh-16rem)] min-h-[480px]"
-                value={content}
-                readOnly={!canEdit}
-                onChange={setContent}
-                language={current.kind === 'env' ? 'env' : 'jsonc'}
-              />
-            ) : current.kind === 'env' ? (
-              <EnvEditor content={content} onChange={setContent} />
-            ) : (
-              <ConfigForm file={current.id} content={content} onContentChange={setContent} issues={issues} localeOptions={localeOptions} />
-            )}
-          </CardContent>
-        </Card>
+      <div className={cn('grid items-start gap-[var(--app-gutter)]', current.form && '@5xl:grid-cols-[minmax(0,1fr)_clamp(17rem,24cqi,24rem)]')}>
+        <div className="min-w-0">
+          {loading ? <Empty loading>{t('common.loading')}</Empty> : effectiveMode === 'file' ? (
+            <CodeEditor
+              className="h-[max(30rem,calc(100dvh-20rem))]"
+              value={content}
+              readOnly={!canEdit}
+              onChange={setContent}
+              label={current.label}
+              language={current.kind === 'env' ? 'env' : 'jsonc'}
+            />
+          ) : current.kind === 'env' ? (
+            <EnvEditor content={content} onChange={setContent} />
+          ) : (
+            <ConfigForm file={current.id} content={content} onContentChange={setContent} issues={issues} localeOptions={localeOptions} />
+          )}
+        </div>
 
         {current.form && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('config.lookupsTitle')}</CardTitle>
-              <CardDescription>{t('config.lookupsHint')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {!lookups ? <p className="text-muted-foreground text-xs">{t('config.lookupsFailed')}</p> : (
-                <>
-                  <LookupList title={t('config.roles')} entries={lookups.roles} />
-                  <LookupList title={t('config.channels')} entries={lookups.channels} />
-                  <LookupList title={t('config.categories')} entries={lookups.categories} />
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <SectionCard title={t('config.lookupsTitle')} description={t('config.lookupsHint')} className="@5xl:sticky @5xl:top-[calc(var(--app-topbar)+1.5rem)]" bodyClassName="grid gap-5">
+            {!lookups ? <p className="text-small text-muted-foreground">{t('config.lookupsFailed')}</p> : (
+              <>
+                <LookupList title={t('config.roles')} entries={lookups.roles} />
+                <LookupList title={t('config.channels')} entries={lookups.channels} />
+                <LookupList title={t('config.categories')} entries={lookups.categories} />
+              </>
+            )}
+          </SectionCard>
         )}
       </div>
     </>

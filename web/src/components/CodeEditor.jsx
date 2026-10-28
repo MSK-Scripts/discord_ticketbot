@@ -2,9 +2,9 @@ import { useRef } from 'react';
 import { cn } from '@/lib/utils.js';
 import { highlight } from '@/lib/highlight.js';
 
-// Line box height in px = font-size 12.5 × line-height 1.6. Every layer (gutter,
+// Line box height in px for the 14 px system monospace. Every layer (gutter,
 // highlight, textarea) uses exactly this so they stay pixel-aligned.
-const LINE = 20;
+const LINE = 22;
 
 /**
  * A plain-text code editor with a line-number gutter and syntax highlighting.
@@ -19,7 +19,7 @@ const LINE = 20;
  * its line — which would drift the colours away from the caret and clip the bottom
  * lines. Clamping every overlay line to LINE px keeps it locked to the textarea.
  */
-export function CodeEditor({ value, onChange, readOnly = false, language = 'jsonc', className }) {
+export function CodeEditor({ value, onChange, readOnly = false, language = 'jsonc', label, className }) {
   const taRef = useRef(null);
   const preRef = useRef(null);
   const gutterRef = useRef(null);
@@ -34,15 +34,15 @@ export function CodeEditor({ value, onChange, readOnly = false, language = 'json
     if (gutterRef.current) gutterRef.current.scrollTop = ta.scrollTop;
   };
 
-  const TYPO = 'font-mono text-[12.5px]';
+  const TYPO = 'font-mono text-[0.875rem]';
   const rowStyle = { height: LINE, lineHeight: `${LINE}px` };
 
   return (
-    <div className={cn('border-input bg-background flex w-full min-w-0 overflow-hidden rounded-md border', TYPO, className)}>
+    <div className={cn('flex w-full min-w-0 overflow-hidden rounded-lg border-[1.5px] border-input bg-card focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-ring', TYPO, className)}>
       <div
         ref={gutterRef}
         aria-hidden="true"
-        className={cn('text-muted-foreground/50 shrink-0 select-none overflow-hidden bg-white/[0.02] py-2 pr-2 pl-3 text-right tabular-nums', TYPO)}
+        className={cn('shrink-0 select-none overflow-hidden border-r bg-muted py-2 pr-2.5 pl-3 text-right text-muted-foreground tabular-nums', TYPO)}
       >
         {Array.from({ length: lineCount }, (_, i) => <div key={i} style={rowStyle}>{i + 1}</div>)}
       </div>
@@ -69,10 +69,11 @@ export function CodeEditor({ value, onChange, readOnly = false, language = 'json
           onChange={e => onChange(e.target.value)}
           onScroll={sync}
           spellCheck={false}
+          aria-label={label}
           wrap="off"
           style={{ lineHeight: `${LINE}px` }}
           className={cn(
-            'absolute inset-0 resize-none overflow-auto whitespace-pre bg-transparent px-3 py-2 text-transparent caret-white outline-none selection:bg-primary/30',
+            'absolute inset-0 resize-none overflow-auto whitespace-pre bg-transparent px-3 py-2 text-transparent caret-foreground outline-none selection:bg-primary-text/25',
             TYPO,
           )}
         />

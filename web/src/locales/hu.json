@@ -40,7 +40,13 @@
     "config": "Konfiguráció",
     "bot": "Bot vezérlése",
     "access": "Jogosultságok",
-    "settings": "Dashboard beállítások"
+    "settings": "Dashboard beállítások",
+    "groupSupport": "Támogatás",
+    "groupBot": "Bot",
+    "groupAdmin": "Adminisztráció",
+    "menuOpen": "Menü megnyitása",
+    "menuClose": "Menü bezárása",
+    "quickNav": "Gyors navigáció"
   },
 
   "app": {
@@ -49,7 +55,16 @@
     "permissionCount": "{count} jogosultság",
     "signOut": "Kijelentkezés",
     "signIn": "Bejelentkezés Discorddal",
-    "askAdmin": "Kérd meg a szerver egyik adminisztrátorát, hogy adjon neked hozzáférést."
+    "askAdmin": "Kérd meg a szerver egyik adminisztrátorát, hogy adjon neked hozzáférést.",
+    "skipToContent": "Ugrás a tartalomra",
+    "account": "Fiók"
+  },
+
+  "theme": {
+    "label": "Megjelenés",
+    "system": "Rendszer",
+    "light": "Világos",
+    "dark": "Sötét"
   },
 
   "user": {
@@ -97,7 +112,9 @@
     "colCreator": "Létrehozó",
     "colClaimedBy": "Felvette",
     "colCreated": "Létrehozva",
-    "colMessages": "Üz."
+    "colMessages": "Üz.",
+    "prevPage": "Előző oldal",
+    "nextPage": "Következő oldal"
   },
 
   "ticket": {
@@ -148,7 +165,9 @@
     "replyAsBot": "Válasz a bot nevében…",
     "send": "Küldés",
     "lockedHint": "Ez a ticket zárolva van, nem lehet rá válaszolni.",
-    "closedHint": "Ez a ticket le van zárva. Nyisd meg újra, ha válaszolni szeretnél."
+    "closedHint": "Ez a ticket le van zárva. Nyisd meg újra, ha válaszolni szeretnél.",
+    "ratingValue": "5-ből {rating} csillag",
+    "replyLabel": "Válaszod"
   },
 
   "bot": {
@@ -191,7 +210,9 @@
     "copied": "másolva!",
     "copyHint": "Kattints az ID másolásához",
     "modeForm": "Űrlap",
-    "modeFile": "Fájl"
+    "modeFile": "Fájl",
+    "files": "Fájlok",
+    "viewMode": "Nézet"
   },
 
   "access": {
@@ -260,6 +281,13 @@
     "faviconUploadLabel": "Új favicon feltöltése",
     "faviconUpload": "Feltöltés",
     "faviconUpdated": "A favicon frissítve.",
-    "faviconReset": "A favicon visszaállt az alapértelmezettre."
+    "faviconReset": "A favicon visszaállt az alapértelmezettre.",
+    "previewTitle": "Előnézet mindkét témában",
+    "previewButton": "Gomb",
+    "previewLink": "Hivatkozás",
+    "previewActive": "Aktív menüpont",
+    "variantFill": "A gombok itt a(z) {hex} színt használják, hogy a feliratuk olvasható maradjon.",
+    "variantText": "A szöveg és a keretek itt a(z) {hex} színt használják, hogy olvashatók maradjanak.",
+    "variantNone": "A színed változtatás nélkül kerül felhasználásra."
   }
 }

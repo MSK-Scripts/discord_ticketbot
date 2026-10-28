@@ -1,63 +1,99 @@
-import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { XIcon } from 'lucide-react';
+import { useEffect, useId, useRef } from 'react';
 import { cn } from '@/lib/utils.js';
+import { handBackFocus, syncModal } from '@/lib/layers.js';
 
-function Dialog(props) { return <DialogPrimitive.Root data-slot="dialog" {...props} />; }
-function DialogTrigger(props) { return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />; }
-function DialogPortal(props) { return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />; }
-function DialogClose(props) { return <DialogPrimitive.Close data-slot="dialog-close" {...props} />; }
+/**
+ * Modal dialog on the native <dialog> element, as in the shop
+ * (msk-shop components/ui/Dialog.tsx).
+ *
+ * showModal() brings the focus trap, Escape to close, an inert page behind
+ * and the top layer without a script of ours, and unlike a Radix dialog it
+ * injects no <style> element at runtime. The title names the dialog and the
+ * description describes it for a screen reader. Focus goes to the first
+ * field or button when it opens and back to the opener when it closes
+ * (lib/layers.js). A click on the backdrop closes it like Escape.
+ *
+ * Buttons go in as children: cancel first, the confirming one last, red only
+ * when the action destroys or ends something.
+ */
+export function Dialog({ open, onClose, title, description, body, children, className }) {
+  const ref = useRef(null);
+  const titleId = useId();
+  const descriptionId = useId();
 
-function DialogOverlay({ className, ...props }) {
+  useEffect(() => {
+    syncModal(ref.current, open, document);
+  }, [open]);
+
+  const handleClose = () => {
+    handBackFocus(ref.current, document);
+    onClose();
+  };
+
   return (
-    <DialogPrimitive.Overlay
-      data-slot="dialog-overlay"
-      className={cn('data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/70', className)}
-      {...props}
-    />
+    <dialog
+      ref={ref}
+      aria-labelledby={titleId}
+      aria-describedby={description ? descriptionId : undefined}
+      onClose={handleClose}
+      // A click on the backdrop lands on the dialog element itself.
+      onClick={e => { if (e.target === e.currentTarget) ref.current?.close(); }}
+      className={cn(
+        'm-auto w-[min(100%_-_2rem,32rem)] max-w-none rounded-lg border bg-card p-[var(--section-pad)] text-card-foreground shadow-card-hover',
+        'open:animate-in open:fade-in-0',
+        className,
+      )}
+    >
+      <div className="grid gap-3">
+        <h2 id={titleId} className="font-display text-h3 font-[650]">{title}</h2>
+        {description && (
+          <p id={descriptionId} className="max-w-[65ch] text-small text-muted-foreground">{description}</p>
+        )}
+        {body && <div className="mt-1">{body}</div>}
+        {children && <div className="mt-2 flex flex-wrap justify-end gap-3">{children}</div>}
+      </div>
+    </dialog>
   );
 }
 
-function DialogContent({ className, children, showCloseButton = true, ...props }) {
+/**
+ * The navigation as a modal drawer at the inline start, below the sidebar
+ * breakpoint (shop AppShell NavDrawer). Its content mounts only while it is
+ * open. Same native behaviour as Dialog: focus trap, Escape, inert page,
+ * focus back to the menu button.
+ */
+export function Drawer({ open, onClose, label, header, children }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    syncModal(ref.current, open, document);
+  }, [open]);
+
+  const handleClose = () => {
+    handBackFocus(ref.current, document);
+    onClose();
+  };
+
   return (
-    <DialogPortal>
-      <DialogOverlay />
-      <DialogPrimitive.Content
-        data-slot="dialog-content"
-        className={cn(
-          'bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg',
-          className,
-        )}
-        {...props}
-      >
-        {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close className="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none [&_svg]:size-4 cursor-pointer">
-            <XIcon />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        )}
-      </DialogPrimitive.Content>
-    </DialogPortal>
+    <dialog
+      ref={ref}
+      aria-label={label}
+      onClose={handleClose}
+      onClick={e => { if (e.target === e.currentTarget) ref.current?.close(); }}
+      className={cn(
+        // Full height at the inline start, at most 22rem and never wider than
+        // the window minus a strip to tap out of it.
+        'm-0 h-dvh max-h-none w-[min(22rem,calc(100vw-3rem))] max-w-none overflow-y-auto overscroll-contain',
+        'border-r bg-card p-0 text-card-foreground',
+        'open:animate-in open:slide-in-from-left-4 open:fade-in-0',
+      )}
+    >
+      {open && (
+        <div className="flex min-h-full flex-col">
+          {header}
+          {children}
+        </div>
+      )}
+    </dialog>
   );
 }
-
-function DialogHeader({ className, ...props }) {
-  return <div data-slot="dialog-header" className={cn('flex flex-col gap-2 text-center sm:text-left', className)} {...props} />;
-}
-
-function DialogFooter({ className, ...props }) {
-  return <div data-slot="dialog-footer" className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)} {...props} />;
-}
-
-function DialogTitle({ className, ...props }) {
-  return <DialogPrimitive.Title data-slot="dialog-title" className={cn('text-lg leading-none font-semibold', className)} {...props} />;
-}
-
-function DialogDescription({ className, ...props }) {
-  return <DialogPrimitive.Description data-slot="dialog-description" className={cn('text-muted-foreground text-sm', className)} {...props} />;
-}
-
-export {
-  Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger,
-};

@@ -1,22 +1,62 @@
-import { useEffect, useRef, useState } from 'react';
-import { UploadIcon, RotateCcwIcon } from 'lucide-react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { ArrowCounterClockwise, Moon, Sun, UploadSimple, WarningCircle } from '@/components/icons.jsx';
 import { api } from '../api.js';
-import { Banner, Empty } from '../ui.jsx';
+import { Banner, Empty, PageHeader, SectionCard } from '../ui.jsx';
 import { applyAccent, applyFavicon, hexToRgb } from '../settings.js';
+import { deriveAccent } from '../accent.js';
+import { cn } from '@/lib/utils.js';
 import { useT } from '../i18n.jsx';
 import { Button } from '@/components/ui/button.jsx';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card.jsx';
 import { Input } from '@/components/ui/input.jsx';
 import { Label } from '@/components/ui/label.jsx';
 
-// The built-in MSK green (index.css --primary). Shown as the picker value when no
-// custom accent is set, and what "Reset" returns to.
-const DEFAULT_ACCENT = '#5eb131';
+// The built-in MSK green (index.css --primary, light theme). Shown as the picker
+// value when no custom accent is set, and what "Reset" returns to.
+const DEFAULT_ACCENT = '#27762e';
+
+/**
+ * The accent in both themes side by side, whatever theme is active: a button,
+ * a link and the active menu item, drawn with the variants accent.js derived
+ * (index.css .accent-preview-*). Says in words when a role had to leave the
+ * chosen colour to stay readable, so a darker link is not a surprise.
+ */
+function AccentPreview({ accent }) {
+  const t = useT();
+  return (
+    <div className="grid gap-2">
+      <p className="kicker text-muted-foreground">{t('settings.previewTitle')}</p>
+      <div className="grid gap-3 @lg:grid-cols-2">
+        {[['light', Sun], ['dark', Moon]].map(([theme, Icon]) => {
+          const roles = deriveAccent(accent, theme);
+          return (
+            <div key={theme} className={cn(`accent-preview-${theme}`, 'grid content-start gap-3 rounded-md border bg-background p-3 text-foreground')}>
+              <p className="flex items-center gap-1.5 text-small font-semibold"><Icon className="size-4" /> {t(`theme.${theme}`)}</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex min-h-9 items-center rounded-md bg-primary px-3.5 text-small font-semibold text-primary-foreground">{t('settings.previewButton')}</span>
+                <span className="text-small font-semibold text-primary-text underline underline-offset-4">{t('settings.previewLink')}</span>
+              </div>
+              <span className="flex min-h-10 items-center rounded-md bg-accent-soft px-3 text-small font-semibold text-primary-text shadow-[inset_3px_0_0_var(--primary-text)]">
+                {t('settings.previewActive')}
+              </span>
+              {roles && (
+                <ul className="grid gap-1 text-small text-muted-foreground">
+                  {roles.adjusted.fill && <li>{t('settings.variantFill', { hex: roles.primary })}</li>}
+                  {roles.adjusted.text && <li>{t('settings.variantText', { hex: roles.primaryText })}</li>}
+                  {!roles.adjusted.fill && !roles.adjusted.text && <li>{t('settings.variantNone')}</li>}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /**
  * Dashboard appearance: accent colour + favicon. Gated by settings.view (read) and
  * settings.edit (change); the owner always holds both. A member with only
- * settings.view sees the current branding but every control is disabled — the API
+ * settings.view sees the current branding but every control is disabled: the API
  * enforces the same split, this just avoids offering a button that would 403.
  * Changes here re-brand the panel for every user, and the accent previews live
  * before you save.
@@ -32,6 +72,8 @@ export default function Settings({ me }) {
   const [error, setError] = useState(null);
   const [notice, setNotice] = useState(null);
   const fileRef = useRef(null);
+  const accentId = useId();
+  const accentHintId = useId();
   const t = useT();
 
   useEffect(() => {
@@ -100,100 +142,96 @@ export default function Settings({ me }) {
 
   const faviconSrc = faviconVersion ? `/favicon.ico?v=${faviconVersion}` : '/favicon.ico';
 
-  if (!loaded) return <Empty>{t('common.loading')}</Empty>;
+  if (!loaded) return <Empty loading>{t('common.loading')}</Empty>;
 
   return (
     <>
-      <div className="mb-5">
-        <h1 className="font-display text-xl font-bold">{t('settings.title')}</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {t('settings.introShared')}{' '}
-          {canEdit ? t('settings.introCanEdit') : t('settings.introReadOnly')}
-        </p>
-      </div>
+      <PageHeader
+        title={t('settings.title')}
+        description={<p>{t('settings.introShared')} {canEdit ? t('settings.introCanEdit') : t('settings.introReadOnly')}</p>}
+      />
 
       <Banner type="error" onClose={() => setError(null)}>{error}</Banner>
       <Banner type="success" onClose={() => setNotice(null)}>{notice}</Banner>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* ── Accent colour ─────────────────────────────────────────────────── */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('settings.accentTitle')}</CardTitle>
-            <CardDescription>{t('settings.accentHint')}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label>{t('settings.accentLabel')}</Label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={hexToRgb(accent) ? accent : DEFAULT_ACCENT}
-                  onChange={e => preview(e.target.value)}
-                  disabled={!canEdit}
-                  className="border-input h-9 w-11 shrink-0 cursor-pointer rounded-md border bg-transparent p-0.5 disabled:cursor-not-allowed disabled:opacity-50"
-                  aria-label={t('settings.accentTitle')}
-                />
-                <Input
-                  className="font-mono"
-                  value={accent}
-                  placeholder={DEFAULT_ACCENT}
-                  onChange={e => preview(e.target.value)}
-                  disabled={!canEdit}
-                />
-              </div>
-              {!validHex && <p className="text-destructive text-xs">{t('settings.accentInvalid', { hex: DEFAULT_ACCENT })}</p>}
-              {savedAccent == null && <p className="text-muted-foreground text-xs">{t('settings.accentDefault', { hex: DEFAULT_ACCENT })}</p>}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" disabled={busy || !accentDirty || !canEdit} onClick={saveAccent}>{t('settings.accentSave')}</Button>
-              <Button size="sm" variant="outline" disabled={busy || savedAccent == null || !canEdit} onClick={resetAccent}>
-                <RotateCcwIcon /> {t('common.resetToDefault')}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ── Favicon ───────────────────────────────────────────────────────── */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('settings.faviconTitle')}</CardTitle>
-            <CardDescription>{t('settings.faviconHint')}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex items-center gap-3">
-              <img
-                src={faviconSrc}
-                alt={t('settings.faviconAlt')}
-                className="size-10 rounded border bg-white/5 object-contain p-1"
-              />
-              <div className="text-muted-foreground text-sm">
-                {faviconVersion ? t('settings.faviconCustom') : t('settings.faviconDefault')}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="favicon-file">{t('settings.faviconUploadLabel')}</Label>
+      <div className="grid items-start gap-[var(--app-gutter)] @4xl:grid-cols-2">
+        <SectionCard title={t('settings.accentTitle')} description={t('settings.accentHint')} bodyClassName="grid gap-5">
+          <div className="grid gap-1.5">
+            <Label htmlFor={accentId}>{t('settings.accentLabel')}</Label>
+            <div className="flex items-center gap-2">
               <input
-                id="favicon-file"
-                ref={fileRef}
-                type="file"
-                accept=".png,.ico,image/png,image/x-icon,image/vnd.microsoft.icon"
-                onChange={e => setFile(e.target.files?.[0] ?? null)}
+                type="color"
+                value={hexToRgb(accent) ? accent : DEFAULT_ACCENT}
+                onChange={e => preview(e.target.value)}
                 disabled={!canEdit}
-                className="text-muted-foreground file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80 block w-full text-sm file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:px-3 file:py-1.5 file:text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                className="size-11 shrink-0 cursor-pointer rounded-md border-[1.5px] border-input bg-card p-1 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label={t('settings.accentTitle')}
+              />
+              <Input
+                id={accentId}
+                className="max-w-56 font-mono"
+                value={accent}
+                placeholder={DEFAULT_ACCENT}
+                onChange={e => preview(e.target.value)}
+                disabled={!canEdit}
+                aria-invalid={!validHex || undefined}
+                aria-describedby={accentHintId}
+                spellCheck={false}
               />
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" disabled={busy || !file || !canEdit} onClick={uploadFavicon}><UploadIcon /> {t('settings.faviconUpload')}</Button>
-              <Button size="sm" variant="outline" disabled={busy || !faviconVersion || !canEdit} onClick={resetFavicon}>
-                <RotateCcwIcon /> {t('common.resetToDefault')}
-              </Button>
+            <div id={accentHintId}>
+              {!validHex && (
+                <p className="flex items-start gap-1.5 text-small font-semibold text-danger">
+                  <WarningCircle className="mt-0.5 size-4 shrink-0" weight="bold" />
+                  {t('settings.accentInvalid', { hex: DEFAULT_ACCENT })}
+                </p>
+              )}
+              {savedAccent == null && <p className="text-small text-muted-foreground">{t('settings.accentDefault', { hex: DEFAULT_ACCENT })}</p>}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          <AccentPreview accent={validHex ? accent : (savedAccent || DEFAULT_ACCENT)} />
+
+          <div className="flex flex-wrap gap-3">
+            <Button disabled={busy || !accentDirty || !canEdit} onClick={saveAccent}>{t('settings.accentSave')}</Button>
+            <Button variant="outline" disabled={busy || savedAccent == null || !canEdit} onClick={resetAccent}>
+              <ArrowCounterClockwise /> {t('common.resetToDefault')}
+            </Button>
+          </div>
+        </SectionCard>
+
+        <SectionCard title={t('settings.faviconTitle')} description={t('settings.faviconHint')} bodyClassName="grid gap-5">
+          <div className="flex items-center gap-3">
+            <img
+              src={faviconSrc}
+              alt={t('settings.faviconAlt')}
+              className="size-12 rounded-md border bg-muted object-contain p-1.5"
+            />
+            <p className="text-muted-foreground">
+              {faviconVersion ? t('settings.faviconCustom') : t('settings.faviconDefault')}
+            </p>
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label htmlFor="favicon-file">{t('settings.faviconUploadLabel')}</Label>
+            <Input
+              id="favicon-file"
+              ref={fileRef}
+              type="file"
+              accept=".png,.ico,image/png,image/x-icon,image/vnd.microsoft.icon"
+              onChange={e => setFile(e.target.files?.[0] ?? null)}
+              disabled={!canEdit}
+              className="cursor-pointer py-1.5 text-small"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Button disabled={busy || !file || !canEdit} onClick={uploadFavicon}><UploadSimple /> {t('settings.faviconUpload')}</Button>
+            <Button variant="outline" disabled={busy || !faviconVersion || !canEdit} onClick={resetFavicon}>
+              <ArrowCounterClockwise /> {t('common.resetToDefault')}
+            </Button>
+          </div>
+        </SectionCard>
       </div>
     </>
   );

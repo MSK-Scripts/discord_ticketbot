@@ -20,16 +20,18 @@ aktivierst, ändert sich an deinem Bot nichts.
 | **Konfiguration** | Bearbeite `config.jsonc`, `snippets.jsonc`, `.env` und die Locale-Dateien wahlweise in einer strukturierten **Formular**-Ansicht oder einer rohen **Datei**-Ansicht (mit Zeilennummern und Syntax-Highlighting). Formular-Änderungen erhalten die `//`-Kommentare, und ein Seitenpanel löst Discord-Rollen-/Kanal-/Kategorie-**Namen** auf, sodass du nie nach rohen IDs suchen musst. |
 | **Bot-Steuerung** | Starten, stoppen, neu starten und aktualisieren des Bots, plus eine Live-Konsole. |
 | **Berechtigungen** | Lege fest, welche Rollen und Nutzer das Dashboard verwenden dürfen und was sie tun dürfen. |
-| **Dashboard-Einstellungen** | Akzentfarbe und Favicon, abgesichert über eigene Ansehen-/Bearbeiten-Rechte. |
+| **Dashboard-Einstellungen** | Akzentfarbe und Favicon, abgesichert über eigene Ansehen-/Bearbeiten-Rechte. Die Akzentfarbe wird an die helle und die dunkle Darstellung angepasst. |
 | **Sprache** | Jeder Nutzer wählt seine eigene Oberflächensprache aus sieben Übersetzungen. |
+| **Darstellung** | Hell, dunkel oder nach Systemeinstellung, von jedem selbst gewählt. Im selben Look wie msk-scripts.de. |
 
 ---
 
 ## Sprache
 
 Das Dashboard gibt es auf **Englisch, Deutsch, Französisch, Spanisch,
-Portugiesisch, Polnisch und Ungarisch**. Die Auswahl sitzt unten in der
-Seitenleiste, direkt über "Abmelden".
+Portugiesisch, Polnisch und Ungarisch**. Die Auswahl steckt im Kontomenü oben
+rechts (dein Avatar und Name), direkt über "Abmelden". Vor der Anmeldung steht
+sie unter dem Anmelde-Button.
 
 Jeder stellt seine Sprache selbst ein: Die Wahl liegt im Browser der jeweiligen
 Person. Wenn du das Panel auf Deutsch stellst, ändert sich für niemanden sonst
@@ -50,6 +52,36 @@ statt die Seite zu zerlegen.
 
 Das strukturierte `config.jsonc`-Formular (dessen Feldbezeichnungen und
 Hilfetexte) ist weiterhin nur auf Englisch, der Rest des Dashboards ist übersetzt.
+
+---
+
+## Darstellung
+
+Das Dashboard hat eine **helle und eine dunkle Darstellung**, mit Schriften,
+Farben und Aufbau von msk-scripts.de. Beim ersten Besuch folgt es der
+Systemeinstellung. Der Schalter oben rechts bietet **System**, **Hell** und
+**Dunkel**; wie die Sprache wird die Wahl im Browser gespeichert und gilt nur
+für dich. Die Darstellung steht fest, bevor die Seite gezeichnet wird, eine
+dunkle Wahl blitzt also nie weiß auf.
+
+Die **Akzentfarbe** aus den *Dashboard-Einstellungen* ersetzt das MSK-Grün in
+beiden Darstellungen: Buttons, Links, den aktiven Menüpunkt, den Fokusrahmen und
+den Streifen über der Kopfzeile. Du kannst jede Farbe wählen, das Dashboard hält
+jede Verwendung lesbar (WCAG 2.2 AA):
+
+- Die Schrift auf einem Akzent-Button ist schwarz oder weiß, je nachdem, was mehr
+  Kontrast hat.
+- Ist die Farbe selbst zu hell oder zu dunkel, um als Schrift auf einer Fläche
+  lesbar zu sein, nutzen Links, Rahmen und Fokusrahmen in der hellen Darstellung
+  eine dunklere und in der dunklen eine hellere Variante. Ein gelber Akzent
+  behält seine gelben Buttons und bekommt dunkle Links auf Weiß, ein
+  Marineblau bekommt hellblaue Links auf dem dunklen Hintergrund.
+- Eine Farbe, die schon passt, wird unverändert genutzt.
+
+Die Einstellungsseite zeigt den Akzent in beiden Darstellungen nebeneinander und
+sagt, wenn eine Variante greift. Das Layout passt sich vom 320-px-Handy bis zum
+Ultrawide-Monitor an, und das Dashboard folgt den Systemeinstellungen für
+reduzierte Bewegung, mehr Kontrast und die Windows-Kontrastdesigns.
 
 ---
 

@@ -10,6 +10,7 @@
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
 import { useT } from './i18n.jsx';
+import { NONE } from './ui.jsx';
 
 const cache = new Map();      // id → user | null (null = resolved, but unknown)
 const listeners = new Set();  // components waiting for the batch to land
@@ -65,19 +66,19 @@ export function useUsers(ids) {
  * when Discord cannot resolve it (deleted account) — that is honest, and still
  * copy-pasteable, which a "Unknown user" placeholder would not be.
  */
-export function UserName({ id, fallback = '—' }) {
+export function UserName({ id, fallback = NONE }) {
   const resolved = useUsers(id ? [id] : []);
   const t = useT();
   if (!id) return <span className="text-muted-foreground">{fallback}</span>;
 
   const user = resolved.get(id);
-  if (!user) return <span className="font-mono text-xs text-muted-foreground" title={id}>{id}</span>;
+  if (!user) return <span className="font-mono text-small text-muted-foreground" title={id}>{id}</span>;
 
   return (
-    <span className="inline-flex min-w-0 items-center gap-1.5" title={`${user.username ?? user.name} · ${id}`}>
-      {user.avatar && <img className="size-5 shrink-0 rounded-full bg-white/8" src={user.avatar} alt="" />}
+    <span className="inline-flex min-w-0 items-center gap-2" title={`${user.username ?? user.name} · ${id}`}>
+      {user.avatar && <img className="size-6 shrink-0 rounded-full bg-muted" src={user.avatar} alt="" />}
       <span className="truncate">{user.name}</span>
-      {!user.inGuild && <span className="text-muted-foreground" title={t('user.leftTitle')}> {t('user.left')}</span>}
+      {!user.inGuild && <span className="shrink-0 text-muted-foreground" title={t('user.leftTitle')}>{t('user.left')}</span>}
     </span>
   );
 }
