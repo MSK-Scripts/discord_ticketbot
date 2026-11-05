@@ -9,6 +9,7 @@
     "dashboard": "node dashboard.js",
     "dashboard:setup": "node scripts/dashboard-setup.js",
     "db:migrate": "node scripts/migrate-db.js",
+    "update": "node scripts/update.js",
     "test": "node --test \"tests/**/*.test.js\""
   },
   "engines": {

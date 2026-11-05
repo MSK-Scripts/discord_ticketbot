@@ -14,7 +14,7 @@ A syntax error is reported with line, column and a pointer to the spot. Placehol
 | `transcriptDesign` | `modern` (default) or `classic` |
 | `transcriptLang` | Language of the transcript, same codes as `lang`, falls back to English |
 | `openTicketChannelId` | Channel that `/setup` posts the panel to |
-| `panel` | `interactionType` (`BUTTON` or `SELECT_MENU`), `autoUpdateOnStart`, `logo`, `banner` (files from `assets/`) |
+| `panel` | `interactionType` (`BUTTON` or `SELECT_MENU`), `autoUpdateOnStart`, `logo`, `banner` (files from `assets/`, see [Panel images](#panel-images)) |
 | `ticketTypes` | Up to 25 ticket types, see below |
 | `ticketNameOption` | Channel name template: `USERNAME`, `USERID`, `TICKETCOUNT` |
 | `claimOption` | `claimButton`, `nameWhenClaimed`, `categoryWhenClaimed` |
@@ -117,6 +117,22 @@ Placeholders: `{user}`, `{staff}`, `{type}`, `{priority}`. Commands: `/snippet s
 ## Secrets and environment
 
 Tokens, the MSK API key, database credentials and dashboard secrets go into `.env`, never into `config.jsonc`. See [Installation](installation-en.md) and [Dashboard](dashboard-en.md).
+
+## Panel images
+
+`panel.logo.file` and `panel.banner.file` name a file in `assets/`. Put your own logo or banner there, for example `assets/logo.png` or `assets/banner.png`. When the file is not in `assets/`, the bot looks in `assets/default/`, which holds the MSK logo, so `"file": "logo.png"` shows the MSK logo until you add your own. Images you add to `assets/` are ignored by git, and the update routine sets a replaced `assets/logo.png` aside and puts it back, so your images never block an update.
+
+## Changing texts
+
+Change a bot text in the dashboard (Configuration, tab of the locale file) or write it into `locales/custom/<lang>.json` yourself. That file holds only the texts you change, in the same structure as `locales/<lang>.json`:
+
+```json
+{ "buttons": { "openTicket": "Contact support" } }
+```
+
+On start the bot reads `locales/<lang>.json` and lays your file over it. Your texts win, everything else comes from the shipped file, so new texts from an update show up on their own. Do not edit `locales/<lang>.json` itself, an update replaces it. `locales/custom/` is ignored by git. A broken custom file only logs a warning, and the bot then uses the shipped texts.
+
+Texts changed in `locales/<lang>.json` with an older version move to `locales/custom/` on their own with the next `npm run update` or dashboard update. The edited file is kept as `locales/<lang>.json.pre-custom-layer`.
 
 ## Adding a language
 

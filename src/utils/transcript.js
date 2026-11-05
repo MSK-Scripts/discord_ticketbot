@@ -4,8 +4,6 @@
  * without any external CDN requests (Discord blocks cross-origin avatar loads).
  */
 
-const path = require('path');
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 // Neutral grey silhouette — always visible, zero external requests.
@@ -46,13 +44,14 @@ function resolveAccent(color) {
 // Transcript UI strings live in the bot's locale files (locales/<lang>.json)
 // under the "transcript" key, so every language's strings sit in one place next
 // to the rest of its translations. English (en.json) is the fallback for any
-// missing language or individual key.
-const LOCALES_DIR = path.resolve(__dirname, '../../locales');
+// missing language or individual key. Each file is read with the customer layer
+// (locales/custom/<lang>.json) merged on top, see utils/locales.js.
+const { loadLocale } = require('./locales');
 const _stringCache = new Map();
 
 function loadEnglishTranscript() {
   try {
-    return require(path.join(LOCALES_DIR, 'en.json')).transcript || {};
+    return loadLocale('en').transcript || {};
   } catch {
     return {};
   }
@@ -73,7 +72,7 @@ function getTranscriptStrings(lang) {
   let chosen = en;
   if (key !== 'en') {
     try {
-      const loc = require(path.join(LOCALES_DIR, `${key}.json`));
+      const loc = loadLocale(key);
       if (loc && loc.transcript) chosen = loc.transcript;
     } catch { /* unknown/missing locale file → English fallback */ }
   }
@@ -93,7 +92,7 @@ function hasTranscriptLocale(lang) {
   if (typeof lang !== 'string' || !/^[a-z]{2,5}$/.test(lang)) return false;
   if (lang === 'en') return true;
   try {
-    const loc = require(path.join(LOCALES_DIR, `${lang}.json`));
+    const loc = loadLocale(lang);
     return !!(loc && loc.transcript);
   } catch {
     return false;

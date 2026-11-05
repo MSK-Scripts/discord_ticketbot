@@ -76,6 +76,19 @@ data/dashboard-settings.json
 data/update-notice.json
 data/dashboard-favicon.*
 
+# Customer files. Own panel images and own locale texts live outside the tracked
+# files, so a customer change never blocks `git pull`. The shipped default logo
+# is in assets/default/; the other tracked files under assets/ are re-included.
+/assets/*
+!/assets/README.md
+!/assets/msk-ticket-bot-banner.png
+!/assets/bot-hosting-*.png
+!/assets/default/
+/locales/custom/
+/locales/*.bak
+/locales/*.pre-custom-layer
+/.update-stash/
+
 # Config (contains IDs/tokens)
 config/config.jsonc
 config/snippets.jsonc

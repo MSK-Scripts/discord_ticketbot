@@ -212,7 +212,11 @@
     "modeForm": "Formular",
     "modeFile": "Datei",
     "files": "Dateien",
-    "viewMode": "Ansicht"
+    "viewMode": "Ansicht",
+    "localeLayerNotice": "Deine Änderungen an dieser Datei werden getrennt von den mitgelieferten Texten gespeichert. Updates behalten sie, und neue Texte aus einem Update erscheinen trotzdem.",
+    "localeReset": "Auf Standard zurücksetzen",
+    "localeResetConfirm": "Alle deine Änderungen an dieser Datei entfernen und zu den mitgelieferten Texten zurückkehren?",
+    "localeResetDone": "Die mitgelieferten Texte gelten wieder. Starte den Bot neu, damit die Änderung wirksam wird."
   },
 
   "access": {

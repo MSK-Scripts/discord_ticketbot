@@ -10,10 +10,10 @@
  */
 
 const { fork } = require('child_process');
-const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const EventEmitter = require('events');
+const { runUpdate, createRunner } = require('../utils/updater');
 
 const BOT_ENTRY = path.resolve(__dirname, '../../index.js');
 const ROOT      = path.resolve(__dirname, '../..');
@@ -246,27 +246,26 @@ class BotSupervisor extends EventEmitter {
   }
 
   /**
-   * git pull + npm install, then restart the bot.
-   * Runs in the repo root; output is streamed into the log ring buffer so the
-   * operator can see what happened in the dashboard console.
+   * Update the installation, then restart the bot.
+   * The routine itself (utils/updater.js, also behind `npm run update`) resets
+   * package-lock.json, moves legacy locale edits into locales/custom/, sets a
+   * replaced logo aside, runs `git pull --ff-only` and `npm install --omit=dev`.
+   * Runs in the repo root; every step is streamed into the log ring buffer so
+   * the operator can see what happened in the dashboard console.
    */
   async update() {
     if (this.busy) return { ok: false, error: 'Another operation is already running.' };
     this.busy = true;
 
     try {
-      this.pushLog('==> [supervisor] git pull');
-      const pull = await this.run('git', ['pull']);
-      if (!pull.ok) return { ok: false, error: 'git pull failed', detail: pull.output };
-
-      this.pushLog('==> [supervisor] npm install --omit=dev');
-      const install = await this.run('npm', ['install', '--omit=dev']);
-      if (!install.ok) return { ok: false, error: 'npm install failed', detail: install.output };
+      const log = (text) => this.pushLog(text);
+      const result = await runUpdate({ root: ROOT, run: createRunner({ cwd: ROOT, onOutput: log }), log });
+      if (!result.ok) return { ok: false, error: result.error, detail: result.detail };
 
       this.pushLog('==> [supervisor] restarting bot with the new version');
       await this.restart();
 
-      return { ok: true, output: `${pull.output}\n${install.output}`.trim() };
+      return { ok: true, output: result.output };
     } finally {
       this.busy = false;
     }
@@ -342,25 +341,6 @@ class BotSupervisor extends EventEmitter {
     });
   }
 
-  /** Run a command in the repo root, capturing its output into the log buffer. */
-  run(cmd, args) {
-    return new Promise((resolve) => {
-      // shell: true so `npm` resolves to npm.cmd on Windows.
-      const proc = spawn(cmd, args, { cwd: ROOT, shell: true });
-      let output = '';
-
-      const collect = (d) => {
-        const text = d.toString();
-        output += text;
-        this.pushLog(text);
-      };
-      proc.stdout?.on('data', collect);
-      proc.stderr?.on('data', collect);
-
-      proc.on('error', (err) => resolve({ ok: false, output: `${output}\n${err.message}` }));
-      proc.on('close', (code) => resolve({ ok: code === 0, output: output.trim() }));
-    });
-  }
 }
 
 module.exports = { BotSupervisor };

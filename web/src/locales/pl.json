@@ -212,7 +212,11 @@
     "modeForm": "Formularz",
     "modeFile": "Plik",
     "files": "Pliki",
-    "viewMode": "Widok"
+    "viewMode": "Widok",
+    "localeLayerNotice": "Twoje zmiany w tym pliku są zapisywane osobno od dostarczonych tekstów. Aktualizacje je zachowują, a nowe teksty z aktualizacji i tak się pojawią.",
+    "localeReset": "Przywróć domyślne",
+    "localeResetConfirm": "Usunąć wszystkie Twoje zmiany w tym pliku i wrócić do dostarczonych tekstów?",
+    "localeResetDone": "Obowiązują znowu dostarczone teksty. Uruchom bota ponownie, aby zmiana zaczęła działać."
   },
 
   "access": {

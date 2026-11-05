@@ -212,7 +212,11 @@
     "modeForm": "Űrlap",
     "modeFile": "Fájl",
     "files": "Fájlok",
-    "viewMode": "Nézet"
+    "viewMode": "Nézet",
+    "localeLayerNotice": "A fájlon végzett módosításaid a gyári szövegektől külön mentődnek. A frissítések megtartják őket, és a frissítés új szövegei így is megjelennek.",
+    "localeReset": "Visszaállítás alapértelmezettre",
+    "localeResetConfirm": "Eltávolítod a fájlon végzett összes módosításodat, és visszatérsz a gyári szövegekhez?",
+    "localeResetDone": "Újra a gyári szövegek érvényesek. Indítsd újra a botot, hogy a módosítás életbe lépjen."
   },
 
   "access": {

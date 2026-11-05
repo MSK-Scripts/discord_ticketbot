@@ -17,8 +17,8 @@ aktivierst, ändert sich an deinem Bot nichts.
 | **Meine Tickets** | Jedes Mitglied sieht die selbst geöffneten Tickets und kann in offenen antworten. Die Antwort erscheint im Discord-Kanal unter dem eigenen Namen. Geschlossene Tickets bieten einen Transcript-Download und, mit Premium, einen "Transcript öffnen"-Link. |
 | **Tickets** | Vollständige Liste mit Filtern, Ticket-Detail mit dem Live-Verlauf, Claim / Schließen / Wieder öffnen / Verschieben / Sperren / Priorität. |
 | **Statistiken** | Gesamtzahlen, Durchschnittsbewertung, durchschnittliche Bearbeitungszeit und ein Team-Ranking nach geschlossenen Tickets. |
-| **Konfiguration** | Bearbeite `config.jsonc`, `snippets.jsonc`, `.env` und die Locale-Dateien wahlweise in einer strukturierten **Formular**-Ansicht oder einer rohen **Datei**-Ansicht (mit Zeilennummern und Syntax-Highlighting). Formular-Änderungen erhalten die `//`-Kommentare, und ein Seitenpanel löst Discord-Rollen-/Kanal-/Kategorie-**Namen** auf, sodass du nie nach rohen IDs suchen musst. |
-| **Bot-Steuerung** | Starten, stoppen, neu starten und aktualisieren des Bots, plus eine Live-Konsole. |
+| **Konfiguration** | Bearbeite `config.jsonc`, `snippets.jsonc`, `.env` und die Locale-Dateien wahlweise in einer strukturierten **Formular**-Ansicht oder einer rohen **Datei**-Ansicht (mit Zeilennummern und Syntax-Highlighting). Formular-Änderungen erhalten die `//`-Kommentare, und ein Seitenpanel löst Discord-Rollen-/Kanal-/Kategorie-**Namen** auf, sodass du nie nach rohen IDs suchen musst. Änderungen an einer Locale-Datei landen als Unterschied zu den mitgelieferten Texten in `locales/custom/`, Updates behalten sie also; **Auf Standard zurücksetzen** entfernt sie wieder (siehe [Texte anpassen](configuration-de.md#texte-anpassen)). |
+| **Bot-Steuerung** | Starten, stoppen, neu starten und aktualisieren des Bots, plus eine Live-Konsole. **Update** führt dieselbe Routine aus wie `npm run update` (siehe [Aktualisieren](installation-de.md#aktualisieren)). |
 | **Berechtigungen** | Lege fest, welche Rollen und Nutzer das Dashboard verwenden dürfen und was sie tun dürfen. |
 | **Dashboard-Einstellungen** | Akzentfarbe und Favicon, abgesichert über eigene Ansehen-/Bearbeiten-Rechte. Die Akzentfarbe wird an die helle und die dunkle Darstellung angepasst. |
 | **Sprache** | Jeder Nutzer wählt seine eigene Oberflächensprache aus sieben Übersetzungen. |
@@ -297,6 +297,13 @@ der Webserver neu lädt: `sudo systemctl restart ticketbot` (oder starte den
 NSSM-/PM2-Dienst neu, unter dem du `dashboard.js` laufen lässt). Reine
 Bot-Änderungen (Commands, Events, Datenbank) greifen dagegen schon über den
 Update-Button.
+
+**Das Update scheitert mit "git pull failed"**
+Das Update zieht nur als Fast-Forward. Deine eigenen Texte, Bilder und die
+Lockfile erledigt es selbst, meist steckt also ein lokaler Commit oder eine
+Änderung an einer anderen versionierten Datei dahinter, etwa am Code. Sieh mit
+`git status` im Bot-Ordner nach oder starte `npm run update` im Terminal, dann
+siehst du die ganze Ausgabe.
 
 **Das Dashboard verweigert den Start mit dem Hinweis, die Konfiguration sei nicht sicher**
 Du hast das Dashboard ohne HTTPS an eine öffentliche Schnittstelle gebunden. Geh

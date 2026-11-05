@@ -72,6 +72,7 @@ export const api = {
   locales: () => request('/locales'),
   locale: (name) => request(`/locales/${encodeURIComponent(name)}`),
   saveLocale: (name, content) => request(`/locales/${encodeURIComponent(name)}`, { method: 'PUT', body: { content } }),
+  resetLocale: (name) => request(`/locales/${encodeURIComponent(name)}`, { method: 'DELETE' }),
 
   botStatus: () => request('/bot/status'),
   botLogs: () => request('/bot/logs'),
