@@ -7,35 +7,8 @@ const {
 } = require('discord.js');
 const { typeOption } = require('./typeOption');
 const path = require('path');
-const fs   = require('fs');
 const { panelEmbed } = require('./embeds');
-
-const ASSETS_DIR = path.resolve(__dirname, '../../assets');
-
-/**
- * Resolves a panel image named in the config. The customer's own file in
- * assets/<file> wins; without one, the shipped default in assets/default/<file>
- * is used (that is where the MSK logo lives, so `panel.logo.file: "logo.png"`
- * works out of the box). Customer images in assets/ are gitignored, so replacing
- * the logo never blocks an update. Returns null when neither file exists.
- * @param {string} file
- * @param {string} [assetsDir]
- * @returns {string|null}
- */
-function resolvePanelAsset(file, assetsDir = ASSETS_DIR) {
-  if (typeof file !== 'string' || file === '') return null;
-  // Only a plain file name inside assets/ is allowed. Without this, a config
-  // value like "../.env" made the panel post the bot's .env (token included)
-  // to Discord as an attachment.
-  if (file !== path.basename(file) || file === '.' || file === '..' || file.includes('\\') || file.includes('/')) return null;
-  const root = path.resolve(assetsDir);
-  for (const candidate of [path.resolve(root, file), path.resolve(root, 'default', file)]) {
-    const rel = path.relative(root, candidate);
-    if (rel.startsWith('..') || path.isAbsolute(rel)) continue;
-    if (fs.statSync(candidate, { throwIfNoEntry: false })?.isFile()) return candidate;
-  }
-  return null;
-}
+const { ASSETS_DIR, resolvePanelAsset } = require('./assetResolver');
 
 /**
  * Builds the full ticket-panel payload (embed + interaction row + file attachments).

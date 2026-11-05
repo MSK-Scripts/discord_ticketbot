@@ -216,7 +216,21 @@
     "localeLayerNotice": "Tus cambios en este archivo se guardan aparte de los textos incluidos. Las actualizaciones los conservan y los textos nuevos de una actualización siguen apareciendo.",
     "localeReset": "Restablecer valores predeterminados",
     "localeResetConfirm": "¿Eliminar todos tus cambios en este archivo y volver a los textos incluidos?",
-    "localeResetDone": "Se usan de nuevo los textos incluidos. Reinicia el Bot para que el cambio surta efecto."
+    "localeResetDone": "Se usan de nuevo los textos incluidos. Reinicia el Bot para que el cambio surta efecto.",
+    "panelAssetCurrent": "Imagen actual",
+    "panelAssetSavedOnly": "Según la configuración guardada.",
+    "panelAssetNoPreview": "Sin vista previa",
+    "panelAssetAltLogo": "Logo actual del panel",
+    "panelAssetAltBanner": "Banner actual del panel",
+    "panelAssetChoose": "Subir una imagen nueva",
+    "panelAssetHint": "PNG, JPEG, GIF, WebP o SVG, hasta {mb} MB. La imagen se convierte y se eliminan sus metadatos (ubicación, datos de la cámara). SVG se convierte en PNG.",
+    "panelAssetScanned": "Un antivirus revisa los archivos subidos.",
+    "panelAssetUpload": "Subir",
+    "panelAssetUploading": "Subiendo…",
+    "panelAssetTooLarge": "El archivo supera los {mb} MB.",
+    "panelAssetUploaded": "Imagen guardada y configurada en config.jsonc. Reinicia el Bot para que el panel la use.",
+    "panelAssetUploadedUnsaved": "Imagen guardada. Guarda la configuración y reinicia el Bot para que el panel la use.",
+    "panelAssetResetDone": "Se usa de nuevo la imagen predeterminada. Reinicia el Bot para que el panel la use."
   },
 
   "access": {

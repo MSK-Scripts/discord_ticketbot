@@ -216,7 +216,21 @@
     "localeLayerNotice": "A fájlon végzett módosításaid a gyári szövegektől külön mentődnek. A frissítések megtartják őket, és a frissítés új szövegei így is megjelennek.",
     "localeReset": "Visszaállítás alapértelmezettre",
     "localeResetConfirm": "Eltávolítod a fájlon végzett összes módosításodat, és visszatérsz a gyári szövegekhez?",
-    "localeResetDone": "Újra a gyári szövegek érvényesek. Indítsd újra a botot, hogy a módosítás életbe lépjen."
+    "localeResetDone": "Újra a gyári szövegek érvényesek. Indítsd újra a botot, hogy a módosítás életbe lépjen.",
+    "panelAssetCurrent": "Jelenlegi kép",
+    "panelAssetSavedOnly": "A mentett konfiguráció szerint.",
+    "panelAssetNoPreview": "Nincs előnézet",
+    "panelAssetAltLogo": "A panel jelenlegi logója",
+    "panelAssetAltBanner": "A panel jelenlegi bannere",
+    "panelAssetChoose": "Új kép feltöltése",
+    "panelAssetHint": "PNG, JPEG, GIF, WebP vagy SVG, legfeljebb {mb} MB. A képet átalakítjuk, a metaadatait (hely, kameraadatok) eltávolítjuk. Az SVG-ből PNG lesz.",
+    "panelAssetScanned": "A feltöltött fájlokat víruskereső ellenőrzi.",
+    "panelAssetUpload": "Feltöltés",
+    "panelAssetUploading": "Feltöltés folyamatban…",
+    "panelAssetTooLarge": "A fájl nagyobb, mint {mb} MB.",
+    "panelAssetUploaded": "A kép elmentve és beállítva a config.jsonc fájlban. Indítsd újra a botot, hogy a panel használja.",
+    "panelAssetUploadedUnsaved": "A kép elmentve. Mentsd a konfigurációt, és indítsd újra a botot, hogy a panel használja.",
+    "panelAssetResetDone": "Újra az alapértelmezett kép érvényes. Indítsd újra a botot, hogy a panel használja."
   },
 
   "access": {

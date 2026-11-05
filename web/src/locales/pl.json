@@ -216,7 +216,21 @@
     "localeLayerNotice": "Twoje zmiany w tym pliku są zapisywane osobno od dostarczonych tekstów. Aktualizacje je zachowują, a nowe teksty z aktualizacji i tak się pojawią.",
     "localeReset": "Przywróć domyślne",
     "localeResetConfirm": "Usunąć wszystkie Twoje zmiany w tym pliku i wrócić do dostarczonych tekstów?",
-    "localeResetDone": "Obowiązują znowu dostarczone teksty. Uruchom bota ponownie, aby zmiana zaczęła działać."
+    "localeResetDone": "Obowiązują znowu dostarczone teksty. Uruchom bota ponownie, aby zmiana zaczęła działać.",
+    "panelAssetCurrent": "Aktualny obraz",
+    "panelAssetSavedOnly": "Zgodnie z zapisaną konfiguracją.",
+    "panelAssetNoPreview": "Brak podglądu",
+    "panelAssetAltLogo": "Aktualne logo panelu",
+    "panelAssetAltBanner": "Aktualny baner panelu",
+    "panelAssetChoose": "Prześlij nowy obraz",
+    "panelAssetHint": "PNG, JPEG, GIF, WebP lub SVG, do {mb} MB. Obraz zostanie przekonwertowany, a jego metadane (lokalizacja, dane aparatu) usunięte. SVG zostanie zamieniony na PNG.",
+    "panelAssetScanned": "Przesłane pliki sprawdza skaner antywirusowy.",
+    "panelAssetUpload": "Prześlij",
+    "panelAssetUploading": "Przesyłanie…",
+    "panelAssetTooLarge": "Plik jest większy niż {mb} MB.",
+    "panelAssetUploaded": "Obraz zapisany i ustawiony w config.jsonc. Uruchom bota ponownie, aby panel go używał.",
+    "panelAssetUploadedUnsaved": "Obraz zapisany. Zapisz konfigurację i uruchom bota ponownie, aby panel go używał.",
+    "panelAssetResetDone": "Obowiązuje znowu domyślny obraz. Uruchom bota ponownie, aby panel go używał."
   },
 
   "access": {

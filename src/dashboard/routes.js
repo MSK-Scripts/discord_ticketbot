@@ -23,6 +23,8 @@ const { getGuildLookups, getChannelMessages, resolveUsers } = require('./discord
 const { getTranscriptUrl } = require('../utils/mskApi');
 const localeStore = require('../utils/locales');
 const { PERMISSIONS, PERMISSION_LABELS, isPermission, isSubjectType, parsePermissions, checkSelfEdit } = require('./permissions');
+const { registerPanelAssetRoutes } = require('./panelAssets');
+const { ASSETS_DIR } = require('../utils/assetResolver');
 
 const ROOT = path.resolve(__dirname, '../..');
 
@@ -459,6 +461,17 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
     audit(req, 'dashboard.settings', 'favicon', { reset: true });
     res.json({ ok: true });
   }));
+
+  // ── Panel logo and banner ───────────────────────────────────────────────────
+  // Upload, preview and reset of the panel images. Same permissions as the
+  // config editor, since an upload changes panel.<slot>.file in config.jsonc.
+  // Pipeline and storage rules: ./panelAssets.js.
+  registerPanelAssetRoutes(api, {
+    requirePermission,
+    audit,
+    configFile: configPath('config'),
+    assetsDir: ASSETS_DIR,
+  });
 
   // ── Bot control ────────────────────────────────────────────────────────────
 

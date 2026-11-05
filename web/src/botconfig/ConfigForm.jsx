@@ -11,7 +11,7 @@ import SnippetsEditor from './SnippetsEditor.jsx';
 import { CaretRight } from '@/components/icons.jsx';
 import { Note } from '../ui.jsx';
 
-export default function ConfigForm({ file, content, onContentChange, issues, localeOptions }) {
+export default function ConfigForm({ file, content, onContentChange, issues, localeOptions, onAssetStored }) {
   const model = safeParse(content);
 
   // Comment-preserving edit callbacks bound to the current content string.
@@ -44,7 +44,7 @@ export default function ConfigForm({ file, content, onContentChange, issues, loc
               <TicketTypesEditor model={model} edit={edit} append={append} remove={remove} issues={issues} />
             )}
             {section.fields.length > 0 && (
-              <FormRenderer model={model} fields={section.fields} onEdit={edit} issues={issues} localeOptions={localeOptions} />
+              <FormRenderer model={model} fields={section.fields} onEdit={edit} issues={issues} localeOptions={localeOptions} onAssetStored={onAssetStored} />
             )}
           </div>
         </details>

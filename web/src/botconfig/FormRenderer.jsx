@@ -3,6 +3,7 @@
 
 import { getAtPath } from './jsoncEdit.js';
 import { Field, Toggle, Select, TextField, TextArea, NumberInput, ColorPicker, EmojiInput, TagInput } from './inputs.jsx';
+import PanelAssetField from './PanelAssetField.jsx';
 
 const samePath = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
 
@@ -12,7 +13,7 @@ export function issueFor(issues, path) {
   return hit?.message;
 }
 
-export default function FormRenderer({ model, fields, onEdit, issues, localeOptions }) {
+export default function FormRenderer({ model, fields, onEdit, issues, localeOptions, onAssetStored }) {
   return (
     <div className="flex flex-col gap-4">
       {fields.map(f => {
@@ -25,6 +26,14 @@ export default function FormRenderer({ model, fields, onEdit, issues, localeOpti
         }
 
         const str = typeof raw === 'string' ? raw : raw == null ? '' : String(raw);
+
+        // Panel logo/banner: the file name plus upload, preview and reset.
+        if (f.kind === 'panelAsset') {
+          return (
+            <PanelAssetField key={key} field={f} value={str} error={error}
+              onChange={v => onEdit(f.path, v)} onStored={onAssetStored} />
+          );
+        }
         // Some selects (bot/transcript language) list the locale files that
         // actually exist instead of a hardcoded set.
         const selectOptions = f.dynamicOptions === 'locales' && localeOptions?.length
