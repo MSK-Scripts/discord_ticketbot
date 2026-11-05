@@ -68,6 +68,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Docker keeps uploaded images and changed texts.** `docker-compose.yml` mounts
+  `./assets` and `./locales-custom` (create both and `chown -R 1000:1000` them like
+  `config` and `data`). The image keeps a copy of the default images and the
+  entrypoint refreshes `assets/default/` on every start, so the mount does not hide
+  them; files of your own in `assets/` are never touched.
+- Shell scripts are always checked out with LF (`.gitattributes`). On Windows
+  with `core.autocrlf` the entrypoint got CRLF and a locally built image failed
+  with `docker-entrypoint.sh: not found`.
+
 - **Security: a panel image path can no longer leave `assets/`.** A value such
   as `"../.env"` in `panel.logo.file` or `panel.banner.file` made the panel post
   that file, the bot token included, to Discord as an attachment. Anyone with

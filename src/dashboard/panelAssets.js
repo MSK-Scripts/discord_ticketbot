@@ -50,7 +50,7 @@ const MAX_PREVIEW_BYTES = 25 * 1024 * 1024;
  */
 // Values from outside (a ClamAV signature, a user id) are logged without line
 // breaks or control characters, so they cannot forge extra log lines.
-const logSafe = (v) => String(v ?? '').replace(/[\u0000-\u001f\u007f]+/g, ' ').slice(0, 200);
+const logSafe = (v) => String(v ?? '').replace(/\r|\n/g, ' ').replace(/[\u0000-\u001f\u007f]+/g, ' ').slice(0, 200);
 
 function slotSpec(slot) {
   switch (slot) {
@@ -320,7 +320,7 @@ function registerPanelAssetRoutes(api, { requirePermission, audit, configFile, a
           verdict = await scanner(input);
         } catch (err) {
           const reason = err instanceof ClamavUnavailableError ? err.message : 'ClamAV failed.';
-          logger.error(`[Dashboard] Upload refused, virus scan failed: ${reason}`);
+          logger.error(`[Dashboard] Upload refused, virus scan failed: ${logSafe(reason)}`);
           return res.status(503).json({ error: 'The virus scanner is not available, so the image was not accepted. Try again later.' });
         }
         if (!verdict.clean) {

@@ -37,6 +37,11 @@ services:
       - ./data:/app/data
       # config.jsonc and snippets.jsonc, so the config survives an image update.
       - ./config:/app/config
+      # Panel images uploaded in the dashboard (logo, banner). The shipped
+      # defaults are copied into assets/default/ on every start.
+      - ./assets:/app/assets
+      # Locale texts changed in the dashboard (only the changed values).
+      - ./locales-custom:/app/locales/custom
 
     # For the web dashboard: uncomment both lines and set DASHBOARD_ENABLED=true
     # plus DASHBOARD_HOST=0.0.0.0 in .env. Without the host change the dashboard
