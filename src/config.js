@@ -264,6 +264,7 @@ function inspectConfig(config) {
       checkId(t?.categoryId, `ticketTypes[${i}].categoryId`);
       checkIdList(t?.staffRoles, `ticketTypes[${i}].staffRoles`);
       checkIdList(t?.cantAccess, `ticketTypes[${i}].cantAccess`);
+      checkIdList(t?.requiredRoles, `ticketTypes[${i}].requiredRoles`);
     });
   }
 
@@ -280,6 +281,9 @@ function inspectConfig(config) {
       if (!t.categoryId) pending.push(`ticketTypes[${i}] is missing "categoryId".`);
       if (t.staffRoles !== undefined && !Array.isArray(t.staffRoles)) {
         fatal.push(`ticketTypes[${i}].staffRoles must be an array.`);
+      }
+      if (t.requiredRoles !== undefined && !Array.isArray(t.requiredRoles)) {
+        fatal.push(`ticketTypes[${i}].requiredRoles must be an array.`);
       }
     });
   }

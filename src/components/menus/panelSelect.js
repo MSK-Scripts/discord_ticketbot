@@ -11,9 +11,9 @@
 const {
   ActionRowBuilder,
   StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
   MessageFlags,
 } = require('discord.js');
+const { typeOption } = require('../../utils/typeOption');
 const { openTicket, getOpenRefusal, refusalText } = require('../../utils/ticketActions');
 const { buildQuestionsModal } = require('../buttons/openTicket');
 
@@ -99,13 +99,7 @@ async function resetMenuViaWebhook(interaction, client) {
  */
 function buildFreshPanelRow(interaction, client) {
   const types   = client.config.ticketTypes;
-  const options = types.map(t =>
-    new StringSelectMenuOptionBuilder()
-      .setLabel(t.name)
-      .setDescription(t.description?.substring(0, 100) ?? '')
-      .setValue(t.codeName)
-      .setEmoji(t.emoji || '🎫')
-  );
+  const options = types.map(t => typeOption(t));
 
   return new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()

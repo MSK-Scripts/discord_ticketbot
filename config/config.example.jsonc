@@ -40,6 +40,7 @@
       "ticketNameOption": "",                   // Template: USERNAME, USERID, TICKETCOUNT or "" for default
       "customDescription": "A team member will get back to you as soon as possible!",
       "cantAccess": [],                         // Role IDs that cannot open this ticket type 
+      "requiredRoles": [],                      // Role IDs allowed to open this type, at least one is needed. [] = everyone (e.g. ["SPONSOR_ROLE_ID"] for sponsor-only support)
       "staffRoles": [],                         // Type-specific staff roles (overrides global rolesWhoHaveAccessToTheTickets)
       "askQuestions": true,                     // If the bot should ask the reason of the ticket
       "questions": [
@@ -68,6 +69,7 @@
       "ticketNameOption": "",
       "customDescription": "",
       "cantAccess": [],
+      "requiredRoles": [],
       "staffRoles": [],
       "askQuestions": false,
       "questions": []

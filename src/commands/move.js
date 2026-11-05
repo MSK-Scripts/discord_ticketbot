@@ -1,7 +1,7 @@
 const {
-  SlashCommandBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder,
-  ActionRowBuilder, MessageFlags,
+  SlashCommandBuilder, StringSelectMenuBuilder, ActionRowBuilder, MessageFlags,
 } = require('discord.js');
+const { typeOption } = require('../utils/typeOption');
 const { getTicketByChannel } = require('../database');
 const { performMove } = require('../utils/ticketActions');
 
@@ -30,13 +30,7 @@ module.exports = {
       });
     }
 
-    const options = types.map(t =>
-      new StringSelectMenuOptionBuilder()
-        .setLabel(t.name)
-        .setDescription(t.description?.substring(0, 100) ?? '')
-        .setValue(t.codeName)
-        .setEmoji(t.emoji || '🎫')
-    );
+    const options = types.map(t => typeOption(t));
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId('tb_moveSelect')

@@ -189,6 +189,27 @@ function buildClosedButtons(client) {
 
 // ─── Open ─────────────────────────────────────────────────────────────────────
 
+/** True when `member` holds at least one of the role ids in `ids`. */
+function hasAnyRole(member, ids) {
+  return (ids ?? []).some(roleId => member.roles.cache.has(roleId));
+}
+
+/**
+ * The per-type part of getOpenRefusal: `cantAccess` (block list) first, then
+ * `requiredRoles` (allow list, empty = everyone). No bypass for staff or
+ * admins. Synchronous, so the panel button can use it to filter the type list.
+ *
+ * @returns {{key: string}|null}
+ */
+function getTypeAccessRefusal(member, ticketType) {
+  if (hasAnyRole(member, ticketType.cantAccess)) return { key: 'messages.noAccessToType' };
+
+  const required = ticketType.requiredRoles ?? [];
+  if (required.length > 0 && !hasAnyRole(member, required)) return { key: 'messages.requiredRoleMissing' };
+
+  return null;
+}
+
 /**
  * Why `member` may not open a ticket (of `ticketType`, when given), or null if
  * they may. The single source of truth for every open path: the panel button,
@@ -202,13 +223,15 @@ function buildClosedButtons(client) {
 async function getOpenRefusal(client, member, ticketType = null) {
   const cfg     = client.config;
   const guildId = member.guild.id;
-  const hasAnyRole = (ids) => (ids ?? []).some(roleId => member.roles.cache.has(roleId));
 
   if (await db.isBlacklisted(member.id, guildId)) return { key: 'messages.blacklisted' };
 
-  if (hasAnyRole(cfg.rolesWhoCanNotCreateTickets)) return { key: 'messages.cannotCreateTickets' };
+  if (hasAnyRole(member, cfg.rolesWhoCanNotCreateTickets)) return { key: 'messages.cannotCreateTickets' };
 
-  if (ticketType && hasAnyRole(ticketType.cantAccess)) return { key: 'messages.noAccessToType' };
+  if (ticketType) {
+    const typeRefusal = getTypeAccessRefusal(member, ticketType);
+    if (typeRefusal) return typeRefusal;
+  }
 
   if (cfg.maxTicketOpened > 0) {
     const open = await db.getOpenTicketsByUser(member.id, guildId);
@@ -1156,6 +1179,7 @@ module.exports = {
   resolveAttachmentBudget,
   openTicket,
   getOpenRefusal,
+  getTypeAccessRefusal,
   refusalText,
   performClose,
   performReopen,

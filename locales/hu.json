@@ -205,6 +205,7 @@
     "channelNotFound": "❌ A csatorna nem található.",
     "unknownTicketType": "❌ Ismeretlen ticket típus.",
     "noAccessToType": "❌ Nincs hozzáférésed ehhez a ticket típushoz.",
+    "requiredRoleMissing": "❌ Ez a kategória csak egy bizonyos ranggal rendelkező tagok számára érhető el.",
     "ticketCreateFailed": "❌ Nem sikerült létrehozni a ticketet. Kérjük, próbáld újra.",
     "renameEmpty": "❌ A név nem tartalmaz érvényes karaktereket (csak betűk, számok és kötőjelek engedélyezettek).",
     "notClaimed": "❌ Ez a ticket nincs senki által átvéve.",

@@ -1,7 +1,8 @@
 const {
   ActionRowBuilder, StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder, MessageFlags,
+  MessageFlags,
 } = require('discord.js');
+const { typeOption } = require('../../utils/typeOption');
 const { getTicketByChannel } = require('../../database');
 
 module.exports = {
@@ -28,13 +29,7 @@ module.exports = {
       });
     }
 
-    const options = types.map(t =>
-      new StringSelectMenuOptionBuilder()
-        .setLabel(t.name)
-        .setDescription(t.description?.substring(0, 100) ?? '')
-        .setValue(t.codeName)
-        .setEmoji(t.emoji || '🎫')
-    );
+    const options = types.map(t => typeOption(t));
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId('tb_moveSelect')

@@ -205,6 +205,7 @@
     "channelNotFound": "❌ Kanal nicht gefunden.",
     "unknownTicketType": "❌ Unbekannter Ticket-Typ.",
     "noAccessToType": "❌ Du hast keinen Zugriff auf diesen Ticket-Typ.",
+    "requiredRoleMissing": "❌ Für diese Kategorie brauchst du eine bestimmte Rolle.",
     "ticketCreateFailed": "❌ Ticket konnte nicht erstellt werden. Bitte versuche es erneut.",
     "renameEmpty": "❌ Der Name enthält keine gültigen Zeichen (nur Buchstaben, Zahlen und Bindestriche sind erlaubt).",
     "notClaimed": "❌ Dieses Ticket ist nicht beansprucht.",
