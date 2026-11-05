@@ -212,7 +212,11 @@
     "modeForm": "Formulaire",
     "modeFile": "Fichier",
     "files": "Fichiers",
-    "viewMode": "Affichage"
+    "viewMode": "Affichage",
+    "localeLayerNotice": "Vos modifications de ce fichier sont enregistrées séparément des textes fournis. Les mises à jour les conservent, et les nouveaux textes d’une mise à jour apparaissent quand même.",
+    "localeReset": "Rétablir par défaut",
+    "localeResetConfirm": "Supprimer toutes vos modifications de ce fichier et revenir aux textes fournis ?",
+    "localeResetDone": "Les textes fournis sont de nouveau utilisés. Redémarrez le bot pour que le changement prenne effet."
   },
 
   "access": {

@@ -50,6 +50,10 @@ export default function Config({ me }) {
   const [viewMode, setViewMode] = useState('form');
   const [pendingSwitch, setPendingSwitch] = useState(null);
   const [pendingMode, setPendingMode] = useState(null);
+  // Locale files: whether a customer layer (locales/custom/<name>) exists, and the
+  // inline confirm for dropping it.
+  const [customized, setCustomized] = useState(false);
+  const [pendingReset, setPendingReset] = useState(false);
   const t = useT();
 
   const canEdit = me.isOwner || me.permissions.includes('config.edit');
@@ -89,10 +93,10 @@ export default function Config({ me }) {
   }, []);
 
   useEffect(() => {
-    setLoading(true); setError(null); setNotice(null);
+    setLoading(true); setError(null); setNotice(null); setPendingReset(false);
     const ln = localeName(file);
     const req = ln ? api.locale(ln) : api.config(file);
-    req.then(({ content }) => { setContent(content); setSaved(content); })
+    req.then((data) => { setContent(data.content); setSaved(data.content); setCustomized(data.customized === true); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, [file]);
@@ -126,11 +130,30 @@ export default function Config({ me }) {
     setBusy(true); setError(null); setNotice(null);
     try {
       const ln = localeName(file);
-      await (ln ? api.saveLocale(ln, content) : api.saveConfig(file, content));
+      const result = await (ln ? api.saveLocale(ln, content) : api.saveConfig(file, content));
+      if (ln) setCustomized(result?.customized === true);
       setSaved(content);
       setNotice(t('config.saved'));
     } catch (e) {
       setError(e.detail ? `${e.message}\n${e.detail}` : e.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Drops the customer layer of the open locale file, then reloads it so the
+  // editor shows the shipped texts.
+  const resetLocale = async () => {
+    const ln = localeName(file);
+    if (!ln) return;
+    setPendingReset(false); setBusy(true); setError(null); setNotice(null);
+    try {
+      await api.resetLocale(ln);
+      const data = await api.locale(ln);
+      setContent(data.content); setSaved(data.content); setCustomized(data.customized === true);
+      setNotice(t('config.localeResetDone'));
+    } catch (e) {
+      setError(e.message);
     } finally {
       setBusy(false);
     }
@@ -228,6 +251,22 @@ export default function Config({ me }) {
 
       {current.kind === 'env' && (
         <Note className="mb-4"><p>{t('config.envNotice')}</p></Note>
+      )}
+
+      {current.kind === 'locale' && (
+        <Note tone={pendingReset ? 'warning' : 'info'} className="mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p>{pendingReset ? t('config.localeResetConfirm') : t('config.localeLayerNotice')}</p>
+            {canEdit && customized && (pendingReset ? (
+              <span className="flex flex-wrap gap-2">
+                <Button size="sm" variant="danger" disabled={busy} onClick={resetLocale}>{t('config.localeReset')}</Button>
+                <Button size="sm" variant="outline" onClick={() => setPendingReset(false)}>{t('common.cancel')}</Button>
+              </span>
+            ) : (
+              <Button size="sm" variant="outline" disabled={busy || dirty} onClick={() => setPendingReset(true)}>{t('config.localeReset')}</Button>
+            ))}
+          </div>
+        </Note>
       )}
 
       <div className={cn('grid items-start gap-[var(--app-gutter)]', current.form && '@5xl:grid-cols-[minmax(0,1fr)_clamp(17rem,24cqi,24rem)]')}>

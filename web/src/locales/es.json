@@ -212,7 +212,11 @@
     "modeForm": "Formulario",
     "modeFile": "Archivo",
     "files": "Archivos",
-    "viewMode": "Vista"
+    "viewMode": "Vista",
+    "localeLayerNotice": "Tus cambios en este archivo se guardan aparte de los textos incluidos. Las actualizaciones los conservan y los textos nuevos de una actualización siguen apareciendo.",
+    "localeReset": "Restablecer valores predeterminados",
+    "localeResetConfirm": "¿Eliminar todos tus cambios en este archivo y volver a los textos incluidos?",
+    "localeResetDone": "Se usan de nuevo los textos incluidos. Reinicia el Bot para que el cambio surta efecto."
   },
 
   "access": {

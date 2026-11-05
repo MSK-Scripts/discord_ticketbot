@@ -11,6 +11,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Own texts live in `locales/custom/`.** Changes to the bot's texts are kept
+  in `locales/custom/<lang>.json` (ignored by git), which holds only the texts
+  that differ from the shipped `locales/<lang>.json`. On start the bot lays
+  that file over the shipped one, so the customer's texts win and new texts
+  from an update still arrive. A broken custom file only logs a warning. The
+  dashboard's locale editor still shows the whole file, but saves only the
+  difference and never writes the shipped file again. A new **Reset to
+  default** button (`DELETE /api/locales/:name`, permission `config.edit`,
+  audited as `locale.reset`) drops the custom texts of a file.
+- **`npm run update`** runs the same update routine as the dashboard's Update
+  button, without the dashboard, for self-hosters and for updating many
+  installations in a loop. It does not restart the bot.
+
+### Changed
+
+- **Updating no longer fails because of local changes to the lockfile, the
+  texts or the logo.** The update routine (dashboard button and
+  `npm run update`) resets `package-lock.json` before and after
+  `npm install`, moves edits made directly in `locales/<lang>.json` into
+  `locales/custom/` once (the edited file is kept as
+  `locales/<lang>.json.pre-custom-layer`), sets a replaced `assets/logo.png`
+  aside and puts it back after the pull. It pulls with `git pull --ff-only`
+  and puts set-aside files back when the pull fails. This migration runs
+  automatically, nothing needs to be done by hand.
+- **The default panel logo lives in `assets/default/logo.png`.** Panel images
+  are looked up in `assets/` first and in `assets/default/` second, so
+  `panel.logo.file: "logo.png"` keeps working with or without an own logo.
+  Images added to `assets/` are ignored by git. `assets/logo.png` is still
+  shipped in this version and will be removed from the repository in a later
+  one; an own `assets/logo.png` keeps working either way.
+- After updating to this version, restart the dashboard service once (not only
+  the bot), so the web server loads the new update routine and locale routes.
+
 ### Fixed
 
 - The startup log printed `API key valid → business` in lower case, because

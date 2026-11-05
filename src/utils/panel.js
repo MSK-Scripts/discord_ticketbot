@@ -10,6 +10,26 @@ const path = require('path');
 const fs   = require('fs');
 const { panelEmbed } = require('./embeds');
 
+const ASSETS_DIR = path.resolve(__dirname, '../../assets');
+
+/**
+ * Resolves a panel image named in the config. The customer's own file in
+ * assets/<file> wins; without one, the shipped default in assets/default/<file>
+ * is used (that is where the MSK logo lives, so `panel.logo.file: "logo.png"`
+ * works out of the box). Customer images in assets/ are gitignored, so replacing
+ * the logo never blocks an update. Returns null when neither file exists.
+ * @param {string} file
+ * @param {string} [assetsDir]
+ * @returns {string|null}
+ */
+function resolvePanelAsset(file, assetsDir = ASSETS_DIR) {
+  if (typeof file !== 'string' || file === '') return null;
+  for (const candidate of [path.resolve(assetsDir, file), path.resolve(assetsDir, 'default', file)]) {
+    if (fs.statSync(candidate, { throwIfNoEntry: false })?.isFile()) return candidate;
+  }
+  return null;
+}
+
 /**
  * Builds the full ticket-panel payload (embed + interaction row + file attachments).
  *
@@ -27,24 +47,24 @@ function buildTicketPanel(client) {
   // ── Optional logo image ──────────────────────────────────────────────────
   const logoCfg = client.config.panel?.logo;
   if (logoCfg?.enabled && logoCfg?.file) {
-    const logoPath = path.resolve(__dirname, '../../assets', logoCfg.file);
-    if (fs.existsSync(logoPath)) {
+    const logoPath = resolvePanelAsset(logoCfg.file);
+    if (logoPath) {
       files.push(new AttachmentBuilder(logoPath, { name: logoCfg.file }));
       embed.setThumbnail(`attachment://${logoCfg.file}`);
     } else {
-      client.logger.warn(`[Panel] Logo file not found: ${logoPath}`);
+      client.logger.warn(`[Panel] Logo file not found: ${path.resolve(ASSETS_DIR, logoCfg.file)}`);
     }
   }
 
   // ── Optional banner image ────────────────────────────────────────────────
   const bannerCfg = client.config.panel?.banner;
   if (bannerCfg?.enabled && bannerCfg?.file) {
-    const bannerPath = path.resolve(__dirname, '../../assets', bannerCfg.file);
-    if (fs.existsSync(bannerPath)) {
+    const bannerPath = resolvePanelAsset(bannerCfg.file);
+    if (bannerPath) {
       files.push(new AttachmentBuilder(bannerPath, { name: bannerCfg.file }));
       embed.setImage(`attachment://${bannerCfg.file}`);
     } else {
-      client.logger.warn(`[Panel] Banner file not found: ${bannerPath}`);
+      client.logger.warn(`[Panel] Banner file not found: ${path.resolve(ASSETS_DIR, bannerCfg.file)}`);
     }
   }
 
@@ -80,4 +100,4 @@ function buildTicketPanel(client) {
   return { embeds: [embed], components: [row], files };
 }
 
-module.exports = { buildTicketPanel };
+module.exports = { buildTicketPanel, resolvePanelAsset };

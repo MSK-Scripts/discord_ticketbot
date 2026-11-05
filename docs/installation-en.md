@@ -92,8 +92,12 @@ Check the Node path with `which node` and adjust `ExecStart` in the unit if it i
 The bot checks for new releases on start and posts them to the log channel (`updateNotification` in the config).
 
 ```bash
-git pull && npm install
+npm run update
 sudo systemctl restart ticketbot
 ```
+
+`npm run update` is the same routine as the **Update** button in the dashboard. Before it pulls, it puts back the shipped `package-lock.json` (npm rewrites it on every install), moves texts you changed directly in `locales/<lang>.json` into `locales/custom/` and sets a replaced `assets/logo.png` aside. Then it runs `git pull --ff-only` and `npm install --omit=dev` and puts your logo back. Your own texts and images are kept, and they no longer make the update fail. The command does not restart the bot, so restart it the way you run it (systemd, PM2, the dashboard). If you run the dashboard, restart its service rather than only the bot, so the web server loads the new version too.
+
+Coming from 2.22.0 or older, where `npm run update` does not exist yet, update once by hand: `git checkout -- package-lock.json && git pull && npm install --omit=dev`.
 
 With Docker: `docker compose pull && docker compose up -d`. Read the [CHANGELOG](../CHANGELOG.md) for the versions you skip, especially entries marked **Breaking**. Database migrations run automatically on the next start.

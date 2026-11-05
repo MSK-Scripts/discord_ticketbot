@@ -14,7 +14,7 @@ Ein Syntaxfehler wird mit Zeile, Spalte und einem Zeiger auf die Stelle gemeldet
 | `transcriptDesign` | `modern` (Standard) oder `classic` |
 | `transcriptLang` | Sprache des Transkripts, dieselben Codes wie `lang`, Rückfall auf Englisch |
 | `openTicketChannelId` | Kanal, in den `/setup` das Panel postet |
-| `panel` | `interactionType` (`BUTTON` oder `SELECT_MENU`), `autoUpdateOnStart`, `logo`, `banner` (Dateien aus `assets/`) |
+| `panel` | `interactionType` (`BUTTON` oder `SELECT_MENU`), `autoUpdateOnStart`, `logo`, `banner` (Dateien aus `assets/`, siehe [Panel-Bilder](#panel-bilder)) |
 | `ticketTypes` | Bis zu 25 Ticket-Typen, siehe unten |
 | `ticketNameOption` | Vorlage für den Kanalnamen: `USERNAME`, `USERID`, `TICKETCOUNT` |
 | `claimOption` | `claimButton`, `nameWhenClaimed`, `categoryWhenClaimed` |
@@ -117,6 +117,22 @@ Platzhalter: `{user}`, `{staff}`, `{type}`, `{priority}`. Befehle: `/snippet sen
 ## Geheimnisse und Umgebung
 
 Tokens, der MSK-API-Key, Datenbank-Zugangsdaten und Dashboard-Secrets gehören in die `.env`, nie in die `config.jsonc`. Siehe [Installation](installation-de.md) und [Dashboard](dashboard-de.md).
+
+## Panel-Bilder
+
+`panel.logo.file` und `panel.banner.file` nennen eine Datei in `assets/`. Dein eigenes Logo oder Banner legst du dort ab, etwa als `assets/logo.png` oder `assets/banner.png`. Liegt die Datei nicht in `assets/`, sucht der Bot in `assets/default/`. Dort liegt das MSK-Logo, `"file": "logo.png"` zeigt also das MSK-Logo, bis du ein eigenes ablegst. Bilder, die du in `assets/` ablegst, ignoriert git, und die Update-Routine legt ein ersetztes `assets/logo.png` beiseite und stellt es danach zurück. Deine Bilder blockieren also kein Update.
+
+## Texte anpassen
+
+Einen Text des Bots änderst du im Dashboard (Konfiguration, Reiter der Locale-Datei) oder trägst ihn selbst in `locales/custom/<lang>.json` ein. Diese Datei enthält nur die Texte, die du änderst, im selben Aufbau wie `locales/<lang>.json`:
+
+```json
+{ "buttons": { "openTicket": "Support kontaktieren" } }
+```
+
+Beim Start liest der Bot `locales/<lang>.json` und legt deine Datei darüber. Deine Texte gewinnen, alles andere kommt aus der mitgelieferten Datei, neue Texte aus einem Update erscheinen also von selbst. `locales/<lang>.json` selbst bitte nicht bearbeiten, ein Update ersetzt sie. `locales/custom/` ignoriert git. Eine fehlerhafte eigene Datei erzeugt nur eine Warnung im Log, der Bot nimmt dann die mitgelieferten Texte.
+
+Texte, die mit einer älteren Version in `locales/<lang>.json` geändert wurden, wandern beim nächsten `npm run update` oder Update aus dem Dashboard von selbst nach `locales/custom/`. Die bearbeitete Datei bleibt als `locales/<lang>.json.pre-custom-layer` erhalten.
 
 ## Eine Sprache hinzufügen
 

@@ -7,6 +7,7 @@ const { loadConfig, inspectConfig } = require('./config');
 const { checkApiKey }     = require('./utils/mskApi');
 const { checkVersion }    = require('./utils/versionCheck');
 const logger = require('./utils/logger');
+const { loadLocale } = require('./utils/locales');
 
 // ── Startup Banner ────────────────────────────────────────────────────────────
 
@@ -166,13 +167,14 @@ class TicketClient extends Client {
     // this a half-configured bot is indistinguishable from a finished one.
     process.send?.({ type: 'config-state', pending });
 
-    // Load locale — __dirname is src/, so ../locales/ is correct
-    const localePath = `../locales/${this.config.lang}.json`;
+    // Load locale: the shipped locales/<lang>.json with the customer layer
+    // (locales/custom/<lang>.json) merged on top. A broken custom file only logs
+    // a warning; a missing shipped file falls back to English as before.
     try {
-      this.locale = require(localePath);
+      this.locale = loadLocale(this.config.lang);
     } catch {
       this.logger.warn(`Locale "${this.config.lang}" not found, falling back to "en".`);
-      this.locale = require('../locales/en.json');
+      this.locale = loadLocale('en');
     }
 
     // Configure logger visibility

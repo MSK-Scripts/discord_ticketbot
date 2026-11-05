@@ -17,8 +17,8 @@ nothing about your bot changes.
 | **My tickets** | Every member sees the tickets they opened and can reply to the open ones. Their reply is posted in the Discord channel under their own name. Closed tickets offer a transcript download and, on premium, an "Open transcript" link. |
 | **Tickets** | Full list with filters, ticket detail with the live conversation, claim / close / reopen / move / lock / priority. |
 | **Statistics** | Totals, average rating, average handling time, and a team ranking by tickets closed. |
-| **Configuration** | Edit `config.jsonc`, `snippets.jsonc`, `.env` and the locale files in either a structured **form** view or a raw **file** view (with line numbers and syntax highlighting). Form edits preserve the `//` comments, and a side panel resolves Discord role/channel/category **names** so you never have to hunt for raw IDs. |
-| **Bot control** | Start, stop, restart and update the bot, plus a live console. |
+| **Configuration** | Edit `config.jsonc`, `snippets.jsonc`, `.env` and the locale files in either a structured **form** view or a raw **file** view (with line numbers and syntax highlighting). Form edits preserve the `//` comments, and a side panel resolves Discord role/channel/category **names** so you never have to hunt for raw IDs. Changes to a locale file are stored in `locales/custom/` as the difference to the shipped texts, so updates keep them; **Reset to default** removes them again (see [Changing texts](configuration-en.md#changing-texts)). |
+| **Bot control** | Start, stop, restart and update the bot, plus a live console. **Update** runs the same routine as `npm run update` (see [Updating](installation-en.md#updating)). |
 | **Permissions** | Decide which roles and users may use the dashboard, and what they may do. |
 | **Dashboard settings** | Accent colour and favicon, gated by their own view / edit permissions. The accent is fitted to the light and the dark theme. |
 | **Language** | Each user picks their own interface language from seven translations. |
@@ -283,6 +283,12 @@ answers 404. Restart the service once so the web server reloads:
 `sudo systemctl restart ticketbot` (or restart the NSSM / PM2 service you run
 `dashboard.js` under). Plain bot changes (commands, events, the database) do take
 effect through the Update button.
+
+**Update fails with "git pull failed"**
+The update only pulls as a fast-forward. Your own texts, images and the
+lockfile are handled for you, so this usually means a local commit or a change
+to another tracked file, such as code. Run `git status` in the bot folder, or
+run `npm run update` in a terminal to see the full output.
 
 **The dashboard refuses to start, saying the configuration is not safe**
 You bound the dashboard to a public interface without HTTPS. Either go back to

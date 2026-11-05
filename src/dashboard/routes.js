@@ -21,6 +21,7 @@ const settings = require('./settings');
 const { validateConfig, stripJsonComments } = require('../config');
 const { getGuildLookups, getChannelMessages, resolveUsers } = require('./discord');
 const { getTranscriptUrl } = require('../utils/mskApi');
+const localeStore = require('../utils/locales');
 const { PERMISSIONS, PERMISSION_LABELS, isPermission, isSubjectType, parsePermissions, checkSelfEdit } = require('./permissions');
 
 const ROOT = path.resolve(__dirname, '../..');
@@ -278,9 +279,13 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
       return res.status(403).json({ error: 'Only the server owner can access the .env file.' });
     }
 
-    const content = await fs.readFile(target, 'utf-8').catch(() => null);
-    if (content === null) return res.status(404).json({ error: 'File not found.' });
-    res.json({ content });
+    let result;
+    try {
+      result = localeStore.readLocaleForEditor(LOCALES_DIR, path.basename(target));
+    } catch {
+      return res.status(404).json({ error: 'File not found.' });
+    }
+    res.json(result);
   }));
 
   api.put('/config/:file', requirePermission('config.edit'), asyncRoute(async (req, res) => {
@@ -333,6 +338,12 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
   // hundreds of flat keys). The name is validated against a strict pattern and the
   // resolved path is checked to stay inside LOCALES_DIR, so ":name" can never
   // traverse out of the folder.
+  //
+  // The shipped files are tracked in git and are never written here: an edit is
+  // stored as a customer layer in locales/custom/<name> holding only the leaves
+  // that differ from the shipped file (utils/locales.js). That keeps `git pull`
+  // working after a customer changed a text. The editor still sees the full file
+  // (shipped + layer merged).
 
   const LOCALES_DIR = path.join(ROOT, 'locales');
   const LOCALE_NAME_RE = /^[a-z0-9_-]+\.json$/i;
@@ -349,6 +360,8 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
     const match = files.find(f => f === name && LOCALE_NAME_RE.test(f));
     return match ? path.join(LOCALES_DIR, match) : null;
   };
+  // Every helper below gets the matched DIRECTORY ENTRY (basename of the resolved
+  // path), so the custom path locales/custom/<entry> is built from readdir too.
 
   api.get('/locales', requirePermission(['config.view', 'config.edit']), asyncRoute(async (req, res) => {
     const files = await fs.readdir(LOCALES_DIR).catch(() => []);
@@ -359,9 +372,13 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
     if (!LOCALE_NAME_RE.test(req.params.name)) return res.status(400).json({ error: 'Invalid locale file name.' });
     const target = await resolveExistingLocale(req.params.name);
     if (!target) return res.status(404).json({ error: 'File not found.' });
-    const content = await fs.readFile(target, 'utf-8').catch(() => null);
-    if (content === null) return res.status(404).json({ error: 'File not found.' });
-    res.json({ content });
+    let result;
+    try {
+      result = localeStore.readLocaleForEditor(LOCALES_DIR, path.basename(target));
+    } catch {
+      return res.status(404).json({ error: 'File not found.' });
+    }
+    res.json(result);
   }));
 
   api.put('/locales/:name', requirePermission('config.edit'), asyncRoute(async (req, res) => {
@@ -375,16 +392,33 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
     const content = req.body?.content;
     if (typeof content !== 'string') return res.status(400).json({ error: 'Invalid body.' });
     if (content.length > 1_000_000) return res.status(413).json({ error: 'File exceeds the 1 MB limit.' });
+    let parsed;
     try {
-      JSON.parse(content); // locale files are plain JSON, no comments
+      parsed = JSON.parse(content); // locale files are plain JSON, no comments
     } catch (err) {
       return res.status(400).json({ error: `Syntax error: ${err.message}` });
     }
+    if (!localeStore.isPlainObject(parsed)) {
+      return res.status(400).json({ error: 'A locale file must be a JSON object.' });
+    }
 
-    await fs.copyFile(target, `${target}.bak`).catch(() => {});
-    await fs.writeFile(target, content, 'utf-8');
+    // Writes only the difference to locales/custom/<name> (with a .bak of the
+    // previous custom file); no difference removes the custom file again.
+    const { customized } = localeStore.saveLocaleEdit(LOCALES_DIR, path.basename(target), parsed);
     audit(req, 'locale.edit', req.params.name);
-    res.json({ ok: true });
+    res.json({ ok: true, customized });
+  }));
+
+  // Back to the shipped texts: drops the customer layer of one locale file. Same
+  // permission as editing, since it is an edit (the removed layer is kept as .bak).
+  api.delete('/locales/:name', requirePermission('config.edit'), asyncRoute(async (req, res) => {
+    if (!LOCALE_NAME_RE.test(req.params.name)) return res.status(400).json({ error: 'Invalid locale file name.' });
+    const target = await resolveExistingLocale(req.params.name);
+    if (!target) return res.status(404).json({ error: 'File not found.' });
+
+    const { removed } = localeStore.resetLocale(LOCALES_DIR, path.basename(target));
+    audit(req, 'locale.reset', req.params.name);
+    res.json({ ok: true, removed });
   }));
 
   // ── Dashboard appearance settings ──────────────────────────────────────────
