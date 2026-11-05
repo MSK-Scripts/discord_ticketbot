@@ -48,6 +48,10 @@ const MAX_PREVIEW_BYTES = 25 * 1024 * 1024;
  * it never becomes part of a path or a config key.
  * @param {string} slot
  */
+// Values from outside (a ClamAV signature, a user id) are logged without line
+// breaks or control characters, so they cannot forge extra log lines.
+const logSafe = (v) => String(v ?? '').replace(/[\u0000-\u001f\u007f]+/g, ' ').slice(0, 200);
+
 function slotSpec(slot) {
   switch (slot) {
     case 'logo':
@@ -257,10 +261,17 @@ function registerPanelAssetRoutes(api, { requirePermission, audit, configFile, a
     const resolved = resolvePanelAsset(await configuredFile(configFile, spec), assetsDir);
     if (!resolved) return res.status(404).json({ error: 'No image found.' });
 
-    const stat = await fs.stat(resolved).catch(() => null);
-    if (!stat || stat.size > MAX_PREVIEW_BYTES) return res.status(404).json({ error: 'No image found.' });
-
-    const buf = await fs.readFile(resolved);
+    // One handle for the size check and the read, so the file cannot change in between.
+    const handle = await fs.open(resolved, 'r').catch(() => null);
+    if (!handle) return res.status(404).json({ error: 'No image found.' });
+    let buf;
+    try {
+      const stat = await handle.stat();
+      if (!stat.isFile() || stat.size > MAX_PREVIEW_BYTES) return res.status(404).json({ error: 'No image found.' });
+      buf = await handle.readFile();
+    } finally {
+      await handle.close();
+    }
     const type = detectImageType(buf);
     const mime = PREVIEW_TYPES[type];
     if (!mime) return res.status(415).json({ error: 'This file cannot be previewed.' });
@@ -281,10 +292,13 @@ function registerPanelAssetRoutes(api, { requirePermission, audit, configFile, a
       const spec = slotOr404(req, res);
       if (!spec) return;
 
-      if (!Buffer.isBuffer(req.body)) {
+      // express.raw() gives a Buffer; anything else (an array or a parsed object
+      // from another body parser) is refused before any length or byte access.
+      const body = req.body;
+      if (Array.isArray(body) || typeof body === 'string' || !Buffer.isBuffer(body)) {
         return res.status(415).json({ error: 'Send the image as application/octet-stream.' });
       }
-      const input = req.body;
+      const input = Buffer.from(body);
       if (input.length === 0) return res.status(400).json({ error: 'Empty upload.' });
       if (input.length > limit.bytes) return res.status(413).json({ error: `The image is larger than ${limit.mb} MB.` });
 
@@ -311,7 +325,7 @@ function registerPanelAssetRoutes(api, { requirePermission, audit, configFile, a
         }
         if (!verdict.clean) {
           audit(req, 'panel.asset.infected', spec.slot, { signature: verdict.signature, type, bytes: input.length });
-          logger.warn(`[Dashboard] Upload refused, ClamAV found ${verdict.signature} (slot ${spec.slot}, user ${req.auth?.userId}).`);
+          logger.warn(`[Dashboard] Upload refused, ClamAV found ${logSafe(verdict.signature)} (slot ${spec.slot}, user ${logSafe(req.auth?.userId)}).`);
           return res.status(422).json({ error: `The virus scanner flagged this file (${verdict.signature}). It was not stored.` });
         }
       }
