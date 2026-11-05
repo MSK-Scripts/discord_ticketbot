@@ -25,6 +25,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`npm run update`** runs the same update routine as the dashboard's Update
   button, without the dashboard, for self-hosters and for updating many
   installations in a loop. It does not restart the bot.
+- **Upload the panel logo and banner in the dashboard.** Configuration, section
+  *Ticket Panel*, has an upload, a preview and **Reset to default** for each
+  image, so a hosted bot can change them without access to the server's files
+  (`POST`/`DELETE /api/panel-assets/:slot`, permission `config.edit`, audited
+  as `panel.asset.upload` and `panel.asset.reset`). PNG, JPEG, GIF, WebP and
+  SVG are accepted, the type is read from the content. Every image is decoded
+  and encoded again with sharp, which removes metadata (EXIF, GPS, XMP, ICC)
+  and anything appended to the file, scales the logo to at most 1024 px and
+  the banner to at most 2048 px, and turns SVG into PNG. Images over 30
+  megapixels are refused before decoding. The file is stored in `assets/`
+  under a generated name and `panel.<slot>.file` in `config.jsonc` is set to
+  it, comments kept; it takes effect after a restart of the bot.
+- **New `.env` keys for uploads.** `ASSET_UPLOAD_MAX_MB` (default 5, 1 to 10)
+  limits the upload size. `CLAMAV_SOCKET`, or `CLAMAV_HOST` and `CLAMAV_PORT`,
+  turn on a virus scan with clamd before an image is processed; a flagged file
+  is refused and audited as `panel.asset.infected`, and an unreachable scanner
+  refuses the upload. Without them uploads are not virus scanned, which the
+  dashboard logs once at start.
+- New production dependency **sharp** for the image conversion. It installs
+  from prebuilt binaries on Linux, Windows and macOS, no build tools needed.
 
 ### Changed
 
@@ -47,6 +67,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the bot), so the web server loads the new update routine and locale routes.
 
 ### Fixed
+
+- **Docker keeps uploaded images and changed texts.** `docker-compose.yml` mounts
+  `./assets` and `./locales-custom` (create both and `chown -R 1000:1000` them like
+  `config` and `data`). The image keeps a copy of the default images and the
+  entrypoint refreshes `assets/default/` on every start, so the mount does not hide
+  them; files of your own in `assets/` are never touched.
+- Shell scripts are always checked out with LF (`.gitattributes`). On Windows
+  with `core.autocrlf` the entrypoint got CRLF and a locally built image failed
+  with `docker-entrypoint.sh: not found`.
 
 - **Security: a panel image path can no longer leave `assets/`.** A value such
   as `"../.env"` in `panel.logo.file` or `panel.banner.file` made the panel post

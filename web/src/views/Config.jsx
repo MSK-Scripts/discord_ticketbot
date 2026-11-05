@@ -9,7 +9,7 @@ import { Copy, Check } from '@/components/icons.jsx';
 import ModeSwitch from '../botconfig/ModeSwitch.jsx';
 import ConfigForm from '../botconfig/ConfigForm.jsx';
 import EnvEditor from '../botconfig/EnvEditor.jsx';
-import { safeParse } from '../botconfig/jsoncEdit.js';
+import { safeParse, editValue } from '../botconfig/jsoncEdit.js';
 import { validateBotConfig } from '../botconfig/validateConfig.js';
 
 // .env is owner-only on the server (bot token + session secret), so non-owners
@@ -159,6 +159,15 @@ export default function Config({ me }) {
     }
   };
 
+  // A panel image upload/reset changes panel.<slot>.file on the server. Mirror it
+  // into the editor: into the saved baseline too when the server wrote the file,
+  // so it does not show up as an unsaved change, and only into the editor when
+  // the server could not patch it (then it is an unsaved edit to save by hand).
+  const onAssetStored = (path, value, configUpdated) => {
+    setContent(c => editValue(c, path, value));
+    if (configUpdated) setSaved(s => editValue(s, path, value));
+  };
+
   const copy = (id) => {
     navigator.clipboard?.writeText(id);
     setCopied(id);
@@ -283,7 +292,7 @@ export default function Config({ me }) {
           ) : current.kind === 'env' ? (
             <EnvEditor content={content} onChange={setContent} />
           ) : (
-            <ConfigForm file={current.id} content={content} onContentChange={setContent} issues={issues} localeOptions={localeOptions} />
+            <ConfigForm file={current.id} content={content} onContentChange={setContent} issues={issues} localeOptions={localeOptions} onAssetStored={onAssetStored} />
           )}
         </div>
 

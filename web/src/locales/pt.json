@@ -216,7 +216,21 @@
     "localeLayerNotice": "Suas alterações neste arquivo são salvas separadamente dos textos incluídos. As atualizações as mantêm, e os textos novos de uma atualização continuam aparecendo.",
     "localeReset": "Restaurar padrão",
     "localeResetConfirm": "Remover todas as suas alterações neste arquivo e voltar aos textos incluídos?",
-    "localeResetDone": "Os textos incluídos voltaram a valer. Reinicie o Bot para a mudança entrar em vigor."
+    "localeResetDone": "Os textos incluídos voltaram a valer. Reinicie o Bot para a mudança entrar em vigor.",
+    "panelAssetCurrent": "Imagem atual",
+    "panelAssetSavedOnly": "Conforme a configuração salva.",
+    "panelAssetNoPreview": "Sem pré-visualização",
+    "panelAssetAltLogo": "Logo atual do painel",
+    "panelAssetAltBanner": "Banner atual do painel",
+    "panelAssetChoose": "Enviar uma nova imagem",
+    "panelAssetHint": "PNG, JPEG, GIF, WebP ou SVG, até {mb} MB. A imagem é convertida e os seus metadados (localização, dados da câmera) são removidos. SVG vira PNG.",
+    "panelAssetScanned": "Um antivírus verifica os arquivos enviados.",
+    "panelAssetUpload": "Enviar",
+    "panelAssetUploading": "Enviando…",
+    "panelAssetTooLarge": "O arquivo é maior que {mb} MB.",
+    "panelAssetUploaded": "Imagem salva e definida em config.jsonc. Reinicie o Bot para o painel a usar.",
+    "panelAssetUploadedUnsaved": "Imagem salva. Salve a configuração e reinicie o Bot para o painel a usar.",
+    "panelAssetResetDone": "A imagem padrão voltou a valer. Reinicie o Bot para o painel a usar."
   },
 
   "access": {

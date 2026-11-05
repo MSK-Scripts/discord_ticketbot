@@ -216,7 +216,21 @@
     "localeLayerNotice": "Your changes to this file are saved separately from the shipped texts. Updates keep them, and new texts from an update still show up.",
     "localeReset": "Reset to default",
     "localeResetConfirm": "Remove all your changes to this file and go back to the shipped texts?",
-    "localeResetDone": "Back to the shipped texts. Restart the bot for the change to take effect."
+    "localeResetDone": "Back to the shipped texts. Restart the bot for the change to take effect.",
+    "panelAssetCurrent": "Current image",
+    "panelAssetSavedOnly": "As in the saved configuration.",
+    "panelAssetNoPreview": "No preview",
+    "panelAssetAltLogo": "Current panel logo",
+    "panelAssetAltBanner": "Current panel banner",
+    "panelAssetChoose": "Upload a new image",
+    "panelAssetHint": "PNG, JPEG, GIF, WebP or SVG, up to {mb} MB. The image is converted and its metadata (location, camera data) is removed. SVG becomes PNG.",
+    "panelAssetScanned": "Uploads are checked by a virus scanner.",
+    "panelAssetUpload": "Upload",
+    "panelAssetUploading": "Uploading…",
+    "panelAssetTooLarge": "The file is larger than {mb} MB.",
+    "panelAssetUploaded": "Image saved and set in config.jsonc. Restart the bot so the panel uses it.",
+    "panelAssetUploadedUnsaved": "Image saved. Save the configuration and restart the bot so the panel uses it.",
+    "panelAssetResetDone": "Back to the default image. Restart the bot so the panel uses it."
   },
 
   "access": {

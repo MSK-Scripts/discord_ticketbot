@@ -17,7 +17,7 @@ nothing about your bot changes.
 | **My tickets** | Every member sees the tickets they opened and can reply to the open ones. Their reply is posted in the Discord channel under their own name. Closed tickets offer a transcript download and, on premium, an "Open transcript" link. |
 | **Tickets** | Full list with filters, ticket detail with the live conversation, claim / close / reopen / move / lock / priority. |
 | **Statistics** | Totals, average rating, average handling time, and a team ranking by tickets closed. |
-| **Configuration** | Edit `config.jsonc`, `snippets.jsonc`, `.env` and the locale files in either a structured **form** view or a raw **file** view (with line numbers and syntax highlighting). Form edits preserve the `//` comments, and a side panel resolves Discord role/channel/category **names** so you never have to hunt for raw IDs. Changes to a locale file are stored in `locales/custom/` as the difference to the shipped texts, so updates keep them; **Reset to default** removes them again (see [Changing texts](configuration-en.md#changing-texts)). |
+| **Configuration** | Edit `config.jsonc`, `snippets.jsonc`, `.env` and the locale files in either a structured **form** view or a raw **file** view (with line numbers and syntax highlighting). Form edits preserve the `//` comments, and a side panel resolves Discord role/channel/category **names** so you never have to hunt for raw IDs. Changes to a locale file are stored in `locales/custom/` as the difference to the shipped texts, so updates keep them; **Reset to default** removes them again (see [Changing texts](configuration-en.md#changing-texts)). The panel logo and banner can be uploaded right there (see [Panel images](#panel-images)). |
 | **Bot control** | Start, stop, restart and update the bot, plus a live console. **Update** runs the same routine as `npm run update` (see [Updating](installation-en.md#updating)). |
 | **Permissions** | Decide which roles and users may use the dashboard, and what they may do. |
 | **Dashboard settings** | Accent colour and favicon, gated by their own view / edit permissions. The accent is fitted to the light and the dark theme. |
@@ -76,6 +76,62 @@ The settings page shows the accent in both themes side by side and says when a
 variant is used. The layout adapts from a 320 px phone to an ultrawide monitor,
 and the dashboard follows the system settings for reduced motion, more contrast
 and the Windows contrast themes.
+
+---
+
+## Panel images
+
+In **Configuration**, section *Ticket Panel*, the logo and the banner each have
+an upload, a preview of the current image and **Reset to default**. This is the
+way to change them on a hosted bot, where you have no access to the server's
+files. It needs the `config.edit` permission, and every upload and reset is in
+the audit log.
+
+Accepted are **PNG, JPEG, GIF, WebP and SVG**, up to **5 MB** per file (see
+`ASSET_UPLOAD_MAX_MB` below). The type is read from the file's content, not from
+its name. Every image is then converted:
+
+* It is decoded and saved again as a new file. Metadata such as the location,
+  camera data or comments does not survive, and neither does anything hidden
+  behind the image data.
+* The logo is scaled down to at most 1024 px, the banner to at most 2048 px.
+  Smaller images keep their size.
+* PNG stays PNG, JPEG stays JPEG, WebP stays WebP, an animated GIF stays
+  animated. A still GIF becomes PNG.
+* **SVG is always converted to PNG.** Discord cannot show SVG in the panel, and
+  an SVG file can contain scripts. SVGs with scripts, links to other files or
+  web addresses, or entity declarations are refused.
+* Images with very many pixels (more than 30 megapixels, for example a
+  "decompression bomb" that is tiny as a file and huge in memory) are refused
+  before they are decoded.
+
+The image is stored in `assets/` under a generated name such as
+`custom-logo-3f2a9c1e5b7d4a60.png`, and `panel.logo.file` or `panel.banner.file`
+in `config.jsonc` is set to that name, with all comments kept. The previously
+uploaded image of the same slot is deleted; images you put into `assets/`
+yourself and the shipped default are never touched. **Reset to default** sets
+the name back to `logo.png` or `banner.png` and deletes the uploaded file. Like
+any other config change, the panel uses the new image after the next restart of
+the bot.
+
+### Virus scan (optional)
+
+If [ClamAV](https://www.clamav.net/) runs on the server, the dashboard can have
+every upload scanned by `clamd` before it is processed. Set either
+`CLAMAV_SOCKET` (the path of clamd's local socket, on Debian usually
+`/var/run/clamav/clamd.ctl`) or `CLAMAV_HOST` and `CLAMAV_PORT`. The user the
+dashboard runs as must be allowed to use the socket.
+
+* A file clamd flags is refused and written to the audit log with the name of
+  the finding.
+* If ClamAV is configured but does not answer (stopped, wrong path, timeout),
+  uploads are **refused** until it answers again. A configured scanner never
+  lets a file through unscanned.
+* Without these variables the dashboard logs once at start that uploads are not
+  virus scanned. Images are still converted as described above.
+
+clamd's `StreamMaxLength` (25 MB by default) has to be larger than the upload
+limit.
 
 ---
 
@@ -231,6 +287,9 @@ reaches Discord.
 | `DASHBOARD_ALLOW_INSECURE` | `false` | Only if you terminate TLS somewhere the bot cannot see |
 | `SESSION_SECRET` | *generated* | Cookie signing key. Never share or reuse it. |
 | `CLIENT_SECRET` | (none) | Discord OAuth2 client secret |
+| `ASSET_UPLOAD_MAX_MB` | `5` | Size limit for a panel image upload in MB, between 1 and 10 |
+| `CLAMAV_SOCKET` | (none) | clamd socket for the virus scan of uploads, e.g. `/var/run/clamav/clamd.ctl` |
+| `CLAMAV_HOST` / `CLAMAV_PORT` | (none) / `3310` | clamd over TCP instead of a socket. `CLAMAV_SOCKET` wins when both are set. |
 
 ---
 

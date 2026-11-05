@@ -216,7 +216,21 @@
     "localeLayerNotice": "Deine Änderungen an dieser Datei werden getrennt von den mitgelieferten Texten gespeichert. Updates behalten sie, und neue Texte aus einem Update erscheinen trotzdem.",
     "localeReset": "Auf Standard zurücksetzen",
     "localeResetConfirm": "Alle deine Änderungen an dieser Datei entfernen und zu den mitgelieferten Texten zurückkehren?",
-    "localeResetDone": "Die mitgelieferten Texte gelten wieder. Starte den Bot neu, damit die Änderung wirksam wird."
+    "localeResetDone": "Die mitgelieferten Texte gelten wieder. Starte den Bot neu, damit die Änderung wirksam wird.",
+    "panelAssetCurrent": "Aktuelles Bild",
+    "panelAssetSavedOnly": "So wie in der gespeicherten Konfiguration.",
+    "panelAssetNoPreview": "Keine Vorschau",
+    "panelAssetAltLogo": "Aktuelles Panel-Logo",
+    "panelAssetAltBanner": "Aktuelles Panel-Banner",
+    "panelAssetChoose": "Neues Bild hochladen",
+    "panelAssetHint": "PNG, JPEG, GIF, WebP oder SVG, bis {mb} MB. Das Bild wird umgewandelt, seine Metadaten (Standort, Kameradaten) werden entfernt. Aus SVG wird PNG.",
+    "panelAssetScanned": "Hochgeladene Dateien prüft ein Virenscanner.",
+    "panelAssetUpload": "Hochladen",
+    "panelAssetUploading": "Wird hochgeladen …",
+    "panelAssetTooLarge": "Die Datei ist größer als {mb} MB.",
+    "panelAssetUploaded": "Bild gespeichert und in config.jsonc eingetragen. Starte den Bot neu, damit das Panel es verwendet.",
+    "panelAssetUploadedUnsaved": "Bild gespeichert. Speichere die Konfiguration und starte den Bot neu, damit das Panel es verwendet.",
+    "panelAssetResetDone": "Das Standardbild gilt wieder. Starte den Bot neu, damit das Panel es verwendet."
   },
 
   "access": {

@@ -17,7 +17,7 @@ aktivierst, ändert sich an deinem Bot nichts.
 | **Meine Tickets** | Jedes Mitglied sieht die selbst geöffneten Tickets und kann in offenen antworten. Die Antwort erscheint im Discord-Kanal unter dem eigenen Namen. Geschlossene Tickets bieten einen Transcript-Download und, mit Premium, einen "Transcript öffnen"-Link. |
 | **Tickets** | Vollständige Liste mit Filtern, Ticket-Detail mit dem Live-Verlauf, Claim / Schließen / Wieder öffnen / Verschieben / Sperren / Priorität. |
 | **Statistiken** | Gesamtzahlen, Durchschnittsbewertung, durchschnittliche Bearbeitungszeit und ein Team-Ranking nach geschlossenen Tickets. |
-| **Konfiguration** | Bearbeite `config.jsonc`, `snippets.jsonc`, `.env` und die Locale-Dateien wahlweise in einer strukturierten **Formular**-Ansicht oder einer rohen **Datei**-Ansicht (mit Zeilennummern und Syntax-Highlighting). Formular-Änderungen erhalten die `//`-Kommentare, und ein Seitenpanel löst Discord-Rollen-/Kanal-/Kategorie-**Namen** auf, sodass du nie nach rohen IDs suchen musst. Änderungen an einer Locale-Datei landen als Unterschied zu den mitgelieferten Texten in `locales/custom/`, Updates behalten sie also; **Auf Standard zurücksetzen** entfernt sie wieder (siehe [Texte anpassen](configuration-de.md#texte-anpassen)). |
+| **Konfiguration** | Bearbeite `config.jsonc`, `snippets.jsonc`, `.env` und die Locale-Dateien wahlweise in einer strukturierten **Formular**-Ansicht oder einer rohen **Datei**-Ansicht (mit Zeilennummern und Syntax-Highlighting). Formular-Änderungen erhalten die `//`-Kommentare, und ein Seitenpanel löst Discord-Rollen-/Kanal-/Kategorie-**Namen** auf, sodass du nie nach rohen IDs suchen musst. Änderungen an einer Locale-Datei landen als Unterschied zu den mitgelieferten Texten in `locales/custom/`, Updates behalten sie also; **Auf Standard zurücksetzen** entfernt sie wieder (siehe [Texte anpassen](configuration-de.md#texte-anpassen)). Logo und Banner des Panels lädst du direkt dort hoch (siehe [Panel-Bilder](#panel-bilder)). |
 | **Bot-Steuerung** | Starten, stoppen, neu starten und aktualisieren des Bots, plus eine Live-Konsole. **Update** führt dieselbe Routine aus wie `npm run update` (siehe [Aktualisieren](installation-de.md#aktualisieren)). |
 | **Berechtigungen** | Lege fest, welche Rollen und Nutzer das Dashboard verwenden dürfen und was sie tun dürfen. |
 | **Dashboard-Einstellungen** | Akzentfarbe und Favicon, abgesichert über eigene Ansehen-/Bearbeiten-Rechte. Die Akzentfarbe wird an die helle und die dunkle Darstellung angepasst. |
@@ -82,6 +82,63 @@ Die Einstellungsseite zeigt den Akzent in beiden Darstellungen nebeneinander und
 sagt, wenn eine Variante greift. Das Layout passt sich vom 320-px-Handy bis zum
 Ultrawide-Monitor an, und das Dashboard folgt den Systemeinstellungen für
 reduzierte Bewegung, mehr Kontrast und die Windows-Kontrastdesigns.
+
+---
+
+## Panel-Bilder
+
+Unter **Konfiguration**, Abschnitt *Ticket Panel*, haben Logo und Banner je einen
+Upload, eine Vorschau des aktuellen Bildes und **Auf Standard zurücksetzen**. So
+änderst du sie bei einem gehosteten Bot, bei dem du keinen Zugriff auf die
+Dateien des Servers hast. Dafür braucht es das Recht `config.edit`, und jeder
+Upload und jedes Zurücksetzen steht im Audit-Log.
+
+Angenommen werden **PNG, JPEG, GIF, WebP und SVG** bis **5 MB** je Datei (siehe
+`ASSET_UPLOAD_MAX_MB` unten). Der Typ wird aus dem Inhalt der Datei gelesen,
+nicht aus ihrem Namen. Danach wird jedes Bild umgewandelt:
+
+* Es wird dekodiert und als neue Datei gespeichert. Metadaten wie Standort,
+  Kameradaten oder Kommentare überstehen das nicht, und auch nichts, was hinter
+  den Bilddaten versteckt ist.
+* Das Logo wird auf höchstens 1024 px verkleinert, das Banner auf höchstens
+  2048 px. Kleinere Bilder behalten ihre Größe.
+* PNG bleibt PNG, JPEG bleibt JPEG, WebP bleibt WebP, ein animiertes GIF bleibt
+  animiert. Ein unbewegtes GIF wird zu PNG.
+* **SVG wird immer zu PNG.** Discord kann SVG im Panel nicht anzeigen, und eine
+  SVG-Datei kann Skripte enthalten. SVGs mit Skripten, Verweisen auf andere
+  Dateien oder Webadressen oder mit Entity-Deklarationen werden abgelehnt.
+* Bilder mit sehr vielen Pixeln (mehr als 30 Megapixel, etwa eine
+  "Dekompressionsbombe", die als Datei winzig und im Speicher riesig ist) werden
+  abgelehnt, bevor sie dekodiert werden.
+
+Gespeichert wird das Bild in `assets/` unter einem erzeugten Namen wie
+`custom-logo-3f2a9c1e5b7d4a60.png`, und `panel.logo.file` beziehungsweise
+`panel.banner.file` in `config.jsonc` wird auf diesen Namen gesetzt, alle
+Kommentare bleiben erhalten. Das zuvor hochgeladene Bild desselben Platzes wird
+gelöscht; Bilder, die du selbst in `assets/` gelegt hast, und das mitgelieferte
+Standardbild bleiben unangetastet. **Auf Standard zurücksetzen** setzt den Namen
+zurück auf `logo.png` beziehungsweise `banner.png` und löscht die hochgeladene
+Datei. Wie jede andere Änderung an der Konfiguration verwendet das Panel das neue
+Bild nach dem nächsten Neustart des Bots.
+
+### Virenscan (optional)
+
+Läuft [ClamAV](https://www.clamav.net/) auf dem Server, kann das Dashboard jeden
+Upload von `clamd` prüfen lassen, bevor es ihn verarbeitet. Setze entweder
+`CLAMAV_SOCKET` (den Pfad des lokalen Sockets von clamd, unter Debian meist
+`/var/run/clamav/clamd.ctl`) oder `CLAMAV_HOST` und `CLAMAV_PORT`. Der Benutzer,
+unter dem das Dashboard läuft, muss den Socket benutzen dürfen.
+
+* Eine Datei, die clamd meldet, wird abgelehnt und mit dem Namen des Fundes ins
+  Audit-Log geschrieben.
+* Ist ClamAV eingetragen, antwortet aber nicht (gestoppt, falscher Pfad,
+  Zeitüberschreitung), werden Uploads **abgelehnt**, bis es wieder antwortet. Ein
+  eingetragener Scanner lässt nie eine Datei ungeprüft durch.
+* Ohne diese Variablen meldet das Dashboard beim Start einmal im Log, dass
+  Uploads nicht auf Viren geprüft werden. Umgewandelt werden die Bilder trotzdem
+  wie oben beschrieben.
+
+`StreamMaxLength` von clamd (Vorgabe 25 MB) muss größer sein als das Upload-Limit.
 
 ---
 
@@ -242,6 +299,9 @@ Ticket ist, bevor irgendetwas Discord erreicht.
 | `DASHBOARD_ALLOW_INSECURE` | `false` | Nur, wenn du TLS an einer Stelle terminierst, die der Bot nicht sieht |
 | `SESSION_SECRET` | *erzeugt* | Schlüssel für die Cookie-Signatur. Niemals teilen oder wiederverwenden. |
 | `CLIENT_SECRET` | (keins) | Discord-OAuth2-Client-Secret |
+| `ASSET_UPLOAD_MAX_MB` | `5` | Größenlimit für den Upload eines Panel-Bildes in MB, zwischen 1 und 10 |
+| `CLAMAV_SOCKET` | (keiner) | Socket von clamd für den Virenscan der Uploads, z. B. `/var/run/clamav/clamd.ctl` |
+| `CLAMAV_HOST` / `CLAMAV_PORT` | (keiner) / `3310` | clamd über TCP statt über einen Socket. Sind beide gesetzt, gilt `CLAMAV_SOCKET`. |
 
 ---
 

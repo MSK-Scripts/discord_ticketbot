@@ -122,6 +122,10 @@ Tokens, der MSK-API-Key, Datenbank-Zugangsdaten und Dashboard-Secrets gehören i
 
 `panel.logo.file` und `panel.banner.file` nennen eine Datei in `assets/`. Dein eigenes Logo oder Banner legst du dort ab, etwa als `assets/logo.png` oder `assets/banner.png`. Liegt die Datei nicht in `assets/`, sucht der Bot in `assets/default/`. Dort liegt das MSK-Logo, `"file": "logo.png"` zeigt also das MSK-Logo, bis du ein eigenes ablegst. Bilder, die du in `assets/` ablegst, ignoriert git, und die Update-Routine legt ein ersetztes `assets/logo.png` beiseite und stellt es danach zurück. Deine Bilder blockieren also kein Update.
 
+Ohne Zugriff auf die Dateien des Servers (ein gehosteter Bot) lädst du Logo oder Banner stattdessen im Dashboard hoch: **Konfiguration**, Abschnitt *Ticket Panel*. Das Dashboard prüft und wandelt das Bild um, legt es unter einem erzeugten Namen wie `custom-logo-3f2a9c1e5b7d4a60.png` in `assets/` ab und trägt diesen Namen in `panel.logo.file` beziehungsweise `panel.banner.file` ein. Aus SVG wird PNG. Das Größenlimit (`ASSET_UPLOAD_MAX_MB`, Vorgabe 5 MB) und der optionale Virenscan mit ClamAV (`CLAMAV_SOCKET` oder `CLAMAV_HOST`/`CLAMAV_PORT`) stehen in der `.env`, siehe [Panel-Bilder im Dashboard](dashboard-de.md#panel-bilder).
+
+Ein Dateiname muss innerhalb von `assets/` bleiben: ein Name wie `../.env` wird ignoriert.
+
 ## Texte anpassen
 
 Einen Text des Bots änderst du im Dashboard (Konfiguration, Reiter der Locale-Datei) oder trägst ihn selbst in `locales/custom/<lang>.json` ein. Diese Datei enthält nur die Texte, die du änderst, im selben Aufbau wie `locales/<lang>.json`:

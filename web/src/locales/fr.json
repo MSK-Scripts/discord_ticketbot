@@ -216,7 +216,21 @@
     "localeLayerNotice": "Vos modifications de ce fichier sont enregistrées séparément des textes fournis. Les mises à jour les conservent, et les nouveaux textes d’une mise à jour apparaissent quand même.",
     "localeReset": "Rétablir par défaut",
     "localeResetConfirm": "Supprimer toutes vos modifications de ce fichier et revenir aux textes fournis ?",
-    "localeResetDone": "Les textes fournis sont de nouveau utilisés. Redémarrez le bot pour que le changement prenne effet."
+    "localeResetDone": "Les textes fournis sont de nouveau utilisés. Redémarrez le bot pour que le changement prenne effet.",
+    "panelAssetCurrent": "Image actuelle",
+    "panelAssetSavedOnly": "Selon la configuration enregistrée.",
+    "panelAssetNoPreview": "Pas d'aperçu",
+    "panelAssetAltLogo": "Logo actuel du panneau",
+    "panelAssetAltBanner": "Bannière actuelle du panneau",
+    "panelAssetChoose": "Téléverser une nouvelle image",
+    "panelAssetHint": "PNG, JPEG, GIF, WebP ou SVG, jusqu'à {mb} Mo. L'image est convertie et ses métadonnées (position, données de l'appareil photo) sont supprimées. Un SVG devient un PNG.",
+    "panelAssetScanned": "Un antivirus vérifie les fichiers téléversés.",
+    "panelAssetUpload": "Téléverser",
+    "panelAssetUploading": "Téléversement…",
+    "panelAssetTooLarge": "Le fichier dépasse {mb} Mo.",
+    "panelAssetUploaded": "Image enregistrée et inscrite dans config.jsonc. Redémarrez le bot pour que le panneau l'utilise.",
+    "panelAssetUploadedUnsaved": "Image enregistrée. Enregistrez la configuration et redémarrez le bot pour que le panneau l'utilise.",
+    "panelAssetResetDone": "L'image par défaut est de nouveau utilisée. Redémarrez le bot pour que le panneau l'utilise."
   },
 
   "access": {

@@ -93,22 +93,32 @@ export const api = {
   resetFavicon: () => request('/dashboard-settings/favicon', { method: 'DELETE' }),
 
   // Favicon upload sends the raw image bytes, not JSON, so it needs its own call.
-  uploadFavicon: async (file) => {
-    const res = await fetch('/api/dashboard-settings/favicon', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: {
-        'x-csrf-token': readCookie(CSRF_COOKIE),
-        'Content-Type': file.type || 'application/octet-stream',
-      },
-      body: file,
-    });
-    if (res.status === 401) { window.location.href = '/auth/login'; return new Promise(() => {}); }
-    const payload = await res.json().catch(() => null);
-    if (!res.ok) throw new ApiError(res.status, payload);
-    return payload;
-  },
+  uploadFavicon: (file) => uploadRaw('/api/dashboard-settings/favicon', file, file.type || 'application/octet-stream'),
+
+  // Panel logo/banner (config.view to look, config.edit to change). The upload is
+  // always sent as application/octet-stream: the server takes the type from the
+  // bytes, never from the browser's guess.
+  panelAssets: () => request('/panel-assets'),
+  uploadPanelAsset: (slot, file) => uploadRaw(`/api/panel-assets/${encodeURIComponent(slot)}`, file, 'application/octet-stream'),
+  resetPanelAsset: (slot) => request(`/panel-assets/${encodeURIComponent(slot)}`, { method: 'DELETE' }),
 };
+
+/** POST raw bytes (a File) with the CSRF header. */
+async function uploadRaw(url, file, contentType) {
+  const res = await fetch(url, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'x-csrf-token': readCookie(CSRF_COOKIE),
+      'Content-Type': contentType,
+    },
+    body: file,
+  });
+  if (res.status === 401) { window.location.href = '/auth/login'; return new Promise(() => {}); }
+  const payload = await res.json().catch(() => null);
+  if (!res.ok) throw new ApiError(res.status, payload);
+  return payload;
+}
 
 /** Logout needs a raw call: it lives outside /api. */
 export async function logout() {

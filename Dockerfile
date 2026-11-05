@@ -55,8 +55,15 @@ COPY . .
 # and a checkout on Windows arrives as read-only directories (dr-xr-xr-x). The
 # image would then run fine when built in CI on Linux and refuse to write its
 # config when built on a developer machine.
-RUN mkdir -p data config config-defaults \
+#
+# The same goes for assets/: uploaded panel images live in a mount over
+# /app/assets, which hides the shipped default images. A copy of assets/default
+# is kept in assets-defaults and refreshed into the mount by the entrypoint.
+# locales/custom holds the locale texts changed in the dashboard and is mounted
+# on its own, so the shipped locale files stay visible.
+RUN mkdir -p data config config-defaults assets/default assets-defaults locales/custom \
  && cp config/*.example.jsonc config-defaults/ \
+ && cp -r assets/default/. assets-defaults/ \
  && chmod +x docker-entrypoint.sh \
  && chown -R node:node /app \
  && chmod -R u+rwX /app
