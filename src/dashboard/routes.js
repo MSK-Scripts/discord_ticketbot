@@ -279,13 +279,9 @@ function registerRoutes(api, { config, supervisor, requirePermission, invalidate
       return res.status(403).json({ error: 'Only the server owner can access the .env file.' });
     }
 
-    let result;
-    try {
-      result = localeStore.readLocaleForEditor(LOCALES_DIR, path.basename(target));
-    } catch {
-      return res.status(404).json({ error: 'File not found.' });
-    }
-    res.json(result);
+    const content = await fs.readFile(target, 'utf-8').catch(() => null);
+    if (content === null) return res.status(404).json({ error: 'File not found.' });
+    res.json({ content });
   }));
 
   api.put('/config/:file', requirePermission('config.edit'), asyncRoute(async (req, res) => {

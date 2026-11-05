@@ -143,9 +143,34 @@ function loadLocale(code, { dir = LOCALES_DIR, warn } = {}) {
     throw new Error(`Invalid locale code: ${code}`);
   }
   const fileName = `${code}.json`;
-  const shipped = JSON.parse(fs.readFileSync(path.join(dir, fileName), 'utf-8'));
-  const custom = readCustomFile(customPathFor(fileName, dir), warn);
+  const shipped = requireFresh(path.join(dir, fileName));
+  const custom = requireCustomFile(customPathFor(fileName, dir), warn);
   return custom ? mergeLocale(shipped, custom) : shipped;
+}
+
+// The bot loads its locales through require(), as it did before the customer
+// layer existed. The cache entry is dropped first, so an edit saved in the
+// dashboard is picked up on the next load instead of after a restart. The
+// dashboard editor below reads with fs, since it needs the raw text.
+function requireFresh(file) {
+  const resolved = require.resolve(file);
+  delete require.cache[resolved];
+  return require(resolved);
+}
+
+function requireCustomFile(file, warn = (m) => logger.warn(m)) {
+  let parsed;
+  try {
+    parsed = requireFresh(file);
+  } catch (err) {
+    if (err.code !== 'MODULE_NOT_FOUND') warn(`[Locale] Ignoring ${file}: ${err.message}. Using the shipped texts.`);
+    return null;
+  }
+  if (!isPlainObject(parsed)) {
+    warn(`[Locale] Ignoring ${file}: not a JSON object. Using the shipped texts.`);
+    return null;
+  }
+  return parsed;
 }
 
 // ── Dashboard editor helpers ─────────────────────────────────────────────────

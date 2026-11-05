@@ -48,6 +48,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Security: a panel image path can no longer leave `assets/`.** A value such
+  as `"../.env"` in `panel.logo.file` or `panel.banner.file` made the panel post
+  that file, the bot token included, to Discord as an attachment. Anyone with
+  `config.edit` in the dashboard could use it to read the `.env`, which is
+  otherwise owner only. Only a plain file name inside `assets/` (or
+  `assets/default/`) is accepted now. Affects every earlier version.
+- The bot config editor showed no file: `GET /config/:file` answered 404 for
+  `config.jsonc`, `snippets.jsonc` and `.env` since the customer locale layer
+  went in. It reads the files directly again.
+- The bot loads its locales through `require()` again, as before the customer
+  locale layer. Only the dashboard editor reads the raw files.
+
 - The startup log printed `API key valid → business` in lower case, because
   the label map had no entry for the Business tier. It prints `Business` now.
 
