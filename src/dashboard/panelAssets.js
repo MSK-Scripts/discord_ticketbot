@@ -325,7 +325,8 @@ function registerPanelAssetRoutes(api, { requirePermission, audit, configFile, a
         }
         if (!verdict.clean) {
           audit(req, 'panel.asset.infected', spec.slot, { signature: verdict.signature, type, bytes: input.length });
-          logger.warn(`[Dashboard] Upload refused, ClamAV found ${logSafe(verdict.signature)} (slot ${spec.slot}, user ${logSafe(req.auth?.userId)}).`);
+          // Signature and user are in the audit entry above; the log only says that it happened.
+          logger.warn(`[Dashboard] Upload refused by ClamAV (slot ${spec.slot}). See the audit log for the signature.`);
           return res.status(422).json({ error: `The virus scanner flagged this file (${verdict.signature}). It was not stored.` });
         }
       }
