@@ -14,10 +14,18 @@ const { registerRoutes } = require('../src/dashboard/routes');
 const SNIPPETS = path.resolve(__dirname, '../config/snippets.jsonc');
 
 test('GET /config/snippets returns the file content', async (t) => {
-  const existed = fs.existsSync(SNIPPETS);
-  const original = existed ? fs.readFileSync(SNIPPETS, 'utf-8') : '// test snippets\n{}\n';
-  if (!existed) fs.writeFileSync(SNIPPETS, original);
-  t.after(() => { if (!existed) fs.rmSync(SNIPPETS, { force: true }); });
+  // Use the local snippets file if there is one; otherwise create it ('wx' fails
+  // instead of overwriting if it appeared in between) and remove it afterwards.
+  let original = '// test snippets\n{}\n';
+  let created = false;
+  try {
+    fs.writeFileSync(SNIPPETS, original, { encoding: 'utf-8', flag: 'wx' });
+    created = true;
+  } catch (err) {
+    if (err.code !== 'EEXIST') throw err;
+    original = fs.readFileSync(SNIPPETS, 'utf-8');
+  }
+  t.after(() => { if (created) fs.rmSync(SNIPPETS, { force: true }); });
 
   const app = express();
   const api = express.Router();
