@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The startup log printed `API key valid → business` in lower case, because
+  the label map had no entry for the Business tier. It prints `Business` now.
+
 ## [2.22.0] - 2026-11-05
 
 ### Added

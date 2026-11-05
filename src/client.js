@@ -20,6 +20,7 @@ const TIER_LABELS = {
   basic:        'Basic',
   premium:      'Premium',
   premium_plus: 'Hosted',
+  business:     'Business',
 };
 
 function printBanner() {
