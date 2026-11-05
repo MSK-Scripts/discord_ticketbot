@@ -21,14 +21,11 @@ const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArr
 
 // A key named "__proto__" in parsed JSON is an own property, but assigning it
 // to a normal object would replace that object's prototype. Locale files never
-// need these names, so they are skipped on both merge and diff, and every other
-// key is written with defineProperty, which creates an own property and never
-// touches the prototype chain.
+// need these names, so they are skipped on both merge and diff. The results are
+// collected in a Map and turned into an object with Object.fromEntries, which
+// defines own properties: no key read from a file is ever used in an
+// assignment, so none can reach the prototype chain.
 const UNSAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
-
-function setOwn(obj, key, value) {
-  Object.defineProperty(obj, key, { value, enumerable: true, writable: true, configurable: true });
-}
 
 function readIfExists(file) {
   try {
@@ -61,14 +58,15 @@ function deepEqual(a, b) {
  * @returns {object}
  */
 function mergeLocale(base, custom) {
-  const out = isPlainObject(base) ? { ...base } : {};
-  if (!isPlainObject(custom)) return out;
-  for (const [key, value] of Object.entries(custom)) {
-    if (UNSAFE_KEYS.has(key)) continue;
-    const current = Object.prototype.hasOwnProperty.call(out, key) ? out[key] : undefined;
-    setOwn(out, key, isPlainObject(value) && isPlainObject(current) ? mergeLocale(current, value) : value);
+  const out = new Map(isPlainObject(base) ? Object.entries(base) : []);
+  if (isPlainObject(custom)) {
+    for (const [key, value] of Object.entries(custom)) {
+      if (UNSAFE_KEYS.has(key)) continue;
+      const current = out.get(key);
+      out.set(key, isPlainObject(value) && isPlainObject(current) ? mergeLocale(current, value) : value);
+    }
   }
-  return out;
+  return Object.fromEntries(out);
 }
 
 /**
@@ -81,20 +79,21 @@ function mergeLocale(base, custom) {
  * @returns {object}
  */
 function diffLocale(base, edited) {
-  const out = {};
-  if (!isPlainObject(edited)) return out;
+  const out = new Map();
+  if (!isPlainObject(edited)) return {};
+  const baseEntries = new Map(isPlainObject(base) ? Object.entries(base) : []);
   for (const [key, value] of Object.entries(edited)) {
     if (UNSAFE_KEYS.has(key)) continue;
-    const has = isPlainObject(base) && Object.prototype.hasOwnProperty.call(base, key);
-    const baseValue = has ? base[key] : undefined;
+    const has = baseEntries.has(key);
+    const baseValue = baseEntries.get(key);
     if (isPlainObject(value) && isPlainObject(baseValue)) {
       const sub = diffLocale(baseValue, value);
-      if (Object.keys(sub).length > 0) setOwn(out, key, sub);
+      if (Object.keys(sub).length > 0) out.set(key, sub);
     } else if (!has || !deepEqual(baseValue, value)) {
-      setOwn(out, key, value);
+      out.set(key, value);
     }
   }
-  return out;
+  return Object.fromEntries(out);
 }
 
 /** Serialises a locale object the way the shipped files are written. */
