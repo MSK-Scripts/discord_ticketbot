@@ -19,7 +19,7 @@ const TIER_COLORS = {
 const TIER_LABELS = {
   basic:        'Basic',
   premium:      'Premium',
-  premium_plus: 'Premium+',
+  premium_plus: 'Hosted',
 };
 
 function printBanner() {

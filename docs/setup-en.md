@@ -16,7 +16,7 @@ Optionally, Premium users can serve transcripts under their own custom domain.
 6. [Step 4 – Set up a Custom Domain (Premium)](#6-step-4--set-up-a-custom-domain-premium)
 7. [Console Output on Startup](#7-console-output-on-startup)
 8. [FAQ](#8-faq)
-9. [Hosted Bot Management (Premium+ and Business)](#9-hosted-bot-management-premium-and-business)
+9. [Hosted Bot Management (Hosted and Business)](#9-hosted-bot-management-hosted-and-business)
 
 ---
 
@@ -36,7 +36,7 @@ configure a **custom domain** so transcripts are served under their own URL.
 
 ## 2. Subscription Tiers
 
-| Feature | Basic (free) | Premium | Premium+ | Business |
+| Feature | Basic (free) | Premium | Hosted | Business |
 |---|---|---|---|---|
 | Price per month | free | €4.99 | €9.99 | €19.99 |
 | Price per year | free | €49 | €99 | €199 |
@@ -151,7 +151,7 @@ Then restart the bot.
 
 ## 6. Step 4 – Set up a Custom Domain (Premium)
 
-> This step is available on **every paid tier** (Premium, Premium+, Business).  
+> This step is available on **every paid tier** (Premium, Hosted, Business).  
 > Basic users can skip this step.
 
 A custom domain lets your users access transcripts under your own URL,  
@@ -225,7 +225,7 @@ When the bot starts you will see the following in the terminal:
                  https://github.com/MSK-Scripts/discord_ticketbot
 
 Checking for updates... up to date (v2.10.0)
-Checking API Key... API key valid → Premium+
+Checking API Key... API key valid → Hosted
 
 Connecting to Discord...
 
@@ -257,7 +257,7 @@ Connecting to Discord...
 | `Invalid API key → Basic` | The key is incorrect or has been regenerated |
 | `MSK server unreachable → Basic` | www.msk-scripts.de is temporarily unreachable |
 | `API key valid → Premium` | ✅ Premium active |
-| `API key valid → Premium+` | ✅ Premium+ active |
+| `API key valid → Hosted` | ✅ Hosted active |
 | `API key valid → business` | ✅ Business active |
 
 ---
@@ -292,14 +292,14 @@ Yes. SSL certificates are obtained automatically via **Let's Encrypt** (Certbot)
 They renew automatically before expiry.
 
 **What is "Hosted Bot Management"?**
-Premium+ and Business customers can have their bot hosted by MSK Scripts and manage it entirely in the browser,
-see [section 9](#9-hosted-bot-management-premium-and-business).
+Hosted and Business customers can have their bot hosted by MSK Scripts and manage it entirely in the browser,
+see [section 9](#9-hosted-bot-management-hosted-and-business).
 
 ---
 
-## 9. Hosted Bot Management (Premium+ and Business)
+## 9. Hosted Bot Management (Hosted and Business)
 
-Do not want to run a server at all? On Premium+ and Business the bot can be **hosted by MSK Scripts**. You set it up
+Do not want to run a server at all? On Hosted and Business the bot can be **hosted by MSK Scripts**. You set it up
 yourself in the [dashboard](https://www.msk-scripts.de/ticketbot/dashboard), no SSH access or server knowledge required.
 
 ![The Bot Hosting tab before activation](../assets/bot-hosting-install.png)

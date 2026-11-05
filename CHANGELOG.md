@@ -26,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The tier the shop sells as **Hosted** was still called Premium+ in the
+  startup log (`API key valid → Hosted`) and in `docs/setup-*.md`. Both use
+  the shop's name now. The internal key stays `premium_plus`.
 - **The type list behind the panel button only shows types the member can
   open.** Types blocked by `cantAccess` or missing a `requiredRoles` role are
   left out. If one type is left, it opens directly as with a single configured
