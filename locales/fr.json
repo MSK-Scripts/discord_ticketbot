@@ -205,6 +205,7 @@
     "channelNotFound": "❌ Salon introuvable.",
     "unknownTicketType": "❌ Type de ticket inconnu.",
     "noAccessToType": "❌ Vous n'avez pas accès à ce type de ticket.",
+    "requiredRoleMissing": "❌ Cette catégorie est réservée aux membres ayant un rôle spécifique.",
     "ticketCreateFailed": "❌ Le ticket n'a pas pu être créé. Veuillez réessayer.",
     "renameEmpty": "❌ Le nom ne contient aucun caractère valide (seuls les lettres, chiffres et tirets sont autorisés).",
     "notClaimed": "❌ Ce ticket n'est pas pris en charge.",

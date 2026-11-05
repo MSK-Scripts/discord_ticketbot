@@ -205,6 +205,7 @@
     "channelNotFound": "❌ Canal não encontrado.",
     "unknownTicketType": "❌ Tipo de ticket desconhecido.",
     "noAccessToType": "❌ Não tens acesso a este tipo de ticket.",
+    "requiredRoleMissing": "❌ Esta categoria só está disponível para membros com um cargo específico.",
     "ticketCreateFailed": "❌ Não foi possível criar o ticket. Por favor, tenta novamente.",
     "renameEmpty": "❌ O nome não contém caracteres válidos (apenas letras, números e hífens são permitidos).",
     "notClaimed": "❌ Este ticket não está assumido.",

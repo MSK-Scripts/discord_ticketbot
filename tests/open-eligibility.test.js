@@ -8,6 +8,7 @@ const assert = require('node:assert/strict');
 process.env.DATABASE_URL = 'sqlite::memory:';
 const db = require('../src/database');
 const { getOpenRefusal, openTicket } = require('../src/utils/ticketActions');
+const openButton = require('../src/components/buttons/openTicket');
 
 const GUILD = 'g1';
 
@@ -47,6 +48,80 @@ test('cantAccess is enforced once a type is known', async () => {
   assert.equal(await getOpenRefusal(fakeClient(), fakeMember('m2', ['civilian']), null), null);
   const refusal = await getOpenRefusal(fakeClient(), fakeMember('m2', ['civilian']), type);
   assert.equal(refusal.key, 'messages.noAccessToType');
+});
+
+test('a type without requiredRoles is open to everyone', async () => {
+  const type = { codeName: 'order', cantAccess: [] };
+  assert.equal(await getOpenRefusal(fakeClient(), fakeMember('r1'), type), null);
+  assert.equal(await getOpenRefusal(fakeClient(), fakeMember('r1'), { ...type, requiredRoles: [] }), null);
+});
+
+test('requiredRoles admits a member with at least one of the roles', async () => {
+  const type = { codeName: 'scripts', cantAccess: [], requiredRoles: ['sponsor', 'partner'] };
+  assert.equal(await getOpenRefusal(fakeClient(), fakeMember('r2', ['partner']), type), null);
+});
+
+test('requiredRoles refuses a member with none of the roles', async () => {
+  const type = { codeName: 'scripts', cantAccess: [], requiredRoles: ['sponsor'] };
+  const refusal = await getOpenRefusal(fakeClient(), fakeMember('r3', ['member']), type);
+  assert.equal(refusal.key, 'messages.requiredRoleMissing');
+  // Before a type is picked the allow list does not apply yet.
+  assert.equal(await getOpenRefusal(fakeClient(), fakeMember('r3', ['member']), null), null);
+});
+
+test('cantAccess wins over requiredRoles', async () => {
+  const type = { codeName: 'scripts', cantAccess: ['muted'], requiredRoles: ['sponsor'] };
+  // Holding a required role does not lift the block list ...
+  const withRole = await getOpenRefusal(fakeClient(), fakeMember('r4', ['sponsor', 'muted']), type);
+  assert.equal(withRole.key, 'messages.noAccessToType');
+  // ... and when both apply, the block list message is the one shown.
+  const withoutRole = await getOpenRefusal(fakeClient(), fakeMember('r5', ['muted']), type);
+  assert.equal(withoutRole.key, 'messages.noAccessToType');
+});
+
+// ── Panel button: the ephemeral type list only offers types the member may open
+
+function fakeButtonInteraction(member) {
+  const calls = {};
+  return {
+    calls,
+    user: { id: member.id, username: member.id },
+    member,
+    guild: member.guild,
+    reply:     async (payload) => { calls.reply = payload; },
+    showModal: async (modal)   => { calls.modal = modal; },
+  };
+}
+
+const PANEL_TYPES = [
+  { codeName: 'scripts', name: 'Script support', description: 'Help with a script', cantAccess: [], requiredRoles: ['sponsor'],
+    askQuestions: true, questions: [{ label: 'Script', style: 'SHORT' }] },
+  { codeName: 'order', name: 'Order', description: 'Order questions', cantAccess: [], requiredRoles: [],
+    askQuestions: true, questions: [{ label: 'Order id', style: 'SHORT' }] },
+];
+
+test('panel button lists every type to a member who may open them all', async () => {
+  const client = fakeClient({ ticketTypes: PANEL_TYPES });
+  const ia = fakeButtonInteraction(fakeMember('b1', ['sponsor']));
+  await openButton.execute(client, ia);
+  const options = ia.calls.reply.components[0].components[0].options.map(o => o.data.value);
+  assert.deepEqual(options, ['scripts', 'order']);
+});
+
+test('panel button skips hidden types and takes the single-type path for the rest', async () => {
+  const client = fakeClient({ ticketTypes: PANEL_TYPES });
+  const ia = fakeButtonInteraction(fakeMember('b2'));
+  await openButton.execute(client, ia);
+  assert.equal(ia.calls.reply, undefined);
+  assert.equal(ia.calls.modal.data.custom_id, 'tb_modalQuestions:order');
+});
+
+test('panel button refuses when no type is left', async () => {
+  const client = fakeClient({ ticketTypes: [PANEL_TYPES[0]] });
+  const ia = fakeButtonInteraction(fakeMember('b3'));
+  await openButton.execute(client, ia);
+  assert.equal(ia.calls.modal, undefined);
+  assert.equal(ia.calls.reply.content, 'messages.requiredRoleMissing');
 });
 
 test('the open-ticket limit is enforced', async () => {

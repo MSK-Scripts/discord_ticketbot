@@ -24,6 +24,7 @@ function typeFields(i) {
     { path: b('ticketNameOption'), kind: 'text', label: 'Channel name template', help: 'USERNAME, USERID, TICKETCOUNT or empty for default.' },
     { path: b('customDescription'), kind: 'textarea', label: 'Custom opening message' },
     { path: b('cantAccess'), kind: 'idList', idKind: 'role', label: 'Roles that cannot open this type' },
+    { path: b('requiredRoles'), kind: 'idList', idKind: 'role', label: 'Roles required to open this type', help: 'Empty = everyone. Otherwise members need at least one of these roles. No exception for staff or admins.' },
     { path: b('staffRoles'), kind: 'idList', idKind: 'role', label: 'Type-specific staff roles' },
     { path: b('askQuestions'), kind: 'toggle', label: 'Ask questions on open' },
   ];

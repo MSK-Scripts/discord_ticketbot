@@ -72,6 +72,9 @@ export function validateBotConfig(model) {
       if (tt.staffRoles !== undefined && !Array.isArray(tt.staffRoles)) {
         issues.push(err(`ticketTypes[${i}].staffRoles must be an array.`, ['ticketTypes', i, 'staffRoles']));
       }
+      if (tt.requiredRoles !== undefined && !Array.isArray(tt.requiredRoles)) {
+        issues.push(err(`ticketTypes[${i}].requiredRoles must be an array.`, ['ticketTypes', i, 'requiredRoles']));
+      }
       const es = enumWarn(tt.priority, ENUMS.priority, ['ticketTypes', i, 'priority'], `ticketTypes[${i}].priority`);
       if (es) issues.push(es);
       if (Array.isArray(tt.questions)) {

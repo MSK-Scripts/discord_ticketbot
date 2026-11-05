@@ -205,6 +205,7 @@
     "channelNotFound": "❌ Channel not found.",
     "unknownTicketType": "❌ Unknown ticket type.",
     "noAccessToType": "❌ You do not have access to this ticket type.",
+    "requiredRoleMissing": "❌ This category is only open to members with a specific role.",
     "ticketCreateFailed": "❌ Ticket could not be created. Please try again.",
     "renameEmpty": "❌ The name contains no valid characters (only letters, numbers and hyphens are allowed).",
     "notClaimed": "❌ This ticket is not claimed.",

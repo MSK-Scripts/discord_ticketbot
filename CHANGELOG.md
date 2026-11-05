@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is automatically lifted to the top of the GitHub Release notes by
 > `.github/workflows/release.yml`. Keep this file up to date before tagging.
 
+## [Unreleased]
+
+### Added
+
+- **Ticket types that only certain roles can open.** A ticket type takes a new
+  optional `requiredRoles` list. Empty (the default) keeps the type open to
+  everyone, so existing configs behave as before. With roles listed, a member
+  needs at least one of them, otherwise the bot refuses with a new message
+  (`messages.requiredRoleMissing`, in all eight languages). This makes it
+  possible to keep script support for sponsors while orders and invoices stay
+  open to all. `cantAccess` still applies and wins, and there is no exception
+  for staff or administrators. The check sits next to `cantAccess` in the one
+  eligibility check every open path uses. The dashboard has a field for it in
+  the ticket type editor.
+
+### Changed
+
+- **The type list behind the panel button only shows types the member can
+  open.** Types blocked by `cantAccess` or missing a `requiredRoles` role are
+  left out. If one type is left, it opens directly as with a single configured
+  type; if none is left, the member gets the refusal right away. The
+  `SELECT_MENU` panel is shared by everyone, so it still lists every type and
+  refuses after the pick.
+
 ## [2.21.0] - 2026-10-28
 
 ### Security

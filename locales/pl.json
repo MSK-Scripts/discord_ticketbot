@@ -205,6 +205,7 @@
     "channelNotFound": "❌ Kanał nie znaleziony.",
     "unknownTicketType": "❌ Nieznany typ zgłoszenia.",
     "noAccessToType": "❌ Nie masz dostępu do tego typu zgłoszenia.",
+    "requiredRoleMissing": "❌ Ta kategoria jest dostępna tylko dla członków z określoną rolą.",
     "ticketCreateFailed": "❌ Nie udało się utworzyć zgłoszenia. Spróbuj ponownie.",
     "renameEmpty": "❌ Nazwa nie zawiera prawidłowych znaków (dozwolone są tylko litery, cyfry i myślniki).",
     "notClaimed": "❌ To zgłoszenie nie jest przejęte.",

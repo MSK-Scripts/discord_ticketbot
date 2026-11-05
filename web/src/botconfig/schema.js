@@ -202,7 +202,7 @@ export const DEFAULT_QUESTION = { label: '', placeholder: '', style: 'SHORT', ma
 export const DEFAULT_TICKET_TYPE = {
   codeName: '', name: '', description: '', emoji: '', color: '', categoryId: '',
   priority: 'medium', ticketNameOption: '', customDescription: '',
-  cantAccess: [], staffRoles: [], askQuestions: false, questions: [],
+  cantAccess: [], requiredRoles: [], staffRoles: [], askQuestions: false, questions: [],
 };
 
 export const DEFAULT_SNIPPET = { name: '', description: '', content: '', embed: null };

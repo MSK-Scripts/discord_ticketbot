@@ -13,6 +13,7 @@ Was der Bot kann, alle Slash-Befehle und alle Buttons. Zurück zur [README](../R
 | 🔴 Prioritäten | Low, Medium, High, Urgent. Pro Ticket-Typ vorgegeben oder per `/priority` |
 | 🛡️ Staff pro Typ | Ein Ticket-Typ mit eigenen `staffRoles` wird nur von diesen Rollen betreut, beim Kanalzugriff und bei jeder Staff-Aktion |
 | 🚧 Sperren beim Öffnen | Gesperrte Rollen, `cantAccess` pro Typ, eine Blacklist und ein Limit offener Tickets pro Nutzer, das sich nicht umgehen lässt |
+| 🔑 Typen nur mit Rolle | `requiredRoles` pro Typ: Ein Typ wie der Script-Support lässt sich auf Mitglieder mit einer der genannten Rollen beschränken, die anderen bleiben für alle offen |
 | 📝 Staff-Notizen | Private Notizen pro Ticket mit `/note` |
 | 🔀 Ticket verschieben | In einen anderen Typ und dessen Kategorie, mit den passenden Rechten |
 | 🔒 Sperren | Ticket sperren, Ersteller und hinzugefügte Nutzer können nicht mehr schreiben |

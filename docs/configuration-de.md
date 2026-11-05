@@ -47,6 +47,7 @@ Ein Syntaxfehler wird mit Zeile, Spalte und einem Zeiger auf die Stelle gemeldet
     "ticketNameOption": "",           // überschreibt die globale Vorlage
     "customDescription": "",
     "cantAccess": [],                 // Rollen, die diesen Typ nicht öffnen können
+    "requiredRoles": [],              // leer = alle; sonst wird eine dieser Rollen gebraucht
     "staffRoles": [],                 // leer = globale Staff-Rollen
     "askQuestions": true,
     "questions": [ /* bis zu 5 */ ]
@@ -55,6 +56,8 @@ Ein Syntaxfehler wird mit Zeile, Spalte und einem Zeiger auf die Stelle gemeldet
 ```
 
 **`staffRoles` ersetzt die globalen Rollen.** Ein Typ mit eigenen `staffRoles` wird nur von diesen Rollen betreut: Sie sehen den Kanal, können übernehmen, sperren, verschieben und schließen, und die Staff-Erinnerung pingt sie. Die globalen `rolesWhoHaveAccessToTheTickets` wirken bei so einem Ticket nicht. Soll die globale Staff-Rolle Zugriff behalten, gehört sie in die `staffRoles` des Typs. Administratoren haben immer Zugriff.
+
+**`requiredRoles` legt fest, wer einen Typ öffnen darf.** Leer (die Vorgabe) heißt, alle dürfen ihn öffnen. Stehen Rollen drin, braucht ein Mitglied mindestens eine davon, sonst lehnt der Bot mit "Für diese Kategorie brauchst du eine bestimmte Rolle." ab. So lässt sich etwa der Script-Support auf Sponsoren beschränken, während Bestellungen und Rechnungen für alle offen bleiben. `cantAccess` gilt zusätzlich und hat Vorrang: Wer eine gesperrte Rolle hat, kann den Typ nicht öffnen, auch wenn er eine der benötigten Rollen besitzt. Eine Ausnahme für Staff oder Administratoren gibt es nicht. Soll dein Team den Typ selbst öffnen können, gib ihm eine der Rollen. Beim Panel `BUTTON` zeigt die Typ-Auswahl nur die Typen, die das Mitglied öffnen darf; bleibt genau einer übrig, öffnet er direkt. Das Panel `SELECT_MENU` ist für alle gleich, dort erscheint die Ablehnung nach der Auswahl.
 
 ## Schließen
 

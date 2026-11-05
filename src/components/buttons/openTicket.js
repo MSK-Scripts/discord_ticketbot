@@ -2,16 +2,18 @@
  * Button: tb_open
  * Always the entry point — shown in every ticket panel regardless of type count.
  *
- * Behaviour:
+ * Behaviour (only counting the types this member may open, see
+ * getTypeAccessRefusal: `cantAccess` and `requiredRoles`):
  *  - Multiple types → show ephemeral select menu (fresh each time, no Discord cache issue)
  *  - Single type, has questions → show questions modal
  *  - Single type, no questions  → open ticket directly
+ *  - No type left → the refusal of the first configured type
  */
 const {
   ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder,
   StringSelectMenuBuilder, StringSelectMenuOptionBuilder, MessageFlags,
 } = require('discord.js');
-const { openTicket, getOpenRefusal, refusalText } = require('../../utils/ticketActions');
+const { openTicket, getOpenRefusal, getTypeAccessRefusal, refusalText } = require('../../utils/ticketActions');
 
 // How long (ms) the "ticket created" confirmation stays visible before auto-delete
 const SUCCESS_DELETE_DELAY = 10_000;
@@ -23,18 +25,29 @@ module.exports = {
     const cfg  = client.config;
     const user = interaction.user;
 
+    // ── Types this member may open ────────────────────────────────────────────
+    // This list is ephemeral, so it can be personal: types blocked by
+    // `cantAccess` or missing a `requiredRoles` role are left out. The select
+    // handler still runs the full check on the picked type.
+    const openable = cfg.ticketTypes.filter(t => !getTypeAccessRefusal(interaction.member, t));
+
     // ── Guard checks ──────────────────────────────────────────────────────────
     // With one type, check it right away; with several, the type-specific
-    // checks run once a type is picked.
-    const singleType = cfg.ticketTypes.length === 1 ? cfg.ticketTypes[0] : null;
-    const refusal    = await getOpenRefusal(client, interaction.member, singleType);
+    // checks run once a type is picked. With none left, checking the first
+    // configured type yields its type refusal (after blacklist and blocked
+    // roles, which take precedence).
+    const checkType = openable.length === 1 ? openable[0]
+                    : openable.length === 0 ? cfg.ticketTypes[0]
+                    : null;
+    const refusal   = await getOpenRefusal(client, interaction.member, checkType)
+                   ?? (openable.length === 0 ? { key: 'messages.noAccessToType' } : null);
     if (refusal) {
       return interaction.reply({ content: refusalText(client, refusal), flags: MessageFlags.Ephemeral });
     }
 
     // ── Multiple types → ephemeral select menu ────────────────────────────────
-    if (cfg.ticketTypes.length > 1) {
-      const options = cfg.ticketTypes.map(t =>
+    if (openable.length > 1) {
+      const options = openable.map(t =>
         new StringSelectMenuOptionBuilder()
           .setLabel(t.name)
           .setDescription(t.description?.substring(0, 100) ?? '')
@@ -55,7 +68,7 @@ module.exports = {
     }
 
     // ── Single type ───────────────────────────────────────────────────────────
-    const ticketType = cfg.ticketTypes[0];
+    const ticketType = openable[0];
 
     // Has questions → show modal (the panel button interaction is consumed by the modal)
     if (ticketType.askQuestions && ticketType.questions?.length > 0) {

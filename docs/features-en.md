@@ -13,6 +13,7 @@ What the bot can do, every slash command and every button. Back to the [README](
 | 🔴 Priorities | Low, Medium, High, Urgent. Predefined per ticket type or set with `/priority` |
 | 🛡️ Type-specific staff | A ticket type with its own `staffRoles` is handled by those roles only, for channel access and for every staff action |
 | 🚧 Open restrictions | Blocked roles, per-type `cantAccess`, a blacklist and a per-user open limit that cannot be raced |
+| 🔑 Role-gated types | Per-type `requiredRoles`: a type such as script support can be limited to members with one of the listed roles, the others stay open to everyone |
 | 📝 Staff notes | Private notes per ticket with `/note` |
 | 🔀 Move ticket | Move a ticket to another type and category, with the matching permissions |
 | 🔒 Lock | Lock a ticket so the creator and added users can no longer write |
