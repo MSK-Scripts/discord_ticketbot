@@ -21,8 +21,23 @@ const isPlainObject = (v) => v !== null && typeof v === 'object' && !Array.isArr
 
 // A key named "__proto__" in parsed JSON is an own property, but assigning it
 // to a normal object would replace that object's prototype. Locale files never
-// need it, so it is simply skipped on both merge and diff.
-const UNSAFE_KEY = '__proto__';
+// need these names, so they are skipped on both merge and diff, and every other
+// key is written with defineProperty, which creates an own property and never
+// touches the prototype chain.
+const UNSAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+function setOwn(obj, key, value) {
+  Object.defineProperty(obj, key, { value, enumerable: true, writable: true, configurable: true });
+}
+
+function readIfExists(file) {
+  try {
+    return fs.readFileSync(file, 'utf-8');
+  } catch (err) {
+    if (err.code === 'ENOENT') return null;
+    throw err;
+  }
+}
 
 function deepEqual(a, b) {
   if (a === b) return true;
@@ -49,8 +64,9 @@ function mergeLocale(base, custom) {
   const out = isPlainObject(base) ? { ...base } : {};
   if (!isPlainObject(custom)) return out;
   for (const [key, value] of Object.entries(custom)) {
-    if (key === UNSAFE_KEY) continue;
-    out[key] = isPlainObject(value) && isPlainObject(out[key]) ? mergeLocale(out[key], value) : value;
+    if (UNSAFE_KEYS.has(key)) continue;
+    const current = Object.prototype.hasOwnProperty.call(out, key) ? out[key] : undefined;
+    setOwn(out, key, isPlainObject(value) && isPlainObject(current) ? mergeLocale(current, value) : value);
   }
   return out;
 }
@@ -68,14 +84,14 @@ function diffLocale(base, edited) {
   const out = {};
   if (!isPlainObject(edited)) return out;
   for (const [key, value] of Object.entries(edited)) {
-    if (key === UNSAFE_KEY) continue;
+    if (UNSAFE_KEYS.has(key)) continue;
     const has = isPlainObject(base) && Object.prototype.hasOwnProperty.call(base, key);
     const baseValue = has ? base[key] : undefined;
     if (isPlainObject(value) && isPlainObject(baseValue)) {
       const sub = diffLocale(baseValue, value);
-      if (Object.keys(sub).length > 0) out[key] = sub;
+      if (Object.keys(sub).length > 0) setOwn(out, key, sub);
     } else if (!has || !deepEqual(baseValue, value)) {
-      out[key] = value;
+      setOwn(out, key, value);
     }
   }
   return out;
@@ -149,7 +165,7 @@ function loadLocale(code, { dir = LOCALES_DIR, warn } = {}) {
 function readLocaleForEditor(dir, fileName) {
   const shippedText = fs.readFileSync(path.join(dir, fileName), 'utf-8');
   const customFile = customPathFor(fileName, dir);
-  if (!fs.existsSync(customFile)) return { content: shippedText, customized: false };
+  if (readIfExists(customFile) === null) return { content: shippedText, customized: false };
   const custom = readCustomFile(customFile);
   if (!custom) return { content: shippedText, customized: true };
   return { content: formatLocale(mergeLocale(JSON.parse(shippedText), custom)), customized: true };
@@ -170,7 +186,8 @@ function saveLocaleEdit(dir, fileName, edited) {
   const diff = diffLocale(shipped, edited);
   const customFile = customPathFor(fileName, dir);
 
-  if (fs.existsSync(customFile)) fs.copyFileSync(customFile, `${customFile}.bak`);
+  const previous = readIfExists(customFile);
+  if (previous !== null) fs.writeFileSync(`${customFile}.bak`, previous, 'utf-8');
 
   if (Object.keys(diff).length === 0) {
     fs.rmSync(customFile, { force: true });
@@ -188,8 +205,9 @@ function saveLocaleEdit(dir, fileName, edited) {
  */
 function resetLocale(dir, fileName) {
   const customFile = customPathFor(fileName, dir);
-  if (!fs.existsSync(customFile)) return { removed: false };
-  fs.copyFileSync(customFile, `${customFile}.bak`);
+  const previous = readIfExists(customFile);
+  if (previous === null) return { removed: false };
+  fs.writeFileSync(`${customFile}.bak`, previous, 'utf-8');
   fs.rmSync(customFile, { force: true });
   return { removed: true };
 }

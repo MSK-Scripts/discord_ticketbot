@@ -117,7 +117,12 @@ async function migrateLocale({ root, run, log }, rel) {
   const editedText = fs.readFileSync(abs, 'utf-8');
 
   const backup = `${abs}${LEGACY_SUFFIX}`;
-  if (!fs.existsSync(backup)) fs.writeFileSync(backup, editedText, 'utf-8');
+  // 'wx' creates the backup only if it does not exist yet, in one step.
+  try {
+    fs.writeFileSync(backup, editedText, { encoding: 'utf-8', flag: 'wx' });
+  } catch (err) {
+    if (err.code !== 'EEXIST') throw err;
+  }
 
   const head = await run('git', ['show', `HEAD:${rel}`], { capture: true });
   const edited = readJson(editedText);
@@ -132,10 +137,16 @@ async function migrateLocale({ root, run, log }, rel) {
     if (keys > 0) {
       const customFile = path.join(root, 'locales', CUSTOM_DIRNAME, name);
       let existing = {};
-      if (fs.existsSync(customFile)) {
-        existing = readJson(fs.readFileSync(customFile, 'utf-8'));
+      let existingText = null;
+      try {
+        existingText = fs.readFileSync(customFile, 'utf-8');
+      } catch (err) {
+        if (err.code !== 'ENOENT') throw err;
+      }
+      if (existingText !== null) {
+        existing = readJson(existingText);
         if (!existing) {
-          fs.copyFileSync(customFile, `${customFile}.bak`);
+          fs.writeFileSync(`${customFile}.bak`, existingText, 'utf-8');
           log(`[update] ${path.posix.join('locales', CUSTOM_DIRNAME, name)} was not valid JSON, kept as ${name}.bak.`);
           existing = {};
         }

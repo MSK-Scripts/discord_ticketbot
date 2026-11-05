@@ -175,3 +175,13 @@ test('editor: DELETE drops the custom layer, a second DELETE is a no-op', () => 
   assert.deepEqual(readLocaleForEditor(dir, 'de.json').customized, false);
   assert.deepEqual(resetLocale(dir, 'de.json'), { removed: false });
 });
+
+test('merge and diff: "constructor" and "prototype" keys are ignored and nothing leaks into Object.prototype', () => {
+  const hostile = JSON.parse('{"constructor": {"prototype": {"polluted": "yes"}}, "prototype": {"polluted": "yes"}, "messages": {"x": "y"}}');
+  const merged = mergeLocale(SHIPPED, hostile);
+  const diff = diffLocale(SHIPPED, hostile);
+  assert.equal(({}).polluted, undefined);
+  assert.equal(Object.prototype.hasOwnProperty.call(merged, 'prototype'), false);
+  assert.equal(Object.prototype.hasOwnProperty.call(diff, 'constructor'), false);
+  assert.equal(merged.messages.x, 'y');
+});
