@@ -33,6 +33,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `SELECT_MENU` panel is shared by everyone, so it still lists every type and
   refuses after the pick.
 
+### Fixed
+
+- **A ticket type without a description no longer breaks the type menus.**
+  Discord rejects an empty option description, and the dashboard creates new
+  types with an empty one. The panel, the button's type list and both move
+  menus failed for such a type. The description is now left out when it is
+  empty.
+
 ## [2.21.0] - 2026-10-28
 
 ### Security

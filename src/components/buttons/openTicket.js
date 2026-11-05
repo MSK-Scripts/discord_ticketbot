@@ -11,8 +11,9 @@
  */
 const {
   ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder,
-  StringSelectMenuBuilder, StringSelectMenuOptionBuilder, MessageFlags,
+  StringSelectMenuBuilder, MessageFlags,
 } = require('discord.js');
+const { typeOption } = require('../../utils/typeOption');
 const { openTicket, getOpenRefusal, getTypeAccessRefusal, refusalText } = require('../../utils/ticketActions');
 
 // How long (ms) the "ticket created" confirmation stays visible before auto-delete
@@ -47,13 +48,7 @@ module.exports = {
 
     // ── Multiple types → ephemeral select menu ────────────────────────────────
     if (openable.length > 1) {
-      const options = openable.map(t =>
-        new StringSelectMenuOptionBuilder()
-          .setLabel(t.name)
-          .setDescription(t.description?.substring(0, 100) ?? '')
-          .setValue(t.codeName)
-          .setEmoji(t.emoji || '🎫')
-      );
+      const options = openable.map(t => typeOption(t));
 
       const menu = new StringSelectMenuBuilder()
         .setCustomId('tb_selectType')

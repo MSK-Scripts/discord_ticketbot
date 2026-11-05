@@ -3,9 +3,9 @@ const {
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
-  StringSelectMenuOptionBuilder,
   AttachmentBuilder,
 } = require('discord.js');
+const { typeOption } = require('./typeOption');
 const path = require('path');
 const fs   = require('fs');
 const { panelEmbed } = require('./embeds');
@@ -58,13 +58,7 @@ function buildTicketPanel(client) {
     // Show the select menu directly in the panel — no button click needed.
     // The handler (tb_panelSelect) resets the menu after every use so Discord
     // never caches a previously selected value.
-    const options = types.map(t =>
-      new StringSelectMenuOptionBuilder()
-        .setLabel(t.name)
-        .setDescription(t.description?.substring(0, 100) ?? '')
-        .setValue(t.codeName)
-        .setEmoji(t.emoji || '🎫')
-    );
+    const options = types.map(t => typeOption(t));
 
     row = new ActionRowBuilder().addComponents(
       new StringSelectMenuBuilder()
