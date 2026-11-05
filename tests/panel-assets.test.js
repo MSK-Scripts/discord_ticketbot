@@ -42,3 +42,15 @@ test('the repository ships the default logo for panel.logo.file "logo.png"', () 
   assert.ok(fs.statSync(path.resolve(__dirname, '../assets/default/logo.png')).isFile());
   assert.ok(resolvePanelAsset('logo.png'));
 });
+
+test('resolvePanelAsset: a path outside assets/ is never resolved', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tb-assets-'));
+  fs.mkdirSync(path.join(dir, 'assets'));
+  fs.writeFileSync(path.join(dir, '.env'), 'TOKEN=secret');
+  fs.writeFileSync(path.join(dir, 'assets', 'logo.png'), 'x');
+  const assets = path.join(dir, 'assets');
+  for (const bad of ['../.env', '..\.env', '/etc/passwd', path.join(dir, '.env'), '..', '.', 'default/../../.env']) {
+    assert.equal(resolvePanelAsset(bad, assets), null, bad);
+  }
+  assert.equal(resolvePanelAsset('logo.png', assets), path.join(assets, 'logo.png'));
+});

@@ -24,7 +24,14 @@ const ASSETS_DIR = path.resolve(__dirname, '../../assets');
  */
 function resolvePanelAsset(file, assetsDir = ASSETS_DIR) {
   if (typeof file !== 'string' || file === '') return null;
-  for (const candidate of [path.resolve(assetsDir, file), path.resolve(assetsDir, 'default', file)]) {
+  // Only a plain file name inside assets/ is allowed. Without this, a config
+  // value like "../.env" made the panel post the bot's .env (token included)
+  // to Discord as an attachment.
+  if (file !== path.basename(file) || file === '.' || file === '..' || file.includes('\\') || file.includes('/')) return null;
+  const root = path.resolve(assetsDir);
+  for (const candidate of [path.resolve(root, file), path.resolve(root, 'default', file)]) {
+    const rel = path.relative(root, candidate);
+    if (rel.startsWith('..') || path.isAbsolute(rel)) continue;
     if (fs.statSync(candidate, { throwIfNoEntry: false })?.isFile()) return candidate;
   }
   return null;
