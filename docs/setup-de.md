@@ -16,7 +16,7 @@ Premium-Nutzer können Transkripte zusätzlich unter ihrer eigenen Domain bereit
 6. [Schritt 4 – Eigene Domain einrichten (Premium)](#6-schritt-4--eigene-domain-einrichten-premium)
 7. [Konsolenausgabe beim Start](#7-konsolenausgabe-beim-start)
 8. [Häufige Fragen](#8-häufige-fragen)
-9. [Gehostetes Bot-Management (Premium+ und Business)](#9-gehostetes-bot-management-premium-und-business)
+9. [Gehostetes Bot-Management (Hosted und Business)](#9-gehostetes-bot-management-hosted-und-business)
 
 ---
 
@@ -36,7 +36,7 @@ Premium-Nutzer erhalten zusätzlich herunterladbare Dateianhänge im Transkript 
 
 ## 2. Abo-Modelle im Überblick
 
-| Feature | Basic (kostenlos) | Premium | Premium+ | Business |
+| Feature | Basic (kostenlos) | Premium | Hosted | Business |
 |---|---|---|---|---|
 | Preis pro Monat | kostenlos | 4,99 € | 9,99 € | 19,99 € |
 | Preis pro Jahr | kostenlos | 49 € | 99 € | 199 € |
@@ -151,7 +151,7 @@ Starte den Bot danach neu.
 
 ## 6. Schritt 4 – Eigene Domain einrichten (Premium)
 
-> Dieser Schritt ist in **jeder bezahlten Stufe** verfügbar (Premium, Premium+, Business).  
+> Dieser Schritt ist in **jeder bezahlten Stufe** verfügbar (Premium, Hosted, Business).  
 > Basic-Nutzer können diesen Schritt überspringen.
 
 Mit einer eigenen Domain sind Transkripte unter deiner URL abrufbar,  
@@ -226,7 +226,7 @@ Beim Start siehst du folgende Ausgabe im Terminal:
                  https://github.com/MSK-Scripts/discord_ticketbot
 
 Checking for updates... up to date (v2.10.0)
-Checking API Key... API key valid → Premium+
+Checking API Key... API key valid → Hosted
 
 Connecting to Discord...
 
@@ -258,7 +258,7 @@ Connecting to Discord...
 | `Invalid API key → Basic` | Der Key ist falsch oder wurde neu generiert |
 | `MSK server unreachable → Basic` | www.msk-scripts.de ist vorübergehend nicht erreichbar |
 | `API key valid → Premium` | ✅ Premium aktiv |
-| `API key valid → Premium+` | ✅ Premium+ aktiv |
+| `API key valid → Hosted` | ✅ Hosted aktiv |
 | `API key valid → business` | ✅ Business aktiv |
 
 ---
@@ -293,14 +293,14 @@ Ja. SSL-Zertifikate werden automatisch über **Let's Encrypt** (Certbot) ohne Ko
 und erneuern sich automatisch vor Ablauf.
 
 **Was ist „Gehostetes Bot-Management“?**
-Premium+- und Business-Kunden können ihren Bot von MSK Scripts hosten lassen und ihn komplett im Browser verwalten,
-siehe [Abschnitt 9](#9-gehostetes-bot-management-premium-und-business).
+Hosted- und Business-Kunden können ihren Bot von MSK Scripts hosten lassen und ihn komplett im Browser verwalten,
+siehe [Abschnitt 9](#9-gehostetes-bot-management-hosted-und-business).
 
 ---
 
-## 9. Gehostetes Bot-Management (Premium+ und Business)
+## 9. Gehostetes Bot-Management (Hosted und Business)
 
-Du willst gar keinen Server betreiben? Mit Premium+ und Business kann der Bot **von MSK Scripts gehostet** werden.
+Du willst gar keinen Server betreiben? Mit Hosted und Business kann der Bot **von MSK Scripts gehostet** werden.
 Eingerichtet wird das selbst im [Dashboard](https://www.msk-scripts.de/ticketbot/dashboard), ohne SSH-Zugang und ohne
 Serverkenntnisse.
 
