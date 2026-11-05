@@ -140,6 +140,38 @@ unter dem das Dashboard läuft, muss den Socket benutzen dürfen.
 
 `StreamMaxLength` von clamd (Vorgabe 25 MB) muss größer sein als das Upload-Limit.
 
+#### ClamAV einrichten
+
+ClamAV ist optional. Ohne läuft der Upload trotzdem, und die Bilder werden wie
+oben beschrieben umgewandelt. clamd hält seine Signaturdatenbank im Arbeitsspeicher
+und braucht deutlich mehr als 1 GB RAM. Prüfe also vorher, ob dein Server dafür
+Platz hat.
+
+**Debian oder Ubuntu**, wenn der Bot direkt auf dem Server läuft:
+
+```bash
+sudo apt install clamav-daemon
+sudo systemctl enable --now clamav-freshclam clamav-daemon
+```
+
+Der erste Download der Signaturen dauert ein paar Minuten, clamd startet erst
+danach. Dann diese Zeile in die `.env` des Bots eintragen und das Dashboard neu
+starten:
+
+```bash
+CLAMAV_SOCKET=/var/run/clamav/clamd.ctl
+```
+
+Meldet das Log, dass der Socket nicht geöffnet werden kann, darf der Nutzer des
+Bots ihn nicht verwenden. Dann `LocalSocketGroup` und `LocalSocketMode` in
+`/etc/clamav/clamd.conf` prüfen.
+
+**Docker:** das offizielle Image neben dem Bot laufen lassen, siehe
+[ClamAV für den Bild-Upload](https://docu.msk-scripts.de/de/discord/discord_ticketbot/docker/#clamav-für-den-bild-upload).
+
+Nach einem Neustart steht im Log, ob ClamAV antwortet:
+`Image uploads are virus scanned with ClamAV (...)` heißt, es funktioniert.
+
 ---
 
 ## Schnellstart

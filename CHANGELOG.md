@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.23.0] - 2026-11-05
+
 ### Added
 
 - **Own texts live in `locales/custom/`.** Changes to the bot's texts are kept
